@@ -1,0 +1,603 @@
+﻿<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="splitContainer1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 36</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="splitContainer1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="lblMainFilter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>14, 4</value>
+  </data>
+  <data name="lblMainFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="lblMainFilter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>259, 46</value>
+  </data>
+  <data name="cmbMainFilter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>282, 5</value>
+  </data>
+  <data name="cmbMainFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbMainFilter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>613, 33</value>
+  </data>
+  <data name="lblGridFilter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>14, 58</value>
+  </data>
+  <data name="lblGridFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="lblGridFilter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>259, 46</value>
+  </data>
+  <data name="cmbGridFilterFields_0.Location" type="System.Drawing.Point, System.Drawing">
+    <value>282, 59</value>
+  </data>
+  <data name="cmbGridFilterFields_0.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_0.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>905, 59</value>
+  </data>
+  <data name="cmbGridFilterFields_1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>638, 113</value>
+  </data>
+  <data name="cmbGridFilterValue_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>905, 113</value>
+  </data>
+  <data name="cmbGridFilterFields_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1261, 113</value>
+  </data>
+  <data name="cmbGridFilterValue_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1528, 113</value>
+  </data>
+  <data name="cmbGridFilterFields_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1261, 59</value>
+  </data>
+  <data name="cmbGridFilterValue_1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1884, 113</value>
+  </data>
+  <data name="cmbGridFilterValue_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1884, 59</value>
+  </data>
+  <data name="cmbGridFilterValue_2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1528, 59</value>
+  </data>
+  <data name="cmbGridFilterFields_2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_0.Location" type="System.Drawing.Point, System.Drawing">
+    <value>638, 59</value>
+  </data>
+  <data name="cmbGridFilterValue_0.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_0.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>282, 113</value>
+  </data>
+  <data name="cmbGridFilterFields_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="rbMerge.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1839, 4</value>
+  </data>
+  <data name="rbMerge.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="rbMerge.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 29</value>
+  </data>
+  <data name="GridContextMenu_SetAsMainFilter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 32</value>
+  </data>
+  <data name="GridContextMenu_SetFKasMainFIlter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 32</value>
+  </data>
+  <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>252, 6</value>
+  </data>
+  <data name="GridContextMenu_TimesUsedAsFK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 32</value>
+  </data>
+  <data name="GridContextMenu_OrderCombolByPK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 32</value>
+  </data>
+  <data name="GridContextMenu_Seperator.Size" type="System.Drawing.Size, System.Drawing">
+    <value>252, 6</value>
+  </data>
+  <data name="GridContextMenu_RestoreFilters.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 32</value>
+  </data>
+  <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 32</value>
+  </data>
+  <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
+    <value>256, 208</value>
+  </data>
+  <data name="btnDeleteAddMerge.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1642, 5</value>
+  </data>
+  <data name="btnDeleteAddMerge.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="btnDeleteAddMerge.Size" type="System.Drawing.Size, System.Drawing">
+    <value>118, 44</value>
+  </data>
+  <data name="rbAdd.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1483, 4</value>
+  </data>
+  <data name="rbAdd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="rbAdd.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 29</value>
+  </data>
+  <data name="rbDelete.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1307, 4</value>
+  </data>
+  <data name="rbDelete.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="rbDelete.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 29</value>
+  </data>
+  <data name="rbEdit.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1124, 4</value>
+  </data>
+  <data name="rbEdit.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="rbEdit.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 29</value>
+  </data>
+  <data name="rbView.Location" type="System.Drawing.Point, System.Drawing">
+    <value>946, 4</value>
+  </data>
+  <data name="rbView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="rbView.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 29</value>
+  </data>
+  <data name="lblComboFilter.Location" type="System.Drawing.Point, System.Drawing">
+    <value>14, 246</value>
+  </data>
+  <data name="lblComboFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="lblComboFilter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>259, 35</value>
+  </data>
+  <data name="cmbGridFilterFields_7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>905, 156</value>
+  </data>
+  <data name="cmbGridFilterFields_7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>638, 156</value>
+  </data>
+  <data name="cmbGridFilterValue_6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>282, 156</value>
+  </data>
+  <data name="cmbGridFilterFields_6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1261, 156</value>
+  </data>
+  <data name="cmbGridFilterValue_7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="cmbGridFilterFields_8.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1528, 156</value>
+  </data>
+  <data name="cmbGridFilterFields_8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterFields_8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="cmbGridFilterValue_8.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1884, 156</value>
+  </data>
+  <data name="cmbGridFilterValue_8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="cmbGridFilterValue_8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>257, 33</value>
+  </data>
+  <data name="lblCmbFilterField_3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>635, 285</value>
+  </data>
+  <data name="lblCmbFilterField_3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 30</value>
+  </data>
+  <data name="cmbComboFilterValue_3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>902, 289</value>
+  </data>
+  <data name="cmbComboFilterValue_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboFilterValue_3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 33</value>
+  </data>
+  <data name="lblCmbFilterField_4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1169, 285</value>
+  </data>
+  <data name="lblCmbFilterField_4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 30</value>
+  </data>
+  <data name="cmbComboFilterValue_4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1436, 289</value>
+  </data>
+  <data name="cmbComboFilterValue_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboFilterValue_4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 33</value>
+  </data>
+  <data name="lblCmbFilterField_5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1703, 285</value>
+  </data>
+  <data name="lblCmbFilterField_5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 30</value>
+  </data>
+  <data name="cmbComboFilterValue_5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1970, 289</value>
+  </data>
+  <data name="cmbComboFilterValue_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboFilterValue_5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 33</value>
+  </data>
+  <data name="lblCmbFilterField_0.Location" type="System.Drawing.Point, System.Drawing">
+    <value>635, 242</value>
+  </data>
+  <data name="lblCmbFilterField_0.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 30</value>
+  </data>
+  <data name="cmbComboFilterValue_0.Location" type="System.Drawing.Point, System.Drawing">
+    <value>902, 246</value>
+  </data>
+  <data name="cmbComboFilterValue_0.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboFilterValue_0.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 33</value>
+  </data>
+  <data name="lblCmbFilterField_1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1169, 242</value>
+  </data>
+  <data name="lblCmbFilterField_1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 30</value>
+  </data>
+  <data name="cmbComboFilterValue_1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1436, 246</value>
+  </data>
+  <data name="cmbComboFilterValue_1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboFilterValue_1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 33</value>
+  </data>
+  <data name="lblCmbFilterField_2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1703, 242</value>
+  </data>
+  <data name="lblCmbFilterField_2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 30</value>
+  </data>
+  <data name="cmbComboFilterValue_2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1970, 246</value>
+  </data>
+  <data name="cmbComboFilterValue_2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboFilterValue_2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>263, 33</value>
+  </data>
+  <data name="cmbComboTableList.Location" type="System.Drawing.Point, System.Drawing">
+    <value>279, 246</value>
+  </data>
+  <data name="cmbComboTableList.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="cmbComboTableList.Size" type="System.Drawing.Size, System.Drawing">
+    <value>352, 33</value>
+  </data>
+  <data name="btnBlackLine.Location" type="System.Drawing.Point, System.Drawing">
+    <value>282, 223</value>
+  </data>
+  <data name="btnBlackLine.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="btnBlackLine.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1358, 14</value>
+  </data>
+  <data name="btnReload.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1973, 5</value>
+  </data>
+  <data name="btnReload.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="btnReload.Size" type="System.Drawing.Size, System.Drawing">
+    <value>78, 36</value>
+  </data>
+  <data name="tableLayoutPanel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 34</value>
+  </data>
+  <data name="tableLayoutPanel.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="tableLayoutPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1911, 356</value>
+  </data>
+  <data name="txtMessages.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 4, 2, 4</value>
+  </data>
+  <data name="txtMessages.Size" type="System.Drawing.Size, System.Drawing">
+    <value>2220, 31</value>
+  </data>
+  <data name="splitContainer1.Panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 100, 0, 100</value>
+  </data>
+  <data name="dataGridView1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 5, 4, 5</value>
+  </data>
+  <data name="dataGridView1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>2220, 408</value>
+  </data>
+  <data name="splitContainer1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>2220, 924</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
+    <value>511</value>
+  </data>
+  <data name="splitContainer1.SplitterWidth" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="mnuConnectionList.Size" type="System.Drawing.Size, System.Drawing">
+    <value>303, 34</value>
+  </data>
+  <data name="mnuBlankLine3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>303, 34</value>
+  </data>
+  <data name="mnuAddConnection.Size" type="System.Drawing.Size, System.Drawing">
+    <value>303, 34</value>
+  </data>
+  <data name="mnuDeleteConnection.Size" type="System.Drawing.Size, System.Drawing">
+    <value>303, 34</value>
+  </data>
+  <data name="mnuConnections.Size" type="System.Drawing.Size, System.Drawing">
+    <value>209, 34</value>
+  </data>
+  <data name="mnuClose.Size" type="System.Drawing.Size, System.Drawing">
+    <value>209, 34</value>
+  </data>
+  <data name="mnuFile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 29</value>
+  </data>
+  <data name="mnuOpenTables.Size" type="System.Drawing.Size, System.Drawing">
+    <value>66, 29</value>
+  </data>
+  <data name="mnuTools_ShowITtools.Size" type="System.Drawing.Size, System.Drawing">
+    <value>270, 34</value>
+  </data>
+  <data name="mnuDatabaseInfo.Size" type="System.Drawing.Size, System.Drawing">
+    <value>270, 34</value>
+  </data>
+  <data name="mnuCreateDisplayKey.Size" type="System.Drawing.Size, System.Drawing">
+    <value>270, 34</value>
+  </data>
+  <data name="mnuCreateDisplayKey.Text" xml:space="preserve">
+    <value>建立DK鍵</value>
+  </data>
+  <data name="mnuCreateForeignKey.Size" type="System.Drawing.Size, System.Drawing">
+    <value>270, 34</value>
+  </data>
+  <data name="mnuCreateForeignKey.Text" xml:space="preserve">
+    <value>建立外鍵</value>
+  </data>
+  <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
+    <value>270, 34</value>
+  </data>
+  <data name="mnuToolsBackupDatabase.Size" type="System.Drawing.Size, System.Drawing">
+    <value>270, 34</value>
+  </data>
+  <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>267, 6</value>
+  </data>
+  <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>267, 6</value>
+  </data>
+  <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
+    <value>85, 29</value>
+  </data>
+  <data name="mnuHelpFile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>190, 34</value>
+  </data>
+  <data name="mnuHelp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>76, 29</value>
+  </data>
+  <data name="MainMenu1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>8, 4, 0, 4</value>
+  </data>
+  <data name="MainMenu1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1922, 37</value>
+  </data>
+  <data name="txtRecordsPerPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>62, 34</value>
+  </data>
+  <data name="toolStripButton4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>34, 29</value>
+  </data>
+  <data name="toolStripButton3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 29</value>
+  </data>
+  <data name="toolStripButton2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>34, 29</value>
+  </data>
+  <data name="toolStripButtonColumnWidth.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
+        J/+f6DYF0yA+yQac6Db5f6hWCmwIiE+mC0wIu2DS2Vf/F1x6DefjwlgNyNr34r/0wkdgTMgQDAOQNRNj
+        CIoBOg0rMTTDMLIhIHbriZeYBmDTiIxBGkEYxge5liQDsGGQqykyAISpZwAlmIEywMAAAAc1/Jwvt6sN
+        AAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="toolStripBottom.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 960</value>
+  </data>
+  <data name="toolStripBottom.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1922, 34</value>
+  </data>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>10, 25</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>1922, 994</value>
+  </data>
+  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 8, 5, 8</value>
+  </data>
+</root>

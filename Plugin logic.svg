@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="297mm"
+   height="210mm"
+   viewBox="0 0 297 210"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="Plugin logic.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="1.4716891"
+     inkscape:cx="477.34266"
+     inkscape:cy="244.27713"
+     inkscape:window-width="1920"
+     inkscape:window-height="1013"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g778"
+       transform="matrix(0.59830933,0,0,1.0417306,2.2344392,-0.15878606)">
+      <text
+         xml:space="preserve"
+         style="font-size:4.5861px;line-height:0.95;text-align:center;text-anchor:middle;fill:#ffffff;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+         x="11.146489"
+         y="14.74213"
+         id="text292"><tspan
+           sodipodi:role="line"
+           id="tspan290"
+           style="stroke-width:0.661458"
+           x="11.146489"
+           y="14.74213">=</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-size:6.35px;line-height:0.95;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+         x="5.1378064"
+         y="8.6295404"
+         id="text572"><tspan
+           sodipodi:role="line"
+           id="tspan570"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;stroke-width:0.661458"
+           x="5.1378064"
+           y="8.6295404">IPlugin</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.35px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+         x="15.641041"
+         y="16.180387"
+         id="text734"><tspan
+           sodipodi:role="line"
+           id="tspan732"
+           style="stroke-width:0.661458"
+           x="15.641041"
+           y="16.180387">1. Name &lt;string&gt;</tspan><tspan
+           sodipodi:role="line"
+           style="stroke-width:0.661458"
+           x="15.641041"
+           y="22.212887"
+           id="tspan736">2. &lt;ControlTemplate&gt;</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.35px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+         x="32.001213"
+         y="31.82143"
+         id="text740"><tspan
+           sodipodi:role="line"
+           id="tspan738"
+           style="stroke-width:0.661458"
+           x="32.001213"
+           y="31.82143">a. ToolStripMenuItem</tspan><tspan
+           sodipodi:role="line"
+           style="stroke-width:0.661458"
+           x="32.001213"
+           y="37.853931"
+           id="tspan742">b. UserControlWithCallBack : UserControl</tspan><tspan
+           sodipodi:role="line"
+           style="stroke-width:0.661458"
+           x="32.001213"
+           y="43.886429"
+           id="tspan744" /></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+         x="40.691822"
+         y="44.406174"
+         id="text748"><tspan
+           sodipodi:role="line"
+           id="tspan746"
+           style="font-size:4.93889px;stroke-width:0.661458"
+           x="40.691822"
+           y="44.406174">i. public event EventHandler&lt;EventArgs&lt;String&gt;&gt; CallBack;</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:4.93889px;stroke-width:0.661458"
+           x="40.691822"
+           y="49.098118"
+           id="tspan750">ii.public void ReceiveData(String callBackData)</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:4.93889px;stroke-width:0.661458"
+           x="40.691822"
+           y="53.790066"
+           id="tspan752">   {</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:4.93889px;stroke-width:0.661458"
+           x="40.691822"
+           y="58.48201"
+           id="tspan754">   <tspan
+   style="font-size:4.23333px"
+   id="tspan758">    CallBack.SafeInvoke(this, new EventArgs&lt;string&gt;(callBackData));</tspan></tspan><tspan
+           sodipodi:role="line"
+           style="font-size:4.93889px;stroke-width:0.661458"
+           x="40.691822"
+           y="63.173954"
+           id="tspan756">   }</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:6.35px;line-height:0.95;text-align:center;text-anchor:middle;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+       x="10.067796"
+       y="8.8093214"
+       id="text296"><tspan
+         sodipodi:role="line"
+         id="tspan294"
+         style="stroke-width:0.661458;font-size:6.35px;fill:#000000"
+         x="10.067796"
+         y="8.8093214" /></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+       x="126.47847"
+       y="7.1912832"
+       id="text782"><tspan
+         sodipodi:role="line"
+         id="tspan780"
+         style="stroke-width:0.661458"
+         x="126.47847"
+         y="7.1912832">DataGridViewPlugin : IPlugin</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+       x="21.034504"
+       y="27.147093"
+       id="text786"><tspan
+         sodipodi:role="line"
+         id="tspan784"
+         style="stroke-width:0.661458"
+         x="21.034504"
+         y="27.147093">(<tspan
+   style="font-size:2.82222px"
+   id="tspan989">Includes a contructor from name,List&lt;strings&gt;,usercontrolwithcallback)</tspan>,</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82223px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+       x="126.29869"
+       y="11.506053"
+       id="text999"><tspan
+         sodipodi:role="line"
+         id="tspan997"
+         style="stroke-width:0.661458"
+         x="126.29869"
+         y="11.506053">(Constructor constructs ControlTemplate:</tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.661458"
+         x="126.29869"
+         y="14.187172"
+         id="tspan1001">controlTemplate = new ControlTemplate(this.Name(), </tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.661458"
+         x="126.29869"
+         y="16.86829"
+         id="tspan1003">                                        new List&lt;string&gt;() { &quot;Load Data&quot; }, </tspan><tspan
+         sodipodi:role="line"
+         style="stroke-width:0.661458"
+         x="126.29869"
+         y="19.549408"
+         id="tspan1005">                                        new DataGridViewUserControl());</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333333px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+       x="127.4655"
+       y="30.922518"
+       id="text1009"><tspan
+         sodipodi:role="line"
+         id="tspan1007"
+         style="stroke-width:0.661458;font-size:4.23333333px"
+         x="127.4655"
+         y="30.922518">DataGridViewUserControl : UserControlWithCallBack</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;line-height:0.95;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:start;text-anchor:start;fill:#000000;stroke-width:0.661458;stroke-linejoin:round;stroke-opacity:0.99;paint-order:fill markers stroke"
+       x="128.54419"
+       y="36.1362"
+       id="text1013"><tspan
+         sodipodi:role="line"
+         id="tspan1011"
+         style="font-size:3.52778px;stroke-width:0.661458"
+         x="128.54419"
+         y="36.1362">This is a form that contains a DataGridView and other things.</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:3.52778px;stroke-width:0.661458"
+         x="128.54419"
+         y="39.487591"
+         id="tspan1025"></tspan><tspan
+         sodipodi:role="line"
+         style="font-size:3.52778px;stroke-width:0.661458"
+         x="128.54419"
+         y="42.838982"
+         id="tspan1027">Assign UserControlWithCallBack.CallBack here.</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:3.52778px;stroke-width:0.661458"
+         x="128.54419"
+         y="46.190372"
+         id="tspan1029">In Constructor:</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:3.52778px;stroke-width:0.661458"
+         x="128.54419"
+         y="49.541763"
+         id="tspan1015">      base.CallBack += DataGridViewUserControl_CallBack;  </tspan><tspan
+         sodipodi:role="line"
+         style="font-size:3.52778px;stroke-width:0.661458"
+         x="128.54419"
+         y="52.893154"
+         id="tspan1031">In the code define this function: </tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.661458"
+         x="128.54419"
+         y="56.244545"
+         id="tspan1017">void DataGridViewUserControl_CallBack(object sender, EventArgs&lt;string&gt; e)</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.661458"
+         x="128.54419"
+         y="59.595936"
+         id="tspan1019">{</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.661458"
+         x="128.54419"
+         y="62.947327"
+         id="tspan1021">    if (e.Value == &quot;Load Data&quot;)</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:2.82222px;stroke-width:0.661458"
+         x="128.54419"
+         y="66.298721"
+         id="tspan1023">    {  . . . -Load mockData into the userControl</tspan></text>
+  </g>
+</svg>
