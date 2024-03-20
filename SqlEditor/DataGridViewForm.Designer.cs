@@ -107,6 +107,9 @@
             mnuDuplicateDisplayKeys = new ToolStripMenuItem();
             mnuForeignKeyMissing = new ToolStripMenuItem();
             mnuToolsBackupDatabase = new ToolStripMenuItem();
+            mnuDisplayKeysList = new ToolStripMenuItem();
+            mnuLoadPlugin = new ToolStripMenuItem();
+            mnuRemovePlugin = new ToolStripMenuItem();
             mnuShowITTools = new ToolStripMenuItem();
             mnuHelp = new ToolStripMenuItem();
             mnuHelpFile = new ToolStripMenuItem();
@@ -195,7 +198,6 @@
             tableLayoutPanel.Controls.Add(btnReload, 23, 0);
             tableLayoutPanel.Controls.Add(txtManualFilter, 4, 4);
             tableLayoutPanel.Name = "tableLayoutPanel";
-            tableLayoutPanel.Paint += tableLayoutPanel_Paint;
             // 
             // GridContextMenu
             // 
@@ -715,7 +717,7 @@
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Control;
-            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
             dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
@@ -728,7 +730,7 @@
             dataGridView1.Name = "dataGridView1";
             dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = SystemColors.Control;
-            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
             dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
             dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
             dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
@@ -798,7 +800,7 @@
             // 
             resources.ApplyResources(mnuDeleteConnection, "mnuDeleteConnection");
             mnuDeleteConnection.Name = "mnuDeleteConnection";
-            mnuDeleteConnection.Click += mnuDeleteDatabase_Click;
+            mnuDeleteConnection.Click += mnuDeleteConnectionString_Click;
             // 
             // mnuClose
             // 
@@ -828,7 +830,7 @@
             // mnuIT_Tools
             // 
             resources.ApplyResources(mnuIT_Tools, "mnuIT_Tools");
-            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuDuplicateDisplayKeys, mnuForeignKeyMissing, mnuToolsBackupDatabase, mnuShowITTools });
+            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuDuplicateDisplayKeys, mnuForeignKeyMissing, mnuToolsBackupDatabase, mnuDisplayKeysList, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
             mnuIT_Tools.Name = "mnuIT_Tools";
             // 
             // mnuDatabaseInfo
@@ -854,6 +856,24 @@
             resources.ApplyResources(mnuToolsBackupDatabase, "mnuToolsBackupDatabase");
             mnuToolsBackupDatabase.Name = "mnuToolsBackupDatabase";
             mnuToolsBackupDatabase.Click += mnuToolsBackupDatabase_Click;
+            // 
+            // mnuDisplayKeysList
+            // 
+            resources.ApplyResources(mnuDisplayKeysList, "mnuDisplayKeysList");
+            mnuDisplayKeysList.Name = "mnuDisplayKeysList";
+            mnuDisplayKeysList.Click += mnuDisplayKeysList_Click;
+            // 
+            // mnuLoadPlugin
+            // 
+            resources.ApplyResources(mnuLoadPlugin, "mnuLoadPlugin");
+            mnuLoadPlugin.Name = "mnuLoadPlugin";
+            mnuLoadPlugin.Click += mnuLoadPlugin_Click;
+            // 
+            // mnuRemovePlugin
+            // 
+            resources.ApplyResources(mnuRemovePlugin, "mnuRemovePlugin");
+            mnuRemovePlugin.Name = "mnuRemovePlugin";
+            mnuRemovePlugin.Click += mnuRemovePlugin_Click;
             // 
             // mnuShowITTools
             // 
@@ -1059,6 +1079,9 @@
         internal ToolStripMenuItem mnuIT_Tools;
         public ToolStripMenuItem mnuPrintCurrentTable;
         private ToolStripMenuItem mnuShowITTools;
+        private ToolStripMenuItem mnuLoadPlugin;
+        private ToolStripMenuItem mnuRemovePlugin;
+        private ToolStripMenuItem mnuDisplayKeysList;
         //private Button button2;
     }
 }

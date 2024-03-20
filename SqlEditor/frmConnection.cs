@@ -132,6 +132,13 @@ namespace SqlEditor
         private void cmdTest_Click(object sender, EventArgs e)
         {
             string cs = cmbStrings.Text;
+            // Check for a database string
+            if (cs.IndexOf("{1}") < 0)
+            {
+                MessageBox.Show(MyResources.pleaseChooseDatabaseString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             //Password
             string showUser = cs.Replace("{3}", "*********");  // Used in error message
             if (cs.IndexOf("{3}") >= 0)

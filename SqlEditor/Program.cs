@@ -13,5 +13,6 @@ namespace SqlEditor
             ApplicationConfiguration.Initialize();
             Application.Run(new DataGridViewForm());
         }
+
     }
 }

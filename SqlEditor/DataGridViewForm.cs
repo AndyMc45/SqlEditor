@@ -236,7 +236,7 @@ namespace SqlEditor
 
             //Get font size from registry and define "font"
             int size = 8;  // default
-            try { size = Convert.ToInt32(Interaction.GetSetting("AccessFreeData", "Options", "FontSize", "9")); } catch { }
+            try { size = Convert.ToInt32(Interaction.GetSetting(AppData.appName, "Options", "FontSize", "9")); } catch { }
             System.Drawing.Font font = new System.Drawing.Font("Arial", size, FontStyle.Regular);
 
             // Set font of all single controls - 
@@ -279,7 +279,7 @@ namespace SqlEditor
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = formOptions.DefaultColumnColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionBackColor = formOptions.DefaultColumnColor;
         }
-   
+
         #endregion
 
         //----------------------------------------------------------------------------------------------------------------------
@@ -296,6 +296,8 @@ namespace SqlEditor
             {
                 // 1. Close old connection if any - also turns off various menu items.
                 CloseConnection();
+
+                AppData.databaseName = String.Empty;
 
                 // 2. Get connection string - Opens 1st stored connection if any
                 connectionOptions.msSql = true;  // Other options not yet implemented
@@ -323,7 +325,10 @@ namespace SqlEditor
                     // 5. Open connection
                     MsSql.openConnection(cs);  // May cause an error.  Errors not handled in openConnection(cs)
 
-                    // 6. Initialize datatables
+                    AppData.databaseName = csObject.databaseName;
+                    this.Text = AppData.databaseName;
+                    
+                        // 6. Initialize datatables
                     dataHelper.initializeDataTables();  // Program uses 8 different dataTables - this sets 8 variables to these tables
 
                     // 7. Fill Information Datatables  // Files 6 of the above tables with info about the database
@@ -417,12 +422,6 @@ namespace SqlEditor
                 }
                 aliasTableDictionary[fl.tableAlias].Add(fl.fieldName);
             }
-
-            //if (!String.IsNullOrEmpty(formOptions.strSuperStaticWhereClause))
-            //{
-            //    currentSql.strManualWhereClause = formOptions.strSuperStaticWhereClause;
-            //    formOptions.strSuperStaticWhereClause = string.Empty;   // Only use this once
-            //}
 
             // 2. Bind 9 cmbGridFilterFields with fields for user to select
             //    Only setting up cmbGridFilterFields - cmbGridFilterValues set on cmbGridFilterField SelectionChanged event
@@ -666,9 +665,14 @@ namespace SqlEditor
             // a. Set toolStripButton3 caption
             toolStripButton3.Text = currentSql.myPage.ToString() + "/" + currentSql.TotalPages.ToString();
             // b. Set form caption
-            string dbPath = Interaction.GetSetting("AccessFreeData", "DatabaseList", "path0", "");
-            StringBuilder sb = new StringBuilder(dbPath.Substring(dbPath.LastIndexOf("\\") + 1));
-            sb.Append("    -    " + currentSql.myTable);
+            StringBuilder sb = new StringBuilder();
+            if (!String.IsNullOrEmpty(AppData.databaseName)) 
+            { 
+                sb.Append(AppData.databaseName + " -  "); 
+            }
+
+            // StringBuilder sb = new StringBuilder(dbPath.Substring(dbPath.LastIndexOf("\\") + 1));
+            sb.Append(dgvHelper.TranslateString(currentSql.myTable));
             string strRowsAndPage = String.Format(MyResources.XrowsPageY, currentSql.RecordCount.ToString(), currentSql.myPage.ToString());
             sb.Append("    -     " + strRowsAndPage);
             this.Text = sb.ToString();
@@ -1111,7 +1115,7 @@ namespace SqlEditor
             saveFileDialog1.AddExtension = true;
             if (currentSql != null && MsSql.cn != null)
             {
-                saveFileDialog1.FileName = String.Format("{0}--{1}--Page_{2}", MsSql.cn.Database, currentSql.myTable, currentSql.myPage.ToString());
+                saveFileDialog1.FileName = String.Format("{0}--{1}--Page_{2}", MsSql.cn.Database, dgvHelper.TranslateString(currentSql.myTable), currentSql.myPage.ToString());
             }
             if (!String.IsNullOrEmpty(formOptions.excelFilesFolder))
             {
@@ -1269,7 +1273,7 @@ namespace SqlEditor
             formDBI.ShowDialog();
         }
 
-        private void mnuDeleteDatabase_Click(object sender, EventArgs e)
+        private void mnuDeleteConnectionString_Click(object sender, EventArgs e)
         {
             List<connectionString> csList = AppData.GetConnectionStringList();
             List<string> strCsList = new List<string>();
@@ -1371,7 +1375,6 @@ namespace SqlEditor
             }
         }
 
-
         private void mnuToolsBackupDatabase_Click(object sender, EventArgs e)
         {
             if (MsSql.cn != null)
@@ -1380,7 +1383,7 @@ namespace SqlEditor
                 string folder = AppData.GetKeyValue("DatabaseBackupFolder");
                 if (string.IsNullOrEmpty(folder) || !Path.Exists(folder))
                 {
-                    folder = SelectFolder(folder);  // Returns string.Empty if dialog canceled
+                    folder = SelectFolder(folder, true);  // Returns string.Empty if dialog canceled
                     if (folder == string.Empty)
                     {
                         return;
@@ -1400,7 +1403,7 @@ namespace SqlEditor
                     }
                     else
                     {
-                        folder = SelectFolder(folder);
+                        folder = SelectFolder(folder, true);
                         if (folder == String.Empty)
                         {
                             return;
@@ -1415,10 +1418,10 @@ namespace SqlEditor
             }
         }
 
-        private string SelectFolder(string defaultFolder)
+        private string SelectFolder(string defaultFolder, bool allowNewFolder)
         {
             folderBrowserDialog1 = new FolderBrowserDialog();
-            folderBrowserDialog1.ShowNewFolderButton = true;
+            folderBrowserDialog1.ShowNewFolderButton = allowNewFolder;
             if (Path.Exists(defaultFolder))
             {
                 folderBrowserDialog1.SelectedPath = defaultFolder;
@@ -1953,27 +1956,38 @@ namespace SqlEditor
             if (programMode == ProgramMode.edit)
             {
                 field colField = currentSql.myFields[e.ColumnIndex];
-                // Change to ID column
-                // Set update command
-                List<field> fieldsToUpdate = new List<field>();
-                fieldsToUpdate.Add(colField);
-                MsSql.SetUpdateCommand(fieldsToUpdate, dataHelper.currentDT);
-                // Handle foreign keys
-                DataGridViewColumn col = dataGridView1.Columns[e.ColumnIndex];
-                FkComboColumn Fkcol = col as FkComboColumn;
-                if (Fkcol != null)  // Will be null for non-foreign key row
+                msgText(currentSql.myTable);
+                if (dataGridView1.Columns[e.ColumnIndex].ReadOnly)
                 {
-                    field PK_refTable = dataHelper.getForeignKeyRefField(colField);
-                    FillComboDT(PK_refTable, comboValueType.PK_refTable);
-
-                    // Assign datatable to each cell in FK column
-                    int index = dataHelper.currentDT.Columns.IndexOf(col.Name);
-                    for (int j = 0; j < dataHelper.currentDT.Rows.Count; j++)
+                    (string, string) field = (colField.table, colField.fieldName);
+                    if (!dgvHelper.readOnlyField.Contains(field))
                     {
-                        FkComboCell fkCell = (FkComboCell)dataGridView1.Rows[j].Cells[index];
-                        fkCell.dataTable = dataHelper.comboDT;
+                        msgText(MyResources.aPluginHasMadeReadOnly);
                     }
-                    tableOptions.FkFieldInEditingControl = colField;
+                }
+                else
+                {
+                    // Set update command
+                    List<field> fieldsToUpdate = new List<field>();
+                    fieldsToUpdate.Add(colField);
+                    MsSql.SetUpdateCommand(fieldsToUpdate, dataHelper.currentDT);
+                    // Handle foreign keys
+                    DataGridViewColumn col = dataGridView1.Columns[e.ColumnIndex];
+                    FkComboColumn Fkcol = col as FkComboColumn;
+                    if (Fkcol != null)  // Will be null for non-foreign key row
+                    {
+                        field PK_refTable = dataHelper.getForeignKeyRefField(colField);
+                        FillComboDT(PK_refTable, comboValueType.PK_refTable);
+
+                        // Assign datatable to each cell in FK column
+                        int index = dataHelper.currentDT.Columns.IndexOf(col.Name);
+                        for (int j = 0; j < dataHelper.currentDT.Rows.Count; j++)
+                        {
+                            FkComboCell fkCell = (FkComboCell)dataGridView1.Rows[j].Cells[index];
+                            fkCell.dataTable = dataHelper.comboDT;
+                        }
+                        tableOptions.FkFieldInEditingControl = colField;
+                    }
                 }
             }
         }
@@ -2220,7 +2234,7 @@ namespace SqlEditor
                 else
                 {   // Disable mnoOpenTable elements that don't contain this filter
                     where mfWhere = (where)cmbMainFilter.SelectedValue;
-                    lblMainFilter.Text = mfWhere.fl.table;
+                    lblMainFilter.Text = dgvHelper.TranslateString(mfWhere.fl.table) + " : ";
                     foreach (ToolStripItem tsi in mnuOpenTables.DropDownItems)
                     {
                         SqlFactory sqlFac = new SqlFactory(tsi.Name, 0, 0);
@@ -2531,7 +2545,8 @@ namespace SqlEditor
         private void cmbComboFilterValue_Leave(object sender, EventArgs e)
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            if(tableOptions != null) { 
+            if (tableOptions != null)
+            {
                 if (tableOptions.currentComboFilterValue_isDirty)
                 {
                     tableOptions.doNotWriteGrid = true;
@@ -2776,7 +2791,7 @@ namespace SqlEditor
                 {
                     // string newWhereClause = SqlFactory.SqlStatic.sqlWhereString(dkWhere, string.Empty, true);  // Only display keys enabled so filtered
                     // currentSql.strManualWhereClause = newWhereClause; // Next line Causes the following to search on this where only
-                    currentSql.myWheres.Clear(); 
+                    currentSql.myWheres.Clear();
                     currentSql.myWheres = dkWhere;
                     string strSql = currentSql.returnSql(command.selectAll);
                     MsSqlWithDaDt dadt = new MsSqlWithDaDt(strSql);
@@ -3074,8 +3089,8 @@ namespace SqlEditor
 
         private void toolStripColumnWidth_Click(object sender, EventArgs e)
         {
-            if(currentSql != null)
-            { 
+            if (currentSql != null)
+            {
                 toolStripButtonColumnWidth.Enabled = false;
                 formOptions.narrowColumns = !formOptions.narrowColumns;
                 if (formOptions.narrowColumns) { toolStripButtonColumnWidth.Text = MyResources.wide; }
@@ -3440,15 +3455,6 @@ namespace SqlEditor
 
         #endregion
 
-        private void folderBrowserDialog1_HelpRequest(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tableLayoutPanel_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
 
         private void txtManualFilter_TextChanged(object sender, EventArgs e)
         {
@@ -3527,6 +3533,152 @@ namespace SqlEditor
             if (mnuShowITTools.Checked)
             {
                 SetTableLayoutPanelHeight();
+            }
+        }
+
+        private void mnuLoadPlugin_Click(object sender, EventArgs e)
+        {
+            string myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string selectedFolder = SelectFolder(myDocumentsFolder, false);
+            if (selectedFolder != string.Empty)
+            {
+                if (Directory.Exists(selectedFolder))
+                {
+                    string directoryName = new DirectoryInfo(selectedFolder).Name;
+                    string appDataFolder = Application.CommonAppDataPath;
+                    if (Directory.Exists(appDataFolder))
+                    {
+                        string plugInFolder = String.Format("{0}\\{1}\\{2}", appDataFolder, "PluginsToConsume", directoryName);
+                        if (Directory.Exists(plugInFolder))
+                        {
+                            Directory.Delete(plugInFolder, true);
+                        }
+                        Directory.CreateDirectory(plugInFolder);
+                        CopyDirectory(selectedFolder, plugInFolder, true);
+                        Application_Restart();
+                    }
+                }
+            }
+        }
+        static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+        {
+            // Get information about the source directory
+            var dir = new DirectoryInfo(sourceDir);
+
+            // Check if the source directory exists
+            if (!dir.Exists) { return; }
+
+            // Cache directories before we start copying
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Create the destination directory
+            Directory.CreateDirectory(destinationDir);
+
+            // Get the files in the source directory and copy to the destination directory
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath);
+            }
+
+            // If recursive and copying subdirectories, recursively call this method
+            if (recursive)
+            {
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                    CopyDirectory(subDir.FullName, newDestinationDir, true);
+                }
+            }
+        }
+
+        private void mnuRemovePlugin_Click(object sender, EventArgs e)
+        {
+            // Get information about the source directory
+            string plugInDirectory = String.Format("{0}\\{1}", Application.CommonAppDataPath, "PluginsToConsume");
+            DirectoryInfo dirInfo = new DirectoryInfo(plugInDirectory);
+
+            // Check if the source directory exists
+            if (!dirInfo.Exists) { return; }
+            // Cache directories before we start copying
+            DirectoryInfo[] subDirsInfo = dirInfo.GetDirectories();
+            List<string> pluginDirectories = new List<string>();
+            foreach (DirectoryInfo subDir in subDirsInfo)
+            {
+                pluginDirectories.Add(subDir.FullName);
+            }
+
+            frmListItems directoryListForm = new frmListItems();
+            directoryListForm.myList = pluginDirectories;
+            directoryListForm.myJob = frmListItems.job.SelectString;
+            directoryListForm.Text = "Select Plugin";
+            directoryListForm.ShowDialog();
+            string selectedDirectory = directoryListForm.returnString;
+            int intSelectedDirectory = directoryListForm.returnIndex;
+            directoryListForm = null;
+            if (intSelectedDirectory > -1)
+            {
+                // Executed on next load
+                AppData.SaveKeyValue("deletePluginPath", selectedDirectory);
+                Application_Restart();
+            }
+        }
+
+        private void Application_Restart()
+        {
+            try
+            {
+                Application.Restart();
+                Environment.Exit(0);
+            }
+            catch { }
+        }
+
+        private void mnuDisplayKeysList_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                // Get list of display keys for current table
+                frmListItems frmDisplayKeys = new frmListItems();
+                frmDisplayKeys.myList = new List<string>();
+                frmDisplayKeys.mySelectedList = new List<string>();
+                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'",currentSql.myTable));
+                DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
+                List<string> columnList = new List<string>();
+                foreach (DataRow dr in drsList)
+                {
+                    columnList.Add(dr["ColumnName"].ToString());
+                }
+                List<string> dkColumnList = new List<string>();
+                foreach (DataRow dr in drsSelectedList)
+                {
+                    dkColumnList.Add(dr["ColumnName"].ToString());
+                }
+                frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
+                frmDisplayKeys.Text = "Edit Display Keys (internal list)";
+                frmDisplayKeys.myList = columnList;
+                frmDisplayKeys.mySelectedList = dkColumnList;
+                frmDisplayKeys.ShowDialog();
+                List<string> selectedDKs = frmDisplayKeys.mySelectedList;
+                int intSelectedDirectory = frmDisplayKeys.returnIndex;
+                frmDisplayKeys = null;
+                if (intSelectedDirectory > -1)
+                {
+                    //Select the DKs - NO - must turn unselected off
+                    foreach (String columnName in columnList)
+                    { 
+                        // Set Dk in fields
+                        DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
+                        if (selectedDKs.Contains(columnName)) 
+                        {
+                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
+                        }
+                        else
+                        { 
+                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
+                        }
+                    }
+                }
             }
         }
     }

@@ -70,6 +70,15 @@ namespace SqlEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A plugin has made this column read only.
+        /// </summary>
+        public static string aPluginHasMadeReadOnly {
+            get {
+                return ResourceManager.GetString("aPluginHasMadeReadOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Database Error Message.
         /// </summary>
         public static string databaseErrorMessage {
@@ -287,6 +296,15 @@ namespace SqlEditor.Properties {
         public static string numberOfRowsModified {
             get {
                 return ResourceManager.GetString("numberOfRowsModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please choose a string that has &apos;Database={1}&apos; in it.
+        /// </summary>
+        public static string pleaseChooseDatabaseString {
+            get {
+                return ResourceManager.GetString("pleaseChooseDatabaseString", resourceCulture);
             }
         }
         

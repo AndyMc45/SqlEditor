@@ -225,6 +225,8 @@ namespace SqlEditor
             // Don't include any spaces before or afer "=" or ";".
             defaultStrings.Add("Server={0};Database={1};Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;Encrypt=False");
             defaultStrings.Add("Server={0};Database={1};User id={2};Password={3};MultipleActiveResultSets=true;TrustServerCertificate=True");
+            defaultStrings.Add("Server={0};Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;Encrypt=False");
+            defaultStrings.Add("Server={0};User id={2};Password={3};MultipleActiveResultSets=true;TrustServerCertificate=True");
             return defaultStrings;
         }
 
@@ -426,9 +428,37 @@ namespace SqlEditor
             sb.AppendLine("WHEN totalCreditsinQPA = 0 then 0");
             sb.AppendLine("ELSE ROUND(totalQPs / totalCreditsinQPA, 2) END,");
             sb.AppendLine("[lastUpdated] = GETDATE(), ");
-            sb.AppendLine("[lastTerm] = CTE.maxTerm");
+            sb.AppendLine("[lastTermID] = Terms.termID");
             sb.AppendLine("FROM StudentDegrees Inner Join CTE");
             sb.AppendLine("on StudentDegrees.studentDegreeID = CTE.studentDegreeID");
+            sb.AppendLine("Inner Join Terms on Terms.term = CTE.maxTerm");
+            sb.AppendLine("Where StudentDegrees.lastUpdated <= cte.maxCreateDate"); // Remove this line to update all
+            string query = sb.ToString();
+            result = ExecuteNonQuery(query, ref rowsAffected);
+            return result;
+        }
+
+        public static string updateEveryChangedStudentFirstTermID(ref int rowsAffected)
+        {
+            string result = string.Empty;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("USE[CrtsTranscript_2007_Test]");
+            sb.AppendLine("; With cte AS(");
+            sb.AppendLine("SELECT[Transcript].[studentDegreeID],");
+            sb.AppendLine("Max(Transcript.createDate) as maxCreateDate,");
+            sb.AppendLine("Min(Terms.term) as minTerm");
+            sb.AppendLine("FROM[CrtsTranscript_2007_Test].[dbo].[Transcript]");
+            sb.AppendLine("inner join CourseTermSection on  CourseTermSection.courseTermSectionID = Transcript.courseTermSectionID");
+            sb.AppendLine("inner join CourseTerms on CourseTerms.courseTermID = CourseTermSection.courseTermID");
+            sb.AppendLine("inner join Terms on Terms.termID = CourseTerms.termID");
+            sb.AppendLine("inner join StudentDegrees on[Transcript].[studentDegreeID] = StudentDegrees.studentDegreeID");
+            sb.AppendLine("Group By[Transcript].[studentDegreeID]");
+            sb.AppendLine(")");
+            sb.AppendLine("UPDATE StudentDegrees");
+            sb.AppendLine("SET[firstTermID] = Terms.termID");
+            sb.AppendLine("FROM StudentDegrees Inner Join CTE");
+            sb.AppendLine("on StudentDegrees.studentDegreeID = CTE.studentDegreeID");
+            sb.AppendLine("Inner Join Terms on Terms.term = CTE.minTerm");
             sb.AppendLine("Where StudentDegrees.lastUpdated <= cte.maxCreateDate");
             string query = sb.ToString();
             result = ExecuteNonQuery(query, ref rowsAffected);

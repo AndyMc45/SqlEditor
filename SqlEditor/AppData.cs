@@ -24,8 +24,8 @@ namespace SqlEditor
 
     public static class AppData
     {
-        private static string appName = "SqlEditor";
-
+        public static string appName = "SqlEditor";
+        public static string databaseName { get; set; }
         public static void StoreFormOptions(FormOptions formOpts)
         {
             string jsonString = JsonSerializer.Serialize<FormOptions>(formOpts);

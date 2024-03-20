@@ -120,6 +120,9 @@
   <data name="allKeysInThisPageAreInUse" xml:space="preserve">
     <value>本頁所有主鍵均已使用</value>
   </data>
+  <data name="aPluginHasMadeReadOnly" xml:space="preserve">
+    <value>插件已將此列設為唯讀</value>
+  </data>
   <data name="databaseErrorMessage" xml:space="preserve">
     <value>資料庫錯誤訊息</value>
   </data>
@@ -178,6 +181,9 @@
   </data>
   <data name="numberOfRowsModified" xml:space="preserve">
     <value>修改的行數</value>
+  </data>
+  <data name="pleaseChooseDatabaseString" xml:space="preserve">
+    <value>請選擇其中包含“Database={1}”的字串</value>
   </data>
   <data name="pleaseSelectAvalueFor0" xml:space="preserve">
     <value>請為 {0} 選擇一個值</value>

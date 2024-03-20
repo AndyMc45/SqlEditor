@@ -305,6 +305,24 @@
   <data name="mnuToolsBackupDatabase.Text" xml:space="preserve">
     <value>備份資料庫</value>
   </data>
+  <data name="mnuDisplayKeysList.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 26</value>
+  </data>
+  <data name="mnuDisplayKeysList.Text" xml:space="preserve">
+    <value>編輯Fields表DK列</value>
+  </data>
+  <data name="mnuLoadPlugin.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 26</value>
+  </data>
+  <data name="mnuLoadPlugin.Text" xml:space="preserve">
+    <value>載入plugin</value>
+  </data>
+  <data name="mnuRemovePlugin.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 26</value>
+  </data>
+  <data name="mnuRemovePlugin.Text" xml:space="preserve">
+    <value>移除plugin</value>
+  </data>
   <data name="mnuShowITTools.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 26</value>
   </data>

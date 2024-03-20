@@ -120,6 +120,9 @@
   <data name="allKeysInThisPageAreInUse" xml:space="preserve">
     <value>All keys in this page are in use</value>
   </data>
+  <data name="aPluginHasMadeReadOnly" xml:space="preserve">
+    <value>A plugin has made this column read only</value>
+  </data>
   <data name="databaseErrorMessage" xml:space="preserve">
     <value>Database Error Message</value>
   </data>
@@ -193,6 +196,9 @@
   </data>
   <data name="numberOfRowsModified" xml:space="preserve">
     <value>Number of Rows modified</value>
+  </data>
+  <data name="pleaseChooseDatabaseString" xml:space="preserve">
+    <value>Please choose a string that has 'Database={1}' in it</value>
   </data>
   <data name="pleaseSelectAvalueFor0" xml:space="preserve">
     <value>Please select a value for {0}</value>
