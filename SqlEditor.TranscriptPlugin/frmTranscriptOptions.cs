@@ -164,7 +164,7 @@ namespace SqlEditor.TranscriptPlugin
                             dgvHelper.TranslateHeaders(dgvTranscript);
 
                             //2.3 Fill Grad Requirements DT
-                            TranscriptHelper.fillGradRequirementsDT(ref sbErrors);
+                            TranscriptHelper.fillGradRequirementsDT(studentDegreeID, ref sbErrors);
                             if (sbErrors.Length > 0)
                             {
                                 MessageBox.Show(sbErrors.ToString(), "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);

@@ -166,6 +166,7 @@ namespace SqlEditor
             MainFilterList.Add(wh);
             cmbMainFilter.DisplayMember = "DisplayMember";
             cmbMainFilter.ValueMember = "ValueMemeber";
+
             formOptions.loadingMainFilter = true;
             cmbMainFilter.DataSource = MainFilterList;
             formOptions.loadingMainFilter = false;
@@ -327,8 +328,8 @@ namespace SqlEditor
 
                     AppData.databaseName = csObject.databaseName;
                     this.Text = AppData.databaseName;
-                    
-                        // 6. Initialize datatables
+
+                    // 6. Initialize datatables
                     dataHelper.initializeDataTables();  // Program uses 8 different dataTables - this sets 8 variables to these tables
 
                     // 7. Fill Information Datatables  // Files 6 of the above tables with info about the database
@@ -514,7 +515,6 @@ namespace SqlEditor
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine(e.Message);
                 sb.AppendLine("Sql in the message area. Right click on the area twice to select all and then copy.");
-                msgTextError(sb.ToString());
                 MessageBox.Show(sb.ToString(), "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -554,7 +554,7 @@ namespace SqlEditor
             string errorMsg = MsSql.FillDataTable(dataHelper.currentDT, strSql);
             if (errorMsg != string.Empty)
             {
-                msgTextError(errorMsg);
+                msgTextError(strSql);
                 MessageBox.Show(errorMsg, "ERROR in WriteGrid_NewPage", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -666,9 +666,9 @@ namespace SqlEditor
             toolStripButton3.Text = currentSql.myPage.ToString() + "/" + currentSql.TotalPages.ToString();
             // b. Set form caption
             StringBuilder sb = new StringBuilder();
-            if (!String.IsNullOrEmpty(AppData.databaseName)) 
-            { 
-                sb.Append(AppData.databaseName + " -  "); 
+            if (!String.IsNullOrEmpty(AppData.databaseName))
+            {
+                sb.Append(AppData.databaseName + " -  ");
             }
 
             // StringBuilder sb = new StringBuilder(dbPath.Substring(dbPath.LastIndexOf("\\") + 1));
@@ -1243,7 +1243,11 @@ namespace SqlEditor
             msgText("Count: " + DaDt.dt.Rows.Count.ToString());
             if (!tableOptions.mergingDuplicateKeys)
             {
-                DialogResult reply = MessageBox.Show(Properties.MyResources.doYouWantToMergeDuplicateKeyRows, "Merge Keys", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult reply = DialogResult.Yes;  // Used to skip question
+                if (tableOptions.rapidlyMergingDKsTable == String.Empty)
+                {
+                    reply = MessageBox.Show(Properties.MyResources.doYouWantToMergeDuplicateKeyRows, "Merge Keys", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                }                
                 if (reply == DialogResult.Yes) { tableOptions.mergingDuplicateKeys = true; }
             }
             List<String> andConditions = new List<String>();
@@ -1341,9 +1345,9 @@ namespace SqlEditor
                 AppData.storeConnectionStringList(csList);
             }
             //2. Open connection - this reads the index 0 settings.  Main use of openConnection
-            string msg = OpenConnection();
-            if (msg != string.Empty) { msgTextError(msg); }
-
+            //string msg = OpenConnection();
+            //if (msg != string.Empty) { msgTextError(msg); }
+            Application.Restart();
         }
 
         // Add Database - frmConnection
@@ -1357,9 +1361,10 @@ namespace SqlEditor
             //Store values, reload menu, open connection
             if (connectionAdded)
             {
-                load_mnuDatabaseList();
-                string msg = OpenConnection();
-                if (msg != string.Empty) { msgTextError(msg); }
+                //load_mnuDatabaseList();
+                //string msg = OpenConnection();
+                //if (msg != string.Empty) { msgTextError(msg); }
+                Application.Restart();
             }
         }
         internal void load_mnuDatabaseList()
@@ -2793,7 +2798,7 @@ namespace SqlEditor
                     // currentSql.strManualWhereClause = newWhereClause; // Next line Causes the following to search on this where only
                     currentSql.myWheres.Clear();
                     currentSql.myWheres = dkWhere;
-                    string strSql = currentSql.returnSql(command.selectAll);
+                    string strSql = currentSql.returnSql(command.selectAll, true);
                     MsSqlWithDaDt dadt = new MsSqlWithDaDt(strSql);
                     string errorMsg = dadt.errorMsg;
                     if (errorMsg != string.Empty)
@@ -2860,7 +2865,11 @@ namespace SqlEditor
                 else { PkToDelete = pk2; }
                 msgSB.AppendLine(String.Format("Deleting row with ID {0} will have no other effect on the Database.  ", PkToDelete));
                 msgSB.AppendLine(String.Format("Do you want us to delete the row with ID {0}?", PkToDelete));
-                DialogResult reply = MessageBox.Show(msgSB.ToString(), "Delete one row", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                DialogResult reply = DialogResult.Yes;  // Used to skip question
+                if (tableOptions.rapidlyMergingDKsTable == String.Empty)
+                {
+                    reply = MessageBox.Show(msgSB.ToString(), "Delete one row", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                }
                 if (reply == DialogResult.Yes)
                 {
                     field PKField = dataHelper.getTablePrimaryKeyField(table);
@@ -2878,7 +2887,11 @@ namespace SqlEditor
                 msgSB.AppendLine(String.Format("Other tables use {0} as a foreign key.", table));
                 msgSB.AppendLine(String.Format("To merge these two rows, we will first replace {0} occurances of ID {1} with ID {2} in these tables.", firstPKCount, pk1, pk2));
                 msgSB.AppendLine(String.Format("Then we will delete the row {0} from this table.  Do you want to continue?", pk1));
-                DialogResult reply = MessageBox.Show(msgSB.ToString(), "Merge two rows?", MessageBoxButtons.YesNo);
+                DialogResult reply = DialogResult.Yes;  // Used to skip question
+                if (tableOptions.rapidlyMergingDKsTable == String.Empty)
+                {
+                    reply = MessageBox.Show(msgSB.ToString(), "Merge two rows?", MessageBoxButtons.YesNo);
+                }
                 if (reply == DialogResult.Yes)
                 {
                     foreach (DataRow dr in fieldsDTdrs)
@@ -2952,8 +2965,12 @@ namespace SqlEditor
                                     msgSB.AppendLine(String.Format(Properties.MyResources.youNeedtoMergeRowIn0, TableWithFK, dadt2.dt.Rows.Count.ToString()));
                                     msgSB.AppendLine(String.Format(Properties.MyResources.rowsThatShouldBeMerged0, String.Join(", ", fkTablePKs)));
                                     msgSB.AppendLine(String.Format(Properties.MyResources.doYouWantToSeeTheseRows, String.Join(", ", fkTablePKs)));
-                                    DialogResult result = MessageBox.Show(msgSB.ToString(), "Important message", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
-                                    if (result == DialogResult.Yes)
+                                    DialogResult reply2 = DialogResult.Yes;  // Used to skip question
+                                    if (tableOptions.rapidlyMergingDKsTable == String.Empty)
+                                    {
+                                        reply2 = MessageBox.Show(msgSB.ToString(), "Important message", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                                    }
+                                    if (reply2 == DialogResult.Yes)
                                     {
                                         List<string> orConditions = new List<string>();
                                         foreach (string strPkValue in fkTablePKs)
@@ -3455,7 +3472,6 @@ namespace SqlEditor
 
         #endregion
 
-
         private void txtManualFilter_TextChanged(object sender, EventArgs e)
         {
             if (!txtManualFilter.Enabled) { return; }
@@ -3520,19 +3536,27 @@ namespace SqlEditor
 
         private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
         {
-            foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems)
+            if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
             {
-                if (mi.Name != mnuShowITTools.Name)
-                {
-                    mi.Visible = mnuShowITTools.Checked;
-                    txtManualFilter.Visible = mnuShowITTools.Checked;
-                    lblManualFilter.Visible = mnuShowITTools.Checked;
-                    txtManualFilter.Enabled = mnuShowITTools.Checked;
-                }
+                Application_Restart();
             }
-            if (mnuShowITTools.Checked)
-            {
-                SetTableLayoutPanelHeight();
+            else
+            { 
+                foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
+                {
+                    if (mi.Name != mnuShowITTools.Name)
+                    {
+                        mi.Visible = mnuShowITTools.Checked;
+                        txtManualFilter.Visible = mnuShowITTools.Checked;
+                        lblManualFilter.Visible = mnuShowITTools.Checked;
+                        txtManualFilter.Enabled = mnuShowITTools.Checked;
+                    }
+                }
+                if (mnuShowITTools.Checked)
+                {
+                    SetTableLayoutPanelHeight();
+                    mnuIT_Tools.ShowDropDown();
+                }
             }
         }
 
@@ -3642,7 +3666,7 @@ namespace SqlEditor
                 frmListItems frmDisplayKeys = new frmListItems();
                 frmDisplayKeys.myList = new List<string>();
                 frmDisplayKeys.mySelectedList = new List<string>();
-                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'",currentSql.myTable));
+                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
                 DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
                 List<string> columnList = new List<string>();
                 foreach (DataRow dr in drsList)
@@ -3666,20 +3690,47 @@ namespace SqlEditor
                 {
                     //Select the DKs - NO - must turn unselected off
                     foreach (String columnName in columnList)
-                    { 
+                    {
                         // Set Dk in fields
                         DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
-                        if (selectedDKs.Contains(columnName)) 
+                        if (selectedDKs.Contains(columnName))
                         {
                             dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
                         }
                         else
-                        { 
+                        {
                             dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
                         }
                     }
                 }
             }
+        }
+
+        private void btnRapidMergeDKs_Click(object sender, EventArgs e)
+        {
+            // Used to simplify merging duplicates table
+            if (currentSql.myTable == tableOptions.rapidlyMergingDKsTable && dataGridView1.Rows.Count == 2)
+            {
+                rbMerge.Checked = true;
+                btnDeleteAddMerge_Click(null, null);
+                btnRapidMergeDKs_Click(null, null);
+            }
+            else
+            {
+                writeGrid_NewTable("tableOptions.rapidlyMergingDKsTable", true);
+                tableOptions.mergingDuplicateKeys = true;
+                tableOptions.rapidlyMergingDKsTable = currentSql.myTable; 
+                showDuplicateDispayKeys();
+                rbMerge.Checked = true;
+                btnDeleteAddMerge_Click(null, null);
+            }
+        }
+
+        private void mnuRapidlyMergeDKs_Click(object sender, EventArgs e)
+        {
+            btnRapidMergeDKs.Visible = mnuRapidlyMergeDKs.Checked;
+            tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
+            
         }
     }
 }

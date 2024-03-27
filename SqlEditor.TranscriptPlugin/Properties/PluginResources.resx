@@ -180,6 +180,9 @@
   <data name="openInWord" xml:space="preserve">
     <value>Open in Word</value>
   </data>
+  <data name="partialSuccess" xml:space="preserve">
+    <value>Partial Success</value>
+  </data>
   <data name="selectCourseInTable01" xml:space="preserve">
     <value>Select Course in {0} table (a descendant of the {1} table)</value>
   </data>
@@ -224,5 +227,8 @@
   </data>
   <data name="updateStudentDegreesTable" xml:space="preserve">
     <value>Update StudentDegrees Table</value>
+  </data>
+  <data name="updateSuccess" xml:space="preserve">
+    <value>Update Success</value>
   </data>
 </root>

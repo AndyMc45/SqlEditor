@@ -131,12 +131,12 @@ namespace SqlEditor.TranscriptPlugin
                         strResult = MsSql.updateEveryChangedStudentCreditsLastTermQPA(ref rowsAffected); // Give error msg from here
                         if (!String.IsNullOrEmpty(strResult))
                         {
-                            MessageBox.Show(strResult1, "Partial Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show(strResult1, PluginResources.partialSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         else
-                        {
+                        { 
                             strResult1 += String.Format(PluginResources.CreditsQPALtUpdatedAndCount,Environment.NewLine, rowsAffected); 
-                            MessageBox.Show(strResult1, "Update Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show(strResult1, PluginResources.updateSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
                 }

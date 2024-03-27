@@ -225,4 +225,10 @@
   <data name="updateStudentDegreesTable" xml:space="preserve">
     <value>跟新學生學位表</value>
   </data>
+  <data name="partialSuccess" xml:space="preserve">
+    <value>跟新成功</value>
+  </data>
+  <data name="updateSuccess" xml:space="preserve">
+    <value>跟新一半成功</value>
+  </data>
 </root>

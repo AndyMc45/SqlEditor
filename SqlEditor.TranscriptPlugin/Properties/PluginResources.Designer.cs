@@ -250,6 +250,15 @@ namespace SqlEditor.TranscriptPlugin.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Partial Success.
+        /// </summary>
+        public static string partialSuccess {
+            get {
+                return ResourceManager.GetString("partialSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select Course in {0} table (a descendant of the {1} table).
         /// </summary>
         public static string selectCourseInTable01 {
@@ -381,6 +390,15 @@ namespace SqlEditor.TranscriptPlugin.Properties {
         public static string updateStudentDegreesTable {
             get {
                 return ResourceManager.GetString("updateStudentDegreesTable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update Success.
+        /// </summary>
+        public static string updateSuccess {
+            get {
+                return ResourceManager.GetString("updateSuccess", resourceCulture);
             }
         }
     }

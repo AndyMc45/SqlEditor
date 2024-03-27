@@ -59,7 +59,7 @@
             currentComboFilterValue_isDirty = false;
             allowDisplayKeyEdit = false;
             mergingDuplicateKeys = false;
-
+            rapidlyMergingDKsTable = String.Empty;
         }
         // internal bool fixingDatabase { get; set; }
         // internal string strStaticWhereClause { get; set; }
@@ -72,6 +72,7 @@
         internal bool firstTimeWritingTable { get; set; }
         internal bool allowDisplayKeyEdit { get; set; }
         internal bool mergingDuplicateKeys { get; set; }
+        internal string rapidlyMergingDKsTable { get; set; }
 
     }
 
