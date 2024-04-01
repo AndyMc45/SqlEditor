@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using SqlEditor.PluginsInterface;
+using System.Reflection;
 using Unity;
-using SqlEditor.PluginsInterface;
 
 
 namespace SqlEditor
@@ -26,7 +26,6 @@ namespace SqlEditor
             }
         }
 
-
         static internal MenuStrip Load_Plugins(ref Dictionary<string, string> colHeaderTranslations, ref string translationCultureName, ref List<(string, string)> readOnlyFields)
         {
             // First delete plugin marked for deletion
@@ -34,7 +33,7 @@ namespace SqlEditor
             if (!String.IsNullOrEmpty(deletePluginPath))
             {
                 if (Directory.Exists(deletePluginPath))
-                { 
+                {
                     DeleteDirectory(deletePluginPath);
                 }
                 AppData.SaveKeyValue("deletePluginPath", string.Empty);
@@ -46,12 +45,11 @@ namespace SqlEditor
             string pluginFilePath = String.Format("{0}\\{1}", Application.CommonAppDataPath, "PluginsToConsume"); ;
             if (!Directory.Exists(pluginFilePath))
             {
-                try { Directory.CreateDirectory(pluginFilePath); } 
+                try { Directory.CreateDirectory(pluginFilePath); }
                 catch { };
             }
             else
             {
-// OLD          pluginFilePath = Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).Parent.Parent.FullName + @"\PluginsToConsume\";
                 container = new UnityContainer();
                 // Get recursive list of dll files
 
@@ -62,10 +60,10 @@ namespace SqlEditor
 
                 foreach (String file in dllFiles)
                 {
-                    Assembly assembly = Assembly.LoadFrom(file);
-
-                    try 
+                    try
                     {
+                        Assembly assembly = Assembly.LoadFrom(file);
+
                         IEnumerable<Type> types = GetLoadableTypes(assembly); // Double catch f
                         foreach (Type T in types)
                         {
@@ -82,7 +80,7 @@ namespace SqlEditor
                     }
                     catch (ReflectionTypeLoadException ex)
                     {
-                        
+
                     }
                 }
                 // At this point the unity container has all the plugin data loaded onto it. 
@@ -124,7 +122,7 @@ namespace SqlEditor
         }
 
         static List<string> GetListDllFiles(string sourceDir)
-        { 
+        {
             List<string> dllList = new List<string>();
             // Get information about the source directory
 

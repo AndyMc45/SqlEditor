@@ -14,11 +14,13 @@ namespace SqlEditor.TranscriptPlugin
         public static System.Data.DataTable studentDegreeInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
         public static System.Data.DataTable transcriptDT { get; set; }  // No editing. Transcripts filtered on this studentDegree
 
-        // StudentReqDT is created from scrath -columns added to mainform dataHelper.fieldDT to allows sqlStudentReq factory
+        // StudentReqDT is created from scratch -columns added to mainform dataHelper.fieldDT to allows sqlStudentReq factory
         public static System.Data.DataTable studentReqDT { get; set; } // No editing.  
-        // A 4th Datatable and Sql for course role - I also use transcriptDT / sql but filter on course
+
+        // A 4th Datatable and Sql for course role - I also use transcriptDT / sql for course role but filter on course
         // No editing - 1 data row only for this studentDegree
         public static System.Data.DataTable courseTermInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
+
         private static void InsertTextInTable(Table table, int intRow, int intCell, string text)
         {
             InsertTextInTable(table, intRow, intCell, text, JustificationValues.Center);
@@ -156,7 +158,7 @@ namespace SqlEditor.TranscriptPlugin
                             string strQPA = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "QPA");
 
                             int sdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "firstTermID"));
-                            List<string> sdTermsColNames = new List<string> { "startYear", "startMonth"};
+                            List<string> sdTermsColNames = new List<string> { "startYear", "startMonth" };
                             Dictionary<string, string> sdTermsColValues = TranscriptHelper.GetPkRowColumnValues(
                                     TableName.terms, sdTermID, sdTermsColNames, ref sbErrors);
                             string startDate = String.Format("{0} / {1}", sdTermsColValues["startMonth"], sdTermsColValues["startYear"]);
@@ -191,7 +193,8 @@ namespace SqlEditor.TranscriptPlugin
                                 string eDegreeName = degreeColValues["eDegreeName"];
                                 if (!String.IsNullOrEmpty(eDegreeName)) { studentDegree = eDegreeName; }
                                 string eStudentStatus = studentStatusColValues["eStatusName"];
-                                if (!String.IsNullOrEmpty(eStudentStatus)) { 
+                                if (!String.IsNullOrEmpty(eStudentStatus))
+                                {
                                     endDateWithStatus = String.Format("{0} ({1})", endDate, eStudentStatus);
                                 }
                             }
@@ -441,20 +444,28 @@ namespace SqlEditor.TranscriptPlugin
                                 if (sectionID != currentSectionID)
                                 {
                                     // Get information about current section - not using courseInfo because had two DeleteMethodID columns
-                                    List<string> sectionColNames = new List<string> { "deliveryMethodID", "credits" };
+                                    List<string> sectionColNames = new List<string> { "degreeLevelID", "deliveryMethodID", "credits" };
                                     Dictionary<string, string> sectionColValues = TranscriptHelper.GetPkRowColumnValues(
                                             TableName.section, sectionID, sectionColNames, ref sbErrors);
+
                                     string credits = sectionColValues["credits"];
                                     // Round off the credits
                                     decimal dCredits = Decimal.Parse(credits);
                                     dCredits = Decimal.Round(dCredits, 2);
                                     credits = dCredits.ToString();
                                     credits = credits + "學分";
+
                                     int deliveryMethodID = Int32.Parse(sectionColValues["deliveryMethodID"]);
                                     List<string> delMethodColNames = new List<string> { "delMethName", "eDelMethName" };
                                     Dictionary<string, string> delMethodColValues = TranscriptHelper.GetPkRowColumnValues(
                                             TableName.deliveryMethod, deliveryMethodID, delMethodColNames, ref sbErrors);
                                     string delMethodName = delMethodColValues["delMethName"];
+
+                                    int degreeLevelID = Int32.Parse(sectionColValues["degreeLevelID"]);
+                                    List<string> degreeLevelColNames = new List<string> { "degreeLevelName" };
+                                    Dictionary<string, string> degreeLevelColValues = TranscriptHelper.GetPkRowColumnValues(
+                                            TableName.degreeLevel, degreeLevelID, degreeLevelColNames, ref sbErrors);
+                                    string degreeLevelName = degreeLevelColValues["degreeLevelName"];
 
                                     // Prepare for next row    
                                     TableRow newSectionRow = new TableRow();
@@ -467,7 +478,7 @@ namespace SqlEditor.TranscriptPlugin
 
                                     //Merge cells and insert section name
                                     MergeTableCells(table, currentRow, 1, endMergeColumn);
-                                    string fullSectionName = String.Format("{0}, {1}", delMethodName, credits);
+                                    string fullSectionName = String.Format("{0}, {1}, {2}", degreeLevelName, delMethodName, credits);
                                     InsertTextInTable(table, currentRow, 1, fullSectionName, JustificationValues.Left);
 
                                     //Prepare for next loop

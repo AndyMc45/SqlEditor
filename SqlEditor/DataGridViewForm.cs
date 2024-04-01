@@ -75,7 +75,17 @@ namespace SqlEditor
         internal DataGridViewForm()
         {
             // This loads plugins into Plugins.loadedPlugins AND return pluginMenus, translations, etc.
-            MenuStrip pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref translationCultureName, ref dgvHelper.readOnlyField);
+            MenuStrip pluginMenus = new MenuStrip();
+
+            string pluginError = AppData.GetKeyValue("PluginError");
+            if (String.IsNullOrEmpty(pluginError)) { pluginError = "noError"; }
+            if (pluginError == "noError")
+            {
+                AppData.SaveKeyValue("PluginError", "hasError");  // Prepare for next load
+                pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref translationCultureName, ref dgvHelper.readOnlyField);
+            }
+            AppData.SaveKeyValue("PluginError", "noError");  // Only get here if there is no fatal error.
+
             uiCulture = AppData.GetKeyValue("UICulture");
             dgvHelper.translate = (translationCultureName == uiCulture);
 
@@ -1247,7 +1257,7 @@ namespace SqlEditor
                 if (tableOptions.rapidlyMergingDKsTable == String.Empty)
                 {
                     reply = MessageBox.Show(Properties.MyResources.doYouWantToMergeDuplicateKeyRows, "Merge Keys", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                }                
+                }
                 if (reply == DialogResult.Yes) { tableOptions.mergingDuplicateKeys = true; }
             }
             List<String> andConditions = new List<String>();
@@ -3541,7 +3551,7 @@ namespace SqlEditor
                 Application_Restart();
             }
             else
-            { 
+            {
                 foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
                 {
                     if (mi.Name != mnuShowITTools.Name)
@@ -3719,7 +3729,7 @@ namespace SqlEditor
             {
                 writeGrid_NewTable("tableOptions.rapidlyMergingDKsTable", true);
                 tableOptions.mergingDuplicateKeys = true;
-                tableOptions.rapidlyMergingDKsTable = currentSql.myTable; 
+                tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
                 showDuplicateDispayKeys();
                 rbMerge.Checked = true;
                 btnDeleteAddMerge_Click(null, null);
@@ -3730,7 +3740,7 @@ namespace SqlEditor
         {
             btnRapidMergeDKs.Visible = mnuRapidlyMergeDKs.Checked;
             tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
-            
+
         }
     }
 }

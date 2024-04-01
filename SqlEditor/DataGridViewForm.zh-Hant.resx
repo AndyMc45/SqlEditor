@@ -119,49 +119,49 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="GridContextMenu_SetAsMainFilter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>247, 24</value>
+    <value>283, 32</value>
   </data>
   <data name="GridContextMenu_SetAsMainFilter.Text" xml:space="preserve">
     <value>設定為主要篩選(^m)</value>
   </data>
   <data name="GridContextMenu_SetFKasMainFIlter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>247, 24</value>
+    <value>283, 32</value>
   </data>
   <data name="GridContextMenu_SetFKasMainFIlter.Text" xml:space="preserve">
     <value>設定外鍵為主要篩選(^f)</value>
   </data>
   <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 6</value>
+    <value>280, 6</value>
   </data>
   <data name="GridContextMenu_TimesUsedAsFK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>247, 24</value>
+    <value>283, 32</value>
   </data>
   <data name="GridContextMenu_TimesUsedAsFK.Text" xml:space="preserve">
     <value>使用外鍵的次數</value>
   </data>
   <data name="GridContextMenu_OrderCombolByPK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>247, 24</value>
+    <value>283, 32</value>
   </data>
   <data name="GridContextMenu_OrderCombolByPK.Text" xml:space="preserve">
     <value>按主鍵排序下拉清單</value>
   </data>
   <data name="GridContextMenu_Seperator.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 6</value>
+    <value>280, 6</value>
   </data>
   <data name="GridContextMenu_RestoreFilters.Size" type="System.Drawing.Size, System.Drawing">
-    <value>247, 24</value>
+    <value>283, 32</value>
   </data>
   <data name="GridContextMenu_RestoreFilters.Text" xml:space="preserve">
     <value>恢復上一個篩選</value>
   </data>
   <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
-    <value>247, 24</value>
+    <value>283, 32</value>
   </data>
   <data name="GridContextMenu_ClearFilters.Text" xml:space="preserve">
     <value>清除所有篩選</value>
   </data>
   <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>248, 160</value>
+    <value>284, 208</value>
   </data>
   <data name="lblMainFilter.Text" xml:space="preserve">
     <value>主要篩選：</value>
@@ -170,49 +170,52 @@
     <value>篩選表格：</value>
   </data>
   <data name="rbMerge.Location" type="System.Drawing.Point, System.Drawing">
-    <value>938, 3</value>
+    <value>1184, 4</value>
   </data>
   <data name="rbMerge.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 24</value>
+    <value>80, 29</value>
   </data>
   <data name="rbMerge.Text" xml:space="preserve">
     <value>合 併</value>
+  </data>
+  <data name="btnDeleteAddMerge.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1065, 4</value>
   </data>
   <data name="btnDeleteAddMerge.Size" type="System.Drawing.Size, System.Drawing">
     <value>86, 35</value>
   </data>
   <data name="rbAdd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>754, 3</value>
+    <value>952, 4</value>
   </data>
   <data name="rbAdd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>66, 24</value>
+    <value>80, 29</value>
   </data>
   <data name="rbAdd.Text" xml:space="preserve">
     <value>新 增</value>
   </data>
   <data name="rbDelete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>664, 3</value>
+    <value>838, 4</value>
   </data>
   <data name="rbDelete.Size" type="System.Drawing.Size, System.Drawing">
-    <value>62, 24</value>
+    <value>75, 29</value>
   </data>
   <data name="rbDelete.Text" xml:space="preserve">
     <value>刪除</value>
   </data>
   <data name="rbEdit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>568, 3</value>
+    <value>717, 4</value>
   </data>
   <data name="rbEdit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 24</value>
+    <value>85, 29</value>
   </data>
   <data name="rbEdit.Text" xml:space="preserve">
     <value>編  輯</value>
   </data>
   <data name="rbView.Location" type="System.Drawing.Point, System.Drawing">
-    <value>476, 3</value>
+    <value>601, 4</value>
   </data>
   <data name="rbView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 24</value>
+    <value>85, 29</value>
   </data>
   <data name="rbView.Text" xml:space="preserve">
     <value>查  看</value>
@@ -224,13 +227,13 @@
     <value>729, 7</value>
   </data>
   <data name="btnReload.Size" type="System.Drawing.Size, System.Drawing">
-    <value>39, 23</value>
+    <value>48, 23</value>
   </data>
   <data name="txtManualFilter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>915, 27</value>
+    <value>915, 31</value>
   </data>
   <data name="dataGridView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1421, 408</value>
+    <value>1421, 592</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
@@ -246,103 +249,112 @@
     <value>刪除連結</value>
   </data>
   <data name="mnuConnections.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 26</value>
+    <value>209, 34</value>
   </data>
   <data name="mnuConnections.Text" xml:space="preserve">
     <value>資料庫連結</value>
   </data>
   <data name="mnuClose.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 26</value>
+    <value>209, 34</value>
   </data>
   <data name="mnuClose.Text" xml:space="preserve">
     <value>關閉</value>
   </data>
   <data name="mnuFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>55, 24</value>
+    <value>66, 29</value>
   </data>
   <data name="mnuFile.Text" xml:space="preserve">
     <value>檔案</value>
   </data>
   <data name="mnuOpenTables.Size" type="System.Drawing.Size, System.Drawing">
-    <value>55, 24</value>
+    <value>66, 29</value>
   </data>
   <data name="mnuOpenTables.Text" xml:space="preserve">
     <value>表格</value>
-  </data>
-  <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
-    <value>178, 26</value>
   </data>
   <data name="mnuPrintCurrentTable.Text" xml:space="preserve">
     <value>匯出到 Excel</value>
   </data>
   <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>71, 24</value>
+    <value>85, 29</value>
   </data>
   <data name="mnuTools.Text" xml:space="preserve">
     <value>工具列</value>
   </data>
   <data name="mnuDatabaseInfo.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
+    <value>304, 34</value>
   </data>
   <data name="mnuDatabaseInfo.Text" xml:space="preserve">
     <value>資料庫資訊</value>
   </data>
-  <data name="mnuDuplicateDisplayKeys.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
-  </data>
-  <data name="mnuDuplicateDisplayKeys.Text" xml:space="preserve">
-    <value>檢查重複的顯示鍵</value>
-  </data>
-  <data name="mnuForeignKeyMissing.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
-  </data>
-  <data name="mnuForeignKeyMissing.Text" xml:space="preserve">
-    <value>準備新的外鍵</value>
-  </data>
   <data name="mnuToolsBackupDatabase.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
+    <value>304, 34</value>
   </data>
   <data name="mnuToolsBackupDatabase.Text" xml:space="preserve">
     <value>備份資料庫</value>
   </data>
+  <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>301, 6</value>
+  </data>
+  <data name="mnuForeignKeyMissing.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 34</value>
+  </data>
+  <data name="mnuForeignKeyMissing.Text" xml:space="preserve">
+    <value>準備新的外鍵</value>
+  </data>
   <data name="mnuDisplayKeysList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
+    <value>304, 34</value>
   </data>
   <data name="mnuDisplayKeysList.Text" xml:space="preserve">
     <value>編輯Fields表DK列</value>
   </data>
+  <data name="mnuDuplicateDisplayKeys.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 34</value>
+  </data>
+  <data name="mnuDuplicateDisplayKeys.Text" xml:space="preserve">
+    <value>檢查重複的顯示鍵</value>
+  </data>
+  <data name="mnuRapidlyMergeDKs.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 34</value>
+  </data>
+  <data name="mnuRapidlyMergeDKs.Text" xml:space="preserve">
+    <value>快速合併重複的顯示鍵</value>
+  </data>
+  <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>301, 6</value>
+  </data>
   <data name="mnuLoadPlugin.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
+    <value>304, 34</value>
   </data>
   <data name="mnuLoadPlugin.Text" xml:space="preserve">
     <value>載入plugin</value>
   </data>
   <data name="mnuRemovePlugin.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
+    <value>304, 34</value>
   </data>
   <data name="mnuRemovePlugin.Text" xml:space="preserve">
     <value>移除plugin</value>
   </data>
   <data name="mnuShowITTools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 26</value>
+    <value>304, 34</value>
   </data>
   <data name="mnuShowITTools.Text" xml:space="preserve">
     <value>顯示 IT 工具</value>
   </data>
   <data name="mnuIT_Tools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>87, 24</value>
+    <value>104, 29</value>
   </data>
   <data name="mnuIT_Tools.Text" xml:space="preserve">
     <value>IT 工具列</value>
   </data>
   <data name="mnuHelpFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>156, 26</value>
+    <value>190, 34</value>
   </data>
   <data name="mnuHelpFile.Text" xml:space="preserve">
     <value>幫助文件</value>
   </data>
   <data name="mnuHelp.Size" type="System.Drawing.Size, System.Drawing">
-    <value>63, 24</value>
+    <value>76, 29</value>
   </data>
   <data name="mnuHelp.Text" xml:space="preserve">
     <value>說  明</value>
@@ -354,7 +366,7 @@
     <value>下一頁</value>
   </data>
   <data name="toolStripButton3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>45, 24</value>
+    <value>54, 29</value>
   </data>
   <data name="toolStripButton3.Text" xml:space="preserve">
     <value>頁碼</value>
@@ -368,7 +380,7 @@
   <data name="toolStripButtonColumnWidth.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
         J/+f6DYF0yA+yQac6Db5f6hWCmwIiE+mC0wIu2DS2Vf/F1x6DefjwlgNyNr34r/0wkdgTMgQDAOQNRNj
         CIoBOg0rMTTDMLIhIHbriZeYBmDTiIxBGkEYxge5liQDsGGQqykyAISpZwAlmIEywMAAAAc1/Jwvt6sN
         AAAAAElFTkSuQmCC

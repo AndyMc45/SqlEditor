@@ -94,6 +94,7 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
+
         public static void fillGradRequirementsDT(int studentDegreeID, ref StringBuilder sbErrors)
         {
             // 1. Create a table "StudentReq" - this table is not in the database.
@@ -123,18 +124,18 @@ namespace SqlEditor.TranscriptPlugin
                 dataHelper.AddRowToFieldsDT("StudentReq", 5, "Required", "Required", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 17, "Limit", "Limit", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 // Need to calucate the following from transcript
-                dataHelper.AddRowToFieldsDT("StudentReq", 6, "Count", "Count", "int", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("StudentReq", 6, "Courses", "Courses", "int", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 7, "Earned", "Earned", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 8, "Needed", "Needed", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 9, "InProgress", "InProgress", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
-//                dataHelper.AddRowToFieldsDT("StudentReq", 18, "Icredits", "Icredits", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                //                dataHelper.AddRowToFieldsDT("StudentReq", 18, "Icredits", "Icredits", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
             }
 
             // 2.  Get the Student Requirements table via SQL
             StringBuilder sb = MsSql.getFillStudentRequirementTableSql(studentDegreeID);
-            DataTable reqDataTable = new DataTable();
+            DataTable requirementsDT = new DataTable();
             String sqlString = sb.ToString();
-            MsSql.FillDataTable(reqDataTable, sqlString);
+            MsSql.FillDataTable(requirementsDT, sqlString);
 
             // 3. Create studentReqDT and add a column for each field in StudentReq pseudo table.
             PrintToWord.studentReqDT = new System.Data.DataTable();
@@ -153,94 +154,114 @@ namespace SqlEditor.TranscriptPlugin
                 PrintToWord.studentReqDT.Columns.Add(dc);
             }
 
-            // 3b. Transfer reqDataTable into PrintToWord.studentReqDT
-            foreach (DataRow reqDTrow in reqDataTable.Rows)
+            // 3b. Transfer requirementsDT into PrintToWord.studentReqDT
+            foreach (DataRow requirementsDR in requirementsDT.Rows)
             {
-                Decimal required = Decimal.Parse(reqDTrow["Required"].ToString());
-                Decimal earned = Decimal.Parse(reqDTrow["Earned"].ToString());
+                Decimal required = Decimal.Parse(requirementsDR["Required"].ToString());
+                Decimal earned = Decimal.Parse(requirementsDR["Earned"].ToString());
+                Decimal inprogress = Decimal.Parse(requirementsDR["InProgress"].ToString());
+
+                // Adjust values for qpa - Earned is credits and InProgress is the quality points earned
+                if (requirementsDR["ReqType"].ToString().ToLower() == "qpa")
+                {
+                    if (inprogress > 0)
+                    {
+                        Decimal qpa = earned / inprogress;
+                        qpa = Math.Round(qpa, 2);
+                        earned = qpa;
+                        inprogress = 0;
+                    }
+                    else
+                    {
+                        earned = 0;
+                        inprogress = 0;
+                    }
+                }
                 Decimal needed = Math.Max(0, required - earned);
-                Decimal inprogress = Decimal.Parse(reqDTrow["InProgress"].ToString());
 
                 DataRow dr = PrintToWord.studentReqDT.NewRow();
                 // "StudentReqID" is the Primary key and column set to autoincrement.
                 dataHelper.setColumnValueInDR(dr, "Required", required);
-                dataHelper.setColumnValueInDR(dr, "Limit", reqDTrow["Limit"].ToString());
-                dataHelper.setColumnValueInDR(dr, "ReqArea", reqDTrow["ReqArea"].ToString());
-                dataHelper.setColumnValueInDR(dr, "eReqArea", reqDTrow["eReqArea"].ToString());
+                dataHelper.setColumnValueInDR(dr, "Limit", requirementsDR["Limit"].ToString());
+                dataHelper.setColumnValueInDR(dr, "ReqArea", requirementsDR["ReqArea"].ToString());
+                dataHelper.setColumnValueInDR(dr, "eReqArea", requirementsDR["eReqArea"].ToString());
 
-                dataHelper.setColumnValueInDR(dr, "DelMethName", reqDTrow["DelMethName"].ToString());
-                dataHelper.setColumnValueInDR(dr, "eDelMethName", reqDTrow["eDelMethName"].ToString());
-                dataHelper.setColumnValueInDR(dr, "rDeliveryLevel", reqDTrow["rDeliveryLevel"].ToString());
-                dataHelper.setColumnValueInDR(dr, "ReqType", reqDTrow["ReqType"].ToString());
+                dataHelper.setColumnValueInDR(dr, "DelMethName", requirementsDR["DelMethName"].ToString());
+                dataHelper.setColumnValueInDR(dr, "eDelMethName", requirementsDR["eDelMethName"].ToString());
+                dataHelper.setColumnValueInDR(dr, "rDeliveryLevel", requirementsDR["rDeliveryLevel"].ToString());
+                dataHelper.setColumnValueInDR(dr, "ReqType", requirementsDR["ReqType"].ToString());
 
-                dataHelper.setColumnValueInDR(dr, "Count", reqDTrow["Count"].ToString());
+                dataHelper.setColumnValueInDR(dr, "Courses", requirementsDR["Courses"].ToString());
                 dataHelper.setColumnValueInDR(dr, "Earned", earned);
                 dataHelper.setColumnValueInDR(dr, "InProgress", inprogress);
-                dataHelper.setColumnValueInDR(dr, "Needed", 0);
+                dataHelper.setColumnValueInDR(dr, "Needed", needed);
+
+                //Add this row to the table
+                PrintToWord.studentReqDT.Rows.Add(dr);
+
+                //if (requirementsDR["ReqArea"].ToString() == "QPA")
+                //{
+                //    decimal QPA = 0;
+                //    if (qpaCredits > 0)
+                //    {
+                //        QPA = Math.Round(qpaPoints / qpaCredits, 2);
+                //    }
+                //    dataHelper.setColumnValueInDR(dr, "Earned", QPA);
+                //    dataHelper.setColumnValueInDR(dr, "InProgress", 0);
+                //    if (QPA < rReqCredits)
+                //    {
+                //        dataHelper.setColumnValueInDR(dr, "Needed", rReqCredits - QPA);
+                //    }
+                //}
+                //else
+                //{
+                //    // Fill in columns 
+                //    dataHelper.setColumnValueInDR(dr, "Earned", earned);
+                //    dataHelper.setColumnValueInDR(dr, "InProgress", inProgress);
+                //    if (rReqCredits > earned)
+                //    {
+                //        dataHelper.setColumnValueInDR(dr, "Needed", rReqCredits - earned);
+                //    }
+                //    else
+                //    {
+                //        dataHelper.setColumnValueInDR(dr, "Needed", 0);
+                //    }
+                //    dataHelper.setColumnValueInDR(dr, "Icredits", iCredits);
+                //}
+                //// Add this row to studentReqDT
+                ////PrintToWord.studentReqDT.Rows.Add(dr);
             }
 
-            //if (rGradReqTypeName == "QPA")
-            //        {
-            //            decimal QPA = 0;
-            //            if (qpaCredits > 0)
-            //            {
-            //                QPA = Math.Round(qpaPoints / qpaCredits, 2);
-            //            }
-            //            dataHelper.setColumnValueInDR(dr, "Earned", QPA);
-            //            dataHelper.setColumnValueInDR(dr, "InProgress", 0);
-            //            if (QPA < rReqCredits)
-            //            {
-            //                dataHelper.setColumnValueInDR(dr, "Needed", rReqCredits - QPA);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            // Fill in columns 
-            //            dataHelper.setColumnValueInDR(dr, "Earned", earned);
-            //            dataHelper.setColumnValueInDR(dr, "InProgress", inProgress);
-            //            if (rReqCredits > earned)
-            //            {
-            //                dataHelper.setColumnValueInDR(dr, "Needed", rReqCredits - earned);
-            //            }
-            //            else
-            //            {
-            //                dataHelper.setColumnValueInDR(dr, "Needed", 0);
-            //            }
-            //            dataHelper.setColumnValueInDR(dr, "Icredits", iCredits);
-            //        }
-            //                    // Add this row to studentReqDT
-            //        PrintToWord.studentReqDT.Rows.Add(dr);
-            //        firstLoop = false;
-     
-        //    if (fakeRow) { break; }
+
+            //    if (fakeRow) { break; }
 
 
 
-        //// Update student QPA and total Credits - not yet committed to database
-        //DataRow studentDegreeInfoRow = PrintToWord.studentDegreeInfoDT.Rows[0];
-        //decimal totalQPA = 0;
-        //if (totalQpaCredits > 0)
-        //{
-        //    totalQPA = Math.Round(totalQpaPoints / totalQpaCredits, 2);
-        //}
-        //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "creditsEarned", totalCreditsEarned);
-        //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "QPA", totalQPA);
-        //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "lastUpdated", DateTime.Now.ToShortDateString());
+            //// Update student QPA and total Credits - not yet committed to database
+            //DataRow studentDegreeInfoRow = PrintToWord.studentDegreeInfoDT.Rows[0];
+            //decimal totalQPA = 0;
+            //if (totalQpaCredits > 0)
+            //{
+            //    totalQPA = Math.Round(totalQpaPoints / totalQpaCredits, 2);
+            //}
+            //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "creditsEarned", totalCreditsEarned);
+            //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "QPA", totalQPA);
+            //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "lastUpdated", DateTime.Now.ToShortDateString());
 
-        //// Save these three changes down to the database - start over from scratch.
-        //field pkField = dataHelper.getTablePrimaryKeyField(TableName.studentDegrees);
-        //string pk = dataHelper.getColumnValueinDR(studentDegreeInfoRow, pkField.fieldName);
-        //sqlString = String.Format("Select * from {0} where {1} = '{2}'", TableName.studentDegrees, pkField.fieldName, pk);
-        //MsSqlWithDaDt dadt = new MsSqlWithDaDt(sqlString);
-        //List<field> fieldsToUpdate = new List<field>();
-        //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "creditsEarned"));
-        //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "QPA"));
-        //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "lastUpdated"));
-        //MsSql.SetUpdateCommand(fieldsToUpdate, dadt.da);
-        //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "creditsEarned", totalCreditsEarned);
-        //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "QPA", totalQPA);
-        //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "lastUpdated", DateTime.Now.ToShortDateString());
-        //try { dadt.da.Update(dadt.dt); } catch { }
+            //// Save these three changes down to the database - start over from scratch.
+            //field pkField = dataHelper.getTablePrimaryKeyField(TableName.studentDegrees);
+            //string pk = dataHelper.getColumnValueinDR(studentDegreeInfoRow, pkField.fieldName);
+            //sqlString = String.Format("Select * from {0} where {1} = '{2}'", TableName.studentDegrees, pkField.fieldName, pk);
+            //MsSqlWithDaDt dadt = new MsSqlWithDaDt(sqlString);
+            //List<field> fieldsToUpdate = new List<field>();
+            //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "creditsEarned"));
+            //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "QPA"));
+            //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "lastUpdated"));
+            //MsSql.SetUpdateCommand(fieldsToUpdate, dadt.da);
+            //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "creditsEarned", totalCreditsEarned);
+            //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "QPA", totalQPA);
+            //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "lastUpdated", DateTime.Now.ToShortDateString());
+            //try { dadt.da.Update(dadt.dt); } catch { }
 
         }
 
@@ -284,6 +305,7 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("delmethname", "上課方法名字");
             columnHeaderTranslations.Add("depname", "學科名字");
             columnHeaderTranslations.Add("department", "學科");
+            columnHeaderTranslations.Add("earned", "以得到");
             columnHeaderTranslations.Add("earnedcredits", "得到學分");
             columnHeaderTranslations.Add("ecountryname", "e國家名字");
             columnHeaderTranslations.Add("ecoursename", "e課程名字");
@@ -310,7 +332,7 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("firstterm", "入學學季");
             columnHeaderTranslations.Add("forcredit", "可得到學分");
             columnHeaderTranslations.Add("fulfillrequirementnocredit", "滿足畢業要求_沒學分");
-            columnHeaderTranslations.Add("gender", "性別"); 
+            columnHeaderTranslations.Add("gender", "性別");
             columnHeaderTranslations.Add("grade", "成績");
             columnHeaderTranslations.Add("grades", "成績");
             columnHeaderTranslations.Add("gradestatus", "成績狀態");
@@ -324,14 +346,18 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("lastupdatedqpa", "QPA更新日期");
             columnHeaderTranslations.Add("lastupdatedstudentstatus", "狀態更新日期");
             columnHeaderTranslations.Add("lastterm", "最近上課學季");
-            columnHeaderTranslations.Add("lastupdated", "更新日期"); 
+            columnHeaderTranslations.Add("lastupdated", "更新日期");
+            columnHeaderTranslations.Add("limit", "限制");
+            columnHeaderTranslations.Add("needed", "還需要得到");
             columnHeaderTranslations.Add("note", "說明");
+            columnHeaderTranslations.Add("othercredits", "別的學分");
             columnHeaderTranslations.Add("province", "省市");
             columnHeaderTranslations.Add("provincename", "省市名字");
             columnHeaderTranslations.Add("rdeliverymethod", "r上課方法");
             columnHeaderTranslations.Add("repeatspermitted", "可重複");
             columnHeaderTranslations.Add("reqarea", "規則範圍");
             columnHeaderTranslations.Add("reqtype", "規則類別");
+            columnHeaderTranslations.Add("required", "畢業要求");
             columnHeaderTranslations.Add("requirementarea", "要求名稱");
             columnHeaderTranslations.Add("requirementType", "規則Type");
             columnHeaderTranslations.Add("reqUnits", "必獲數目");
