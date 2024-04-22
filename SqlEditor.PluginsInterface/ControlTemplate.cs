@@ -1,5 +1,6 @@
 ﻿// "Shared" means that all plugins have a ControlTemplate
 // This has many things
+
 namespace SqlEditor.PluginsInterface
 {
     public class ControlTemplate
@@ -57,5 +58,6 @@ namespace SqlEditor.PluginsInterface
             ToolStripMenuItem receivedMenuItem = (ToolStripMenuItem)sender;
             CallBack.SafeInvoke(this, new EventArgs<string>(receivedMenuItem.Tag.ToString()));
         }
+
     }
 }

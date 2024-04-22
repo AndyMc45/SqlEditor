@@ -1,4 +1,5 @@
-﻿namespace SqlEditor.PluginsInterface
+﻿using System.Data;
+namespace SqlEditor.PluginsInterface
 {
     public interface IPlugin
     {
@@ -8,6 +9,10 @@
 
         // MainForm is exported back to every plugin
         Form MainForm { set; }
+
+        List<Func<String, String, DataRow, bool>> UpdateConstraints();
+        List<Func<string, List<Tuple<String,String>>, bool>> InsertConstraints();
+        List<Func<String, int, bool>> DeleteConstraints();
 
     }
 }

@@ -45,10 +45,10 @@ namespace SqlEditor
         // Define delegate
         public MainFormDelegate dgvMainFormDelegate;
         // ColumnHeaderTranslations from the plugin
-        private Dictionary<string, string> colHeaderTranslations = new Dictionary<string, string>();
-        private String translationCultureName = String.Empty;
+        // private Dictionary<string, string> colHeaderTranslations = new Dictionary<string, string>();
         private String uiCulture = string.Empty;
         private Dictionary<string, List<string>> aliasTableDictionary = new Dictionary<string, List<string>>();
+
 
         #endregion
 
@@ -74,6 +74,10 @@ namespace SqlEditor
 
         internal DataGridViewForm()
         {
+            // Testing - plugin will add these
+            //            updateConstraints.Add(transcriptOnGradeConstraintPassed);
+            //            insertConstraints.Add(transcriptCourseLevelCheckPassed);
+
             // This loads plugins into Plugins.loadedPlugins AND return pluginMenus, translations, etc.
             MenuStrip pluginMenus = new MenuStrip();
 
@@ -82,18 +86,26 @@ namespace SqlEditor
             if (pluginError == "noError")
             {
                 AppData.SaveKeyValue("PluginError", "hasError");  // Prepare for next load
-                pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref translationCultureName, ref dgvHelper.readOnlyField);
+                pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref dgvHelper.translationCultureName,
+                    ref dgvHelper.readOnlyField, ref dgvHelper.updateConstraints,
+                    ref dgvHelper.insertConstraints, ref dgvHelper.deleteConstraints);
             }
             AppData.SaveKeyValue("PluginError", "noError");  // Only get here if there is no fatal error.
 
             uiCulture = AppData.GetKeyValue("UICulture");
-            dgvHelper.translate = (translationCultureName == uiCulture);
+
+            dgvHelper.translate = (dgvHelper.translationCultureName == uiCulture);
 
             // Sets culture - this can be set in a plugin
             if (IsUICulture(uiCulture))
             {
                 Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(uiCulture);
                 Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo(uiCulture);
+            }
+            else
+            {
+                Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+                Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
             }
             //Required by windows forms
             InitializeComponent();
@@ -151,7 +163,6 @@ namespace SqlEditor
                 }
             }
         }
-
 
         private void DataGridViewForm_Load(object sender, EventArgs e)
         {
@@ -214,6 +225,7 @@ namespace SqlEditor
 
             // 7. Hide IT tools
             mnuShowITTools.Checked = false;
+
         }
 
         private void DataGridViewForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -395,7 +407,7 @@ namespace SqlEditor
 
         #region Write to Gird
 
-        private void writeGrid_NewTable(string table, bool clearManualFilter)
+        public void writeGrid_NewTable(string table, bool clearManualFilter)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
@@ -507,7 +519,7 @@ namespace SqlEditor
             writeGrid_NewFilter(false);
         }
 
-        internal void writeGrid_NewFilter(bool newLastFilter)
+        public void writeGrid_NewFilter(bool newLastFilter)
         {
             // 1. Updates currentSql.myWheres
             callSqlWheresAndWriteLastFilter(newLastFilter);
@@ -538,7 +550,7 @@ namespace SqlEditor
             writeGrid_NewPage();
         }
 
-        internal void writeGrid_NewPage()
+        public void writeGrid_NewPage()
         {
             Stopwatch watch = new Stopwatch();
             if (formOptions.runTimer) { watch.Start(); }
@@ -783,13 +795,17 @@ namespace SqlEditor
                 height = cmbComboFilterValue_3.Top + cmbComboFilterValue_3.Height + 10;
             }
             tableLayoutPanel.Height = height;
-            // Reposition the splitter
             if (splitContainer1.Width > 0)
             {
                 // Catching error: "Splitterdistance must be between panel1minsize and width and pan2minsize.
-                try { this.splitContainer1.SplitterDistance = txtMessages.Height + tableLayoutPanel.Height; }
+                try
+                {
+                    this.splitContainer1.SplitterDistance = txtMessages.Height + tableLayoutPanel.Height;
+                }
                 catch { }
             }
+            // New
+            dataGridView1.Height = splitContainer1.Panel2.Height;
         }
 
         private void SetColumnsReadOnlyProperty()
@@ -1021,37 +1037,33 @@ namespace SqlEditor
             }
         }
 
-        private void ClearFilters(bool loadingNewTable, bool clearMainFilter, bool clearManualFilter)
+        public void ClearFilters(bool loadingNewTable, bool clearMainFilter, bool clearManualFilter)
         {
+            // Main filter
             if (clearMainFilter && cmbMainFilter.Items.Count > 0)
             {
-                formOptions.loadingMainFilter = true;
+                formOptions.loadingMainFilter = true; // Prevent event from firing
                 cmbMainFilter.SelectedIndex = cmbMainFilter.Items.Count - 1;
                 formOptions.loadingMainFilter = false;
             }
-
-            ClearAllGridFilterLabelCombos(loadingNewTable);
-            ClearAllGridFilterValueCombos(loadingNewTable);
-            if (loadingNewTable)
+            // Manual filter
+            if (clearManualFilter)
             {
-                cmbComboTableList.DataSource = null;
-                cmbComboTableList.Visible = false;
-                cmbComboTableList.Enabled = false;
+                txtManualFilter.Text = String.Empty;
             }
 
+            // Grid filters
+            ClearAllGridFilters(loadingNewTable);
+
+            // Combo filters -
             tableOptions.doNotRebindGridFV = true;
-            ClearAllComboFilterCombos(loadingNewTable);
+            ClearAllComboFilters(loadingNewTable, false);
             tableOptions.doNotRebindGridFV = false;
-
-            if (loadingNewTable && clearManualFilter)
-            {
-                ClearManualFilter();
-            }
         }
 
-        private void ClearAllGridFilterLabelCombos(bool loadingNewTable)
+        private void ClearAllGridFilters(bool loadingNewTable)
         {
-            // Don't clear these if the table is not loading
+            // If loading the table, include the datasources and hide filter
             if (loadingNewTable)
             {
                 ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -1065,9 +1077,8 @@ namespace SqlEditor
                     cmbGridFilterFields[i].Text = string.Empty;
                 }
             }
-        }
-        private void ClearAllGridFilterValueCombos(bool loadingNewTable)
-        {
+
+            // Clear the datasource - if loading the table, hide filter value combo 
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
             for (int i = 0; i < cmbGridFilterValue.Length; i++)
             {
@@ -1081,17 +1092,24 @@ namespace SqlEditor
                 }
             }
         }
-
-        private void ClearAllComboFilterCombos(bool loadingNewTable)
+        private void ClearAllComboFilters(bool loadingNewTable, bool changingComboFilterTable)
         {
             // When calling this, set tableOptions.doNotRebindGridFV = true;
+
+            // Clear all comboFilters - include datasources if loading a new table
+            if (loadingNewTable)
+            {
+                cmbComboTableList.DataSource = null;
+                cmbComboTableList.Visible = false;
+                cmbComboTableList.Enabled = false;
+            }
             Label[] lblCmbFilterFields = { lblCmbFilterField_0, lblCmbFilterField_1, lblCmbFilterField_2, lblCmbFilterField_3, lblCmbFilterField_4, lblCmbFilterField_5 };
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
             for (int i = 0; i < cmbComboFilterValue.Length; i++)
             {
                 // Selection_change event of cmbComboTableList will make some visible
                 // Visible labels will continue to visible for the table, but cmbBoxes may be disabled
-                if (loadingNewTable)
+                if (loadingNewTable || changingComboFilterTable)
                 {
                     cmbComboFilterValue[i].DataSource = null;
                     lblCmbFilterFields[i].Text = String.Empty;
@@ -1102,11 +1120,6 @@ namespace SqlEditor
                 }
                 cmbComboFilterValue[i].Text = String.Empty;   // No major event when this changed
             }
-        }
-
-        private void ClearManualFilter()
-        {
-            txtManualFilter.Text = String.Empty;
         }
 
         #endregion
@@ -1617,6 +1630,58 @@ namespace SqlEditor
             }
         }
 
+        private void GridContextMenu_UnusedAsFK_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                //1.  Get table of unused rows
+                DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("RefTable = '{0}'", currentSql.myTable));
+                StringBuilder sb = new StringBuilder();
+                field pk = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
+                sb.AppendLine(String.Format("Select [{0}].[{1}] from {0} Where ", pk.table, pk.fieldName));
+                List<String> andConditions = new List<String>();
+                if (drs.Length > 0)
+                {
+                    foreach (DataRow row in drs)
+                    {
+                        String atomicStatement = String.Format("NOT EXISTS (Select * FROM {2} WHERE [{0}].[{1}] = [{2}].[{3}])",
+                            pk.table, pk.fieldName, row["TableName"], row["ColumnName"]);
+                        andConditions.Add(atomicStatement);
+                    }
+                    string whereCondition = String.Join(" AND ", andConditions);
+                    sb.AppendLine(whereCondition);
+
+                    //1. Get Datatable with ID numbers of unused rows
+                    string sqlString = sb.ToString();
+                    DataTable dt = new DataTable();
+                    MsSql.FillDataTable(dt, sqlString);
+                    if (dt.Rows.Count > 0)
+                    {
+                        List<String> orConditions = new List<String>();
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            String atomicStatement = String.Format("([{0}] = '{1}' OR [{0}] IS NULL)", pk.fieldName, row[pk.fieldName].ToString());
+                            orConditions.Add(atomicStatement);
+                        }
+                        whereCondition = String.Join(" OR ", orConditions);
+                        setTxtManualFilterText(whereCondition);
+                        writeGrid_NewFilter(false);
+                        // Message box
+                        String strMessage = "These rows are not being used as a foreign key.";
+                        MessageBox.Show(strMessage);
+                    }
+                    else
+                    {
+                        MessageBox.Show(String.Format("Every row in {0} is being used as Foreign Key.", currentSql.myTable));
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(String.Format("{0} not used as Foreign Key.", currentSql.myTable));
+                }
+            }
+        }
+
         private void GridContextMenu_ClearFilters_Click(object sender, EventArgs e)
         {
             if (tableOptions != null)  // Make sure there is a table selected
@@ -2049,20 +2114,33 @@ namespace SqlEditor
                     dr.EndEdit();  // Changes rowstate to modified
                     DataRow[] drArray = new DataRow[1];
                     drArray[0] = dr;
-                    int i = MsSql.currentDA.Update(drArray);
-                    msgText(Properties.MyResources.numberOfRowsModified + " : ");
-                    msgTextAdd(i.ToString());
-                    // Write the grid if this is a foreign key
-                    if (i > 0)
+                    bool constraintPassed = true;
+                    foreach (Func<string, string, DataRow, bool> f in dgvHelper.updateConstraints)
                     {
-                        DataGridViewColumn col = dataGridView1.Columns[currentCell.ColumnIndex];
-                        FkComboColumn fkCol = col as FkComboColumn;
-                        if (fkCol != null)
+                        constraintPassed = f(drColField.table, drColField.fieldName, dr);
+                        if (!constraintPassed) { break; }
+                    }
+                    int i = 0;
+                    if (constraintPassed)
+                    {
+                        i = MsSql.currentDA.Update(drArray);
+                        msgText(Properties.MyResources.numberOfRowsModified + " : ");
+                        msgTextAdd(i.ToString());
+                        // Write the grid if this is a foreign key
+                        if (i > 0)
                         {
-                            writeGrid_NewPage();
+                            DataGridViewColumn col = dataGridView1.Columns[currentCell.ColumnIndex];
+                            FkComboColumn fkCol = col as FkComboColumn;
+                            if (fkCol != null)
+                            {
+                                writeGrid_NewPage();
+                            }
                         }
                     }
-
+                    else
+                    {
+                        writeGrid_NewPage();
+                    }
                 }
             }
         }
@@ -2476,7 +2554,7 @@ namespace SqlEditor
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
 
             tableOptions.doNotRebindGridFV = true;
-            ClearAllComboFilterCombos(true);  //Combo filters only; not Grid Filters
+            ClearAllComboFilters(false, true);  //Combo filters only; not Grid Filters
             tableOptions.doNotRebindGridFV = false;
 
             ComboBox cmb = (ComboBox)sender;
@@ -2828,19 +2906,39 @@ namespace SqlEditor
                     }
                 }
 
-                //  3. O.K. add the row
-                try
+                // 3. Check plugin Added Constraints
+                bool constraintPassed = true;
+                List<Tuple<string, string>> tupleList = new List<Tuple<string, string>>();
+                foreach (where wh in whereList)
                 {
-                    MsSql.SetInsertCommand(currentSql.myTable, whereList, dataHelper.currentDT);  // knows to use currentDA
-                    MsSql.currentDA.InsertCommand.ExecuteNonQuery();
-                    currentSql.strManualWhereClause = string.Empty;
-                    rbView.Checked = true;
-                    writeGrid_NewFilter(true);
+                    tupleList.Add(Tuple.Create(wh.fl.fieldName, wh.whereValue));
                 }
-                catch (Exception ex)
+
+                foreach (Func<string, List<Tuple<string, string>>, bool> f in dgvHelper.insertConstraints)
                 {
-                    msgTextError(ex.Message);
-                    MessageBox.Show(ex.Message, "DATABASE ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    constraintPassed = f(currentSql.myTable, tupleList);
+                    if (!constraintPassed) { break; }
+                }
+                if (constraintPassed)
+                {
+                    //  3. O.K. add the row
+                    try
+                    {
+                        MsSql.SetInsertCommand(currentSql.myTable, whereList, dataHelper.currentDT);  // knows to use currentDA
+                        MsSql.currentDA.InsertCommand.ExecuteNonQuery();
+                        currentSql.strManualWhereClause = string.Empty;
+                        rbView.Checked = true;
+                        writeGrid_NewFilter(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        msgTextError(ex.Message);
+                        MessageBox.Show(ex.Message, "DATABASE ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                    writeGrid_NewFilter(true);
                 }
             }
         }
@@ -3122,7 +3220,9 @@ namespace SqlEditor
                 formOptions.narrowColumns = !formOptions.narrowColumns;
                 if (formOptions.narrowColumns) { toolStripButtonColumnWidth.Text = MyResources.wide; }
                 else { toolStripButtonColumnWidth.Text = MyResources.narrow; }
+                this.SuspendLayout();
                 dgvHelper.SetNewColumnWidths(dataGridView1, currentSql.myFields, formOptions.narrowColumns);
+                this.ResumeLayout(false);
                 toolStripButtonColumnWidth.Enabled = true;
             }
         }
@@ -3437,50 +3537,6 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Events that are unused or do nothing (accidently entered here or storing)
-        private void GridContextMenu_FindInChild_Click(object sender, EventArgs e)
-        {
-            if (dataGridView1.SelectedRows.Count == 1)
-            {
-                // Get list of tables that have this table as foreign key
-                DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("RefTable = '{0}'", currentSql.myTable));
-                if (drs.Count() > 0)
-                {
-                    List<string> tableList = new List<string>();
-                    foreach (DataRow dr in drs)
-                    {
-                        tableList.Add(dr["TableName"].ToString());
-                    }
-
-                    // Get user choice if more than one
-                    frmListItems ChildTablesForm = new frmListItems();
-                    ChildTablesForm.myList = tableList;
-                    ChildTablesForm.myJob = frmListItems.job.SelectString;
-                    ChildTablesForm.Text = "Select Table";
-                    ChildTablesForm.ShowDialog();
-                    string selectedTable = ChildTablesForm.returnString;
-                    ChildTablesForm = null;
-                    if (!String.IsNullOrEmpty(selectedTable))
-                    {
-                        writeGrid_NewTable(selectedTable, true);
-                    }
-                }
-            }
-        }
-
-        private void GridContextMenu_Opening(object sender, CancelEventArgs e) { }
-
-        private void toolStripBottom_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            // SetToStoredColumnWidths();  // Takes too long for transcripts
-        }
-
-        #endregion
 
         private void txtManualFilter_TextChanged(object sender, EventArgs e)
         {
@@ -3489,7 +3545,7 @@ namespace SqlEditor
             string text = txtManualFilter.Text;
             if (text.Length == 0) { return; }
 
-            // Show fields
+            // Show fields in 
             if (text.Length > 3)
             {
                 if (text.Substring(text.Length - 2, 2) == "].")
@@ -3544,6 +3600,13 @@ namespace SqlEditor
             }
         }
 
+        public void setTxtManualFilterText(string text)
+        {
+            // Show filter
+            if (!mnuShowITTools.Checked) { mnuShowITTools.Checked = true; }
+            txtManualFilter.Text = text;
+        }
+
         private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
         {
             if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
@@ -3554,6 +3617,8 @@ namespace SqlEditor
             {
                 foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
                 {
+                    // txtManualFilter shown if mnuShowITTools.Checked;
+                    // So if you want them to show, check it if it is not checked
                     if (mi.Name != mnuShowITTools.Name)
                     {
                         mi.Visible = mnuShowITTools.Checked;
@@ -3716,14 +3781,19 @@ namespace SqlEditor
             }
         }
 
-        private void btnRapidMergeDKs_Click(object sender, EventArgs e)
+        private void btnExtra_Click(object sender, EventArgs e)
+        {
+            btnRapidMergeDKs_Extra();
+        }
+
+        private void btnRapidMergeDKs_Extra()
         {
             // Used to simplify merging duplicates table
             if (currentSql.myTable == tableOptions.rapidlyMergingDKsTable && dataGridView1.Rows.Count == 2)
             {
                 rbMerge.Checked = true;
                 btnDeleteAddMerge_Click(null, null);
-                btnRapidMergeDKs_Click(null, null);
+                btnRapidMergeDKs_Extra();
             }
             else
             {
@@ -3735,11 +3805,70 @@ namespace SqlEditor
                 btnDeleteAddMerge_Click(null, null);
             }
         }
-
         private void mnuRapidlyMergeDKs_Click(object sender, EventArgs e)
         {
-            btnRapidMergeDKs.Visible = mnuRapidlyMergeDKs.Checked;
-            tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
+            if (currentSql != null)
+            {
+                btnExtra.Visible = mnuRapidlyMergeDKs.Checked;
+                if (mnuRapidlyMergeDKs.Checked)
+                {
+                    tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
+                }
+                else
+                {
+                    tableOptions.rapidlyMergingDKsTable = string.Empty;
+                }
+            }
+        }
+
+
+        #region Events that are unused or do nothing (accidently entered here or storing)
+        private void GridContextMenu_FindInChild_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count == 1)
+            {
+                // Get list of tables that have this table as foreign key
+                DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("RefTable = '{0}'", currentSql.myTable));
+                if (drs.Count() > 0)
+                {
+                    List<string> tableList = new List<string>();
+                    foreach (DataRow dr in drs)
+                    {
+                        tableList.Add(dr["TableName"].ToString());
+                    }
+
+                    // Get user choice if more than one
+                    frmListItems ChildTablesForm = new frmListItems();
+                    ChildTablesForm.myList = tableList;
+                    ChildTablesForm.myJob = frmListItems.job.SelectString;
+                    ChildTablesForm.Text = "Select Table";
+                    ChildTablesForm.ShowDialog();
+                    string selectedTable = ChildTablesForm.returnString;
+                    ChildTablesForm = null;
+                    if (!String.IsNullOrEmpty(selectedTable))
+                    {
+                        writeGrid_NewTable(selectedTable, true);
+                    }
+                }
+            }
+        }
+
+        private void GridContextMenu_Opening(object sender, CancelEventArgs e) { }
+
+        private void toolStripBottom_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            // SetToStoredColumnWidths();  // Takes too long for transcripts
+        }
+
+        #endregion
+
+        private void GridContextMenu_Opening_1(object sender, CancelEventArgs e)
+        {
 
         }
     }

@@ -1,5 +1,6 @@
 ﻿using SqlEditor.PluginsInterface;
 using SqlEditor.TranscriptPlugin.Properties;
+using System.Data;
 using System.Text;
 
 
@@ -22,6 +23,16 @@ namespace SqlEditor.TranscriptPlugin
         public Form MainForm { set => mainForm = value; }
         private Form mainForm;   // This will be set to the main form by a delegate
 
+        public List<Func<String, String, DataRow, bool>> UpdateConstraints() { return updateConstraints; }
+        private List<Func<String, String, DataRow, bool>> updateConstraints;
+
+        public List<Func<string, List<Tuple<String, String>>, bool>> InsertConstraints() { return insertConstraints; }
+        private List<Func<string, List<Tuple<String,String>>, bool>> insertConstraints;
+
+        public List<Func<string, int, bool>> DeleteConstraints() { return deleteConstraints; }
+        private List<Func<string, int, bool>> deleteConstraints;
+
+
         #endregion
 
         public TransPlugin(String name)
@@ -32,15 +43,18 @@ namespace SqlEditor.TranscriptPlugin
                 ("Print Transcript", "printTranscript"),
                 ("Print Class List", "printClassList"),
                 ("Update StudentDegrees Table", "updateStudentDegreesTable"),
+                ("Check for transcript errors", "checkForTranscriptErrors"),
                 ("Options", "options")
             };
             // Set appData to desired culture, and then translate if this is same as translationCultureName.
             // See DataGridViewForm.cs constructor.    
             Dictionary<string, string> columnHeaderTranslations = TranscriptHelper.FillColumnHeaderTranslationDictionary();
 
-            List<(String, String)> readOnlyFields = new List<(string, string)>{
+            List<(String, String)> readOnlyFields = new List<(string, string)>
+            {
                 (TableName.studentDegrees, "creditsEarned"), (TableName.studentDegrees, "lastTerm") ,
-                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "studentStatusID") };
+                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "studentStatusID") 
+            };
 
             String translationCultureName = "zh-Hant";  // Hard coded to the language of the translation
 
@@ -53,6 +67,18 @@ namespace SqlEditor.TranscriptPlugin
                                                 translationCultureName,
                                                 columnHeaderTranslations,
                                                 readOnlyFields);
+
+            updateConstraints = new List<Func<String, String, DataRow, bool>> 
+            { 
+                transcriptOnGradeConstraintPassed
+            };
+
+            insertConstraints = new List<Func<string, List<Tuple<String, String>>, bool>>
+            {
+                transcriptCourseLevelCheckPassed
+            };
+
+            deleteConstraints = new List<Func<string, int, bool>>();
         }
 
         // Define CallBack - If things are good, then open the form with 'job'
@@ -107,7 +133,7 @@ namespace SqlEditor.TranscriptPlugin
             }
             else if (e.Value == "updateStudentDegreesTable")
             {
-                // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.  See mainForm constructor. 
+                // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
                 DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
                 // 1. Ask
                 string msgStr = String.Format("{1}{0}{2} {3}",
@@ -115,31 +141,37 @@ namespace SqlEditor.TranscriptPlugin
                     PluginResources.doYouWantToUpdateStDeTable,
                     PluginResources.thiswillUpdateTheStudentDegreesTable,
                     PluginResources.andUpdateQPAbasedOnTranscriptTable);
-                DialogResult result = MessageBox.Show(msgStr, PluginResources.updateStudentDegreesTable, MessageBoxButtons.YesNo, MessageBoxIcon.Question);                 
-                                
+                DialogResult result = MessageBox.Show(msgStr, PluginResources.updateStudentDegreesTable, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
                 // 2. Upgrade StudentDegrees Table
-                if(result == DialogResult.Yes)
+                if (result == DialogResult.Yes)
                 {
                     // 2a. Upgrade StudentStatusID column
                     int rowsAffected = 0;
-                    string strResult = MsSql.UpdateEveryChangedStudentDegreeStatus(ref rowsAffected);
+                    string strResult = TranscriptHelper.UpdateEveryChangedStudentDegreeStatus(ref rowsAffected);
                     if (strResult == String.Empty)
                     {
-                        string strResult1 = String.Format(PluginResources.StDeTableUpdatedAndCount,Environment.NewLine, rowsAffected);
+                        string strResult1 = String.Format(PluginResources.StDeTableUpdatedAndCount, Environment.NewLine, rowsAffected);
                         // 2b. Upgrade QPA-credit-LastTerm-Date columns
-                        MsSql.updateEveryChangedStudentFirstTermID(ref rowsAffected); // No message if error
-                        strResult = MsSql.updateEveryChangedStudentCreditsLastTermQPA(ref rowsAffected); // Give error msg from here
+                        TranscriptHelper.updateEveryChangedStudentFirstTermID(ref rowsAffected); // No message if error
+                        strResult = TranscriptHelper.updateEveryChangedStudentCreditsLastTermQPA(ref rowsAffected); // Give error msg from here
                         if (!String.IsNullOrEmpty(strResult))
                         {
                             MessageBox.Show(strResult1, PluginResources.partialSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         else
-                        { 
-                            strResult1 += String.Format(PluginResources.CreditsQPALtUpdatedAndCount,Environment.NewLine, rowsAffected); 
+                        {
+                            strResult1 += String.Format(PluginResources.CreditsQPALtUpdatedAndCount, Environment.NewLine, rowsAffected);
                             MessageBox.Show(strResult1, PluginResources.updateSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
                 }
+            }
+            else if (e.Value == "checkForTranscriptErrors")
+            {
+                // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
+                DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
+                TranscriptHelper.transcriptProblems(dgvForm);
             }
             else
             {
@@ -246,6 +278,156 @@ namespace SqlEditor.TranscriptPlugin
             }
             return courseTermID;
         }
+
+        private static Func<String, String, DataRow, bool> transcriptOnGradeConstraintPassed =
+            new Func<String, String, DataRow, bool>((table, fieldName, dr) =>
+            {
+                if (table != "Transcript") { return true; }
+                if (fieldName != "gradeID" && fieldName != "gradeStatusID") { return true; }
+                int gradeStatus = Int32.Parse(dataHelper.getColumnValueinDR(dr, "gradeStatusID"));
+                int gradeID = Int32.Parse(dataHelper.getColumnValueinDR(dr, "gradeID"));
+                DataTable dt = new DataTable();
+                String sqlStr = String.Format("SELECT [forCredit] FROM [GradeStatus] Where [gradeStatusID] = {0}", gradeStatus.ToString());
+                MsSql.FillDataTable(dt, sqlStr);
+                if (dt.Rows.Count > 0)  // Always = 1
+                {
+                    DataRow gsDR = dt.Rows[0];
+                    Boolean forCredit = Boolean.Parse(dataHelper.getColumnValueinDR(gsDR, "forCredit"));
+                        dt = new DataTable();
+                        sqlStr = String.Format("SELECT [grade], [creditsInQPA], [earnedCredits] FROM [Grades] Where [gradesID] = {0}", gradeID.ToString());
+                        MsSql.FillDataTable(dt, sqlStr);
+                        if (dt.Rows.Count > 0) // Always 1
+                        {
+                            DataRow gradesDR = dt.Rows[0];
+                            Boolean creditsInQPA = Boolean.Parse(dataHelper.getColumnValueinDR(gradesDR, "creditsInQPA"));
+                            Boolean earnedCredits = Boolean.Parse(dataHelper.getColumnValueinDR(gradesDR, "earnedCredits"));
+                            if (!forCredit && (creditsInQPA || earnedCredits))
+                            {
+                               string  grade = dataHelper.getColumnValueinDR(gradesDR, "grade");
+                               string errorMessage = String.Format("Student can't get grade {0} in a course that is not for credit", grade);
+                                MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return false;
+                            }
+                        }
+                }
+                return true;
+            });
+
+        private static Func<string, List<Tuple<String,String>>, bool> transcriptCourseLevelCheckPassed =
+            new Func<string, List<Tuple<String, String>>, bool>((table, fieldAndValueTuples) =>
+            {
+                if (table != "Transcript") { return true; }
+                int studentDegreeID = 0;
+                int courseTermSectionID = 0;
+                foreach (Tuple<String,String> fieldAndValue  in fieldAndValueTuples)
+                {
+                    if (fieldAndValue.Item1 == "studentDegreeID")
+                    {
+                        studentDegreeID = Int32.Parse(fieldAndValue.Item2);
+                    }
+                    if (fieldAndValue.Item1 == "courseTermSectionID")
+                    {
+                        courseTermSectionID = Int32.Parse(fieldAndValue.Item2);
+                    }
+                }
+                if (studentDegreeID > 0 && courseTermSectionID > 0)  //Always true
+                {
+                    DataTable dt = new DataTable();
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("Select degreeLevel, degreeLevelName ");
+                    sb.Append("From StudentDegrees inner join Degrees as d on d.degreeID = StudentDegrees.degreeID ");
+                    sb.Append("inner join DegreeLevel on d.degreeLevelID = DegreeLevel.degreeLevelID ");
+                    sb.Append("where StudentDegrees.studentDegreeID = {0} ");
+                    String sqlStr = String.Format(sb.ToString(), studentDegreeID.ToString());
+                    int studentDegreeLevel = 0;
+                    string studentDegreeLevelName = string.Empty;
+                    MsSql.FillDataTable(dt, sqlStr);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow sdDR = dt.Rows[0];
+                        studentDegreeLevel = Int32.Parse(dataHelper.getColumnValueinDR(sdDR, "degreeLevel"));
+                        studentDegreeLevelName = dataHelper.getColumnValueinDR(sdDR, "degreeLevelName");
+                    }
+                    // CourseLevel
+                    int courseLevel = 0;
+                    string courseDegreeLevelName = string.Empty;
+                    dt = new DataTable();
+                    sb = new StringBuilder();
+                    sb.Append("Select degreeLevel, degreeLevelName ");
+                    sb.Append("From CourseTermSection inner join Section on Section.sectionID = CourseTermSection.sectionID ");
+                    sb.Append("inner join DegreeLevel on DegreeLevel.degreeLevelID = Section.degreeLevelID ");
+                    sb.Append("Where courseTermSectionID = {0} ");
+                    sqlStr = String.Format(sb.ToString(), courseTermSectionID.ToString());
+                    MsSql.FillDataTable(dt, sqlStr);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow sdDR = dt.Rows[0];
+                        courseLevel = Int32.Parse(dataHelper.getColumnValueinDR(sdDR, "degreeLevel"));
+                        courseDegreeLevelName = dataHelper.getColumnValueinDR(sdDR, "degreeLevelName");
+                    }
+                    if (courseLevel < studentDegreeLevel)
+                    {
+                        string errorMessage = String.Format("{0} student can't take a {1} course", studentDegreeLevelName, courseDegreeLevelName);
+                        MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+
+                // 2nd check
+                int gradeID = 0;
+                int gradeStatusID = 0;
+                foreach (Tuple<String,String> fieldAndValue in fieldAndValueTuples)
+                {
+                    if (fieldAndValue.Item1 == "gradeID")
+                    {
+                        gradeID = Int32.Parse(fieldAndValue.Item2);
+                    }
+                    if (fieldAndValue.Item1 == "gradeStatusID")
+                    {
+                        gradeStatusID = Int32.Parse(fieldAndValue.Item2);
+                    }
+                }
+                if (gradeID > 0 && gradeStatusID > 0)
+                {
+                    DataTable dt = new DataTable();
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("Select grade, earnedCredits, creditsInQPA ");
+                    sb.Append("From Grades where Grades.gradesID = {0} ");
+                    String sqlStr = String.Format(sb.ToString(), gradeID.ToString());
+                    bool earnedCredits = true;
+                    bool creditsInQPA = true;
+                    string grade = String.Empty;
+                    MsSql.FillDataTable(dt, sqlStr);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow gDR = dt.Rows[0];
+                        earnedCredits = Boolean.Parse(dataHelper.getColumnValueinDR(gDR, "earnedCredits"));
+                        creditsInQPA = Boolean.Parse(dataHelper.getColumnValueinDR(gDR, "creditsInQPA"));
+                        grade = dataHelper.getColumnValueinDR(gDR, "grade");
+                    }
+                    // for Credit
+                    bool forCredit = false;
+                    dt = new DataTable();
+                    sb = new StringBuilder();
+                    sb.Append("Select forCredit from GradeStatus where gradeStatusID = {0} ");
+                    sqlStr = String.Format(sb.ToString(), gradeStatusID.ToString());
+                    MsSql.FillDataTable(dt, sqlStr);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow gsDR = dt.Rows[0];
+                        forCredit = Boolean.Parse(dataHelper.getColumnValueinDR(gsDR, "forCredit"));
+                    }
+                    if (!forCredit && (creditsInQPA || earnedCredits))
+                    {
+                        string errorMessage = String.Format("Student can't get grade {0} in a course that is not for credit", grade);
+                        MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
 
     }
 }
