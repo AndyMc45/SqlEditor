@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualBasic;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using SqlEditor.Properties;
 
 using System.ComponentModel;
@@ -42,12 +43,10 @@ namespace SqlEditor
         internal ProgramMode programMode = ProgramMode.none;  //none, view, edit, add, delete, merge
         public SqlFactory? currentSql = null;  //builds the sql string via .myInnerJoins, .myFields, .myWheres, my.OrderBys
         internal BindingList<where>? MainFilterList;  // Use this to fill in past main filters in combo box
-        // Define delegate
-        public MainFormDelegate dgvMainFormDelegate;
-        // ColumnHeaderTranslations from the plugin
-        // private Dictionary<string, string> colHeaderTranslations = new Dictionary<string, string>();
+        // public MainFormDelegate dgvMainFormDelegate;
         private String uiCulture = string.Empty;
         private Dictionary<string, List<string>> aliasTableDictionary = new Dictionary<string, List<string>>();
+        private ILogger myLogger;
 
 
         #endregion
@@ -72,29 +71,39 @@ namespace SqlEditor
 
         #region Entire Form constructor, events, and Log file
 
-        internal DataGridViewForm()
+        public DataGridViewForm(ILogger<DataGridViewForm> logger)
         {
-            // Testing - plugin will add these
-            //            updateConstraints.Add(transcriptOnGradeConstraintPassed);
-            //            insertConstraints.Add(transcriptCourseLevelCheckPassed);
-
-            // This loads plugins into Plugins.loadedPlugins AND return pluginMenus, translations, etc.
-            MenuStrip pluginMenus = new MenuStrip();
-
+            myLogger = logger;
+            // pluginError = true if the last load of the program did not cause error.
             string pluginError = AppData.GetKeyValue("PluginError");
             if (String.IsNullOrEmpty(pluginError)) { pluginError = "noError"; }
+            myLogger.LogInformation("Plugin Error status: {status}", pluginError);
+
+            MenuStrip pluginMenus = new MenuStrip();
             if (pluginError == "noError")
             {
-                AppData.SaveKeyValue("PluginError", "hasError");  // Prepare for next load
-                pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref dgvHelper.translationCultureName,
-                    ref dgvHelper.readOnlyField, ref dgvHelper.updateConstraints,
-                    ref dgvHelper.insertConstraints, ref dgvHelper.deleteConstraints);
+                AppData.SaveKeyValue("PluginError", "hasError");  // Prepare for next load - undone below if no error
+                myLogger.LogInformation("Loading Plugins");
+                try 
+                {
+                    // This loads plugins into Plugins.loadedPlugins AND return pluginMenus, translations, etc.
+                    pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref dgvHelper.translationCultureName,
+                        ref dgvHelper.readOnlyField, ref dgvHelper.updateConstraints,
+                        ref dgvHelper.insertConstraints, ref dgvHelper.deleteConstraints);
+                }
+                catch(Exception ex) 
+                {
+                    myLogger.LogInformation("Error loading plugin: {ex}", ex.Message);
+                }
             }
             AppData.SaveKeyValue("PluginError", "noError");  // Only get here if there is no fatal error.
 
             uiCulture = AppData.GetKeyValue("UICulture");
 
             dgvHelper.translate = (dgvHelper.translationCultureName == uiCulture);
+
+            myLogger.LogInformation("uiCulture: {culture}", uiCulture);
+            myLogger.LogInformation("Translation Culture: {trans}", dgvHelper.translationCultureName);
 
             // Sets culture - this can be set in a plugin
             if (IsUICulture(uiCulture))
@@ -108,17 +117,20 @@ namespace SqlEditor
                 Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
             }
             //Required by windows forms
+            myLogger.LogInformation("Initializing Form Component");
             InitializeComponent();
             // Some setting to speed up datagridview
+            myLogger.LogInformation("Settings to speed up DataGridView");
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.None);
             dataGridView1.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             dataGridView1.RowHeadersVisible = false;
 
             // Define delegate for main form
-            dgvMainFormDelegate = Plugins.ExportForm;
+            // dgvMainFormDelegate = Plugins.ExportForm;
 
             // Add plugin menus if any
+            myLogger.LogInformation("Plugin Menu Count: {n}", pluginMenus.Items.Count.ToString());
             if (pluginMenus.Items.Count > 0)
             {
                 // Translate plugin menus
@@ -140,9 +152,11 @@ namespace SqlEditor
             }
 
             // Invoke delegate - this will load mainForm into all plugins
-            dgvMainFormDelegate(this);
+            //dgvMainFormDelegate(this);
+            Plugins.ExportForm(this);
 
             // Clone context menu items and add them to Tools menu.
+            myLogger.LogInformation("Cloning context menu");
             ToolStripItem[] items = new ToolStripItem[GridContextMenu.Items.Count];
             foreach (ToolStripItem tsi in GridContextMenu.Items)
             {
@@ -166,11 +180,13 @@ namespace SqlEditor
 
         private void DataGridViewForm_Load(object sender, EventArgs e)
         {
+            myLogger.LogInformation("Loading form");
             //Shrink size of elements if the screen is too small.
             int tlp_pixelWidth = tableLayoutPanel.Width;
             System.Drawing.Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
             if (workingArea.Width < tlp_pixelWidth)
             {
+                myLogger.LogInformation("Upadate TableLayOutPanel width: {width}",workingArea.Width.ToString());
                 tableLayoutPanel.Width = workingArea.Width;
             }
 
@@ -210,14 +226,19 @@ namespace SqlEditor
             DesignControlsOnFormLoad();  // Set font size and other features of various controls
 
             // 3. Load Database List (in files menu)
+            myLogger.LogInformation("Loading DatabaseList");
             load_mnuDatabaseList();  // Add previously open databases to databases menu dropdown list
 
             // 4. Open Log file
             // openLogFile(); //errors ignored 
 
             // 5. Open last connection 
+            myLogger.LogInformation("Opening Connection");
             string msg = OpenConnection();  // Returns any error msg
-            if (msg != string.Empty) { msgText(msg); txtMessages.ForeColor = System.Drawing.Color.Red; }
+            if (msg != string.Empty) {
+                myLogger.LogInformation("Error Opening connection: {msg}", msg);
+                msgText(msg); txtMessages.ForeColor = System.Drawing.Color.Red; 
+            }
 
             // 6. Set Mode and filters to "none".
             programMode = ProgramMode.none;
@@ -225,7 +246,7 @@ namespace SqlEditor
 
             // 7. Hide IT tools
             mnuShowITTools.Checked = false;
-
+            myLogger.LogInformation("Form Loaded");
         }
 
         private void DataGridViewForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -315,6 +336,7 @@ namespace SqlEditor
             SetFiltersColumnsTablePanel();
             connectionOptions = new ConnectionOptions();  // resets options
             StringBuilder sb = new StringBuilder();
+            bool foundError = false;
             try
             {
                 // 1. Close old connection if any - also turns off various menu items.
@@ -329,18 +351,22 @@ namespace SqlEditor
                 if (csObject == null)
                 {
                     sb.AppendLine(MyResources.NoPreviousConnectionSet);
+                    foundError = true;
                 }
-                else
+                if (csObject.comboString.IndexOf("{3}") >= 0)
+                {
+                    frmLogin passwordForm = new frmLogin();
+                    passwordForm.Text = csObject.server;
+                    passwordForm.ShowDialog();
+                    string password = passwordForm.password;
+                    passwordForm = null;
+                    if (String.IsNullOrEmpty(password)) { sb.AppendLine("Passsword not entered."); foundError = true; }
+                    csObject.comboString = csObject.comboString.Replace("{3}", password);
+                }
+
+                if(!foundError)
                 {
                     // Get password from user
-                    if (csObject.comboString.IndexOf("{3}") >= 0)
-                    {
-                        frmLogin passwordForm = new frmLogin();
-                        passwordForm.ShowDialog();
-                        string password = passwordForm.password;
-                        passwordForm = null;
-                        csObject.comboString = csObject.comboString.Replace("{3}", password);
-                    }
 
                     // {0} is server, {1} is Database, {2} is user, {3} is password (unknown)
                     string cs = String.Format(csObject.comboString, csObject.server, csObject.databaseName, csObject.user);
@@ -1489,6 +1515,10 @@ namespace SqlEditor
                 cmbMainFilter.SelectedIndex = 0;
                 // writeGrid_NewFilter(); // Change event will do this
             }
+            else
+            {
+                MessageBox.Show(Properties.MyResources.selectExactlyOneRow, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void GridContextMenu_SetFkAsMainFilter_Click(object sender, EventArgs e)
@@ -1548,7 +1578,10 @@ namespace SqlEditor
                     }
                 }
             }
-
+            else
+            {
+                MessageBox.Show(Properties.MyResources.selectExactlyOneRow, "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void GridContextMenu_FindUnusedFK_Click(object sender, EventArgs e)

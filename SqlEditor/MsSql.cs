@@ -223,10 +223,12 @@ namespace SqlEditor
         {
             List<string> defaultStrings = new List<string>();
             // Don't include any spaces before or afer "=" or ";".
+            defaultStrings.Add("Sql-database - chose windows or sql-authentication: ");
             defaultStrings.Add("Server={0};Database={1};Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;Encrypt=False");
             defaultStrings.Add("Server={0};Database={1};User id={2};Password={3};MultipleActiveResultSets=true;TrustServerCertificate=True");
-            defaultStrings.Add("Server={0};Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True;Encrypt=False");
-            defaultStrings.Add("Server={0};User id={2};Password={3};MultipleActiveResultSets=true;TrustServerCertificate=True");
+            defaultStrings.Add("Azure database with Sql-authentication: ");
+            defaultStrings.Add("Server={0};Initial Catalog={1};Persist Security Info=False;User ID={2};Password={3}; MultipleActiveResultSets=True; Encrypt=True; TrustServerCertificate=False; Connection Timeout=30");
+            defaultStrings.Add("Recent connections: ");
             return defaultStrings;
         }
 

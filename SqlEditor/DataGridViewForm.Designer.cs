@@ -39,8 +39,9 @@
             GridContextMenu_SetAsMainFilter = new ToolStripMenuItem();
             GridContextMenu_SetFKasMainFIlter = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
-            GridContextMenu_TimesUsedAsFK = new ToolStripMenuItem();
             GridContextMenu_OrderCombolByPK = new ToolStripMenuItem();
+            GridContextMenu_TimesUsedAsFK = new ToolStripMenuItem();
+            GridContextMenu_UnusedAsFK = new ToolStripMenuItem();
             toolSripSeparator2 = new ToolStripSeparator();
             GridContextMenu_RestoreFilters = new ToolStripMenuItem();
             GridContextMenu_ClearFilters = new ToolStripMenuItem();
@@ -125,7 +126,6 @@
             toolStripButtonColumnWidth = new ToolStripButton();
             saveFileDialog1 = new SaveFileDialog();
             folderBrowserDialog1 = new FolderBrowserDialog();
-            GridContextMenu_UnusedAsFK = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -230,18 +230,24 @@
             toolStripSeparator1.Name = "toolStripSeparator1";
             resources.ApplyResources(toolStripSeparator1, "toolStripSeparator1");
             // 
-            // GridContextMenu_TimesUsedAsFK
-            // 
-            GridContextMenu_TimesUsedAsFK.Name = "GridContextMenu_TimesUsedAsFK";
-            resources.ApplyResources(GridContextMenu_TimesUsedAsFK, "GridContextMenu_TimesUsedAsFK");
-            GridContextMenu_TimesUsedAsFK.Click += GridContextMenu_TimesUsedAsFK_Click;
-            // 
             // GridContextMenu_OrderCombolByPK
             // 
             GridContextMenu_OrderCombolByPK.CheckOnClick = true;
             GridContextMenu_OrderCombolByPK.Name = "GridContextMenu_OrderCombolByPK";
             resources.ApplyResources(GridContextMenu_OrderCombolByPK, "GridContextMenu_OrderCombolByPK");
             GridContextMenu_OrderCombolByPK.Click += GridContextMenu_OrderComboByPK_Click;
+            // 
+            // GridContextMenu_TimesUsedAsFK
+            // 
+            GridContextMenu_TimesUsedAsFK.Name = "GridContextMenu_TimesUsedAsFK";
+            resources.ApplyResources(GridContextMenu_TimesUsedAsFK, "GridContextMenu_TimesUsedAsFK");
+            GridContextMenu_TimesUsedAsFK.Click += GridContextMenu_TimesUsedAsFK_Click;
+            // 
+            // GridContextMenu_UnusedAsFK
+            // 
+            GridContextMenu_UnusedAsFK.Name = "GridContextMenu_UnusedAsFK";
+            resources.ApplyResources(GridContextMenu_UnusedAsFK, "GridContextMenu_UnusedAsFK");
+            GridContextMenu_UnusedAsFK.Click += GridContextMenu_UnusedAsFK_Click;
             // 
             // toolSripSeparator2
             // 
@@ -984,12 +990,6 @@
             toolStripButtonColumnWidth.Margin = new Padding(10, 0, 10, 0);
             toolStripButtonColumnWidth.Name = "toolStripButtonColumnWidth";
             toolStripButtonColumnWidth.Click += toolStripColumnWidth_Click;
-            // 
-            // GridContextMenu_UnusedAsFK
-            // 
-            GridContextMenu_UnusedAsFK.Name = "GridContextMenu_UnusedAsFK";
-            resources.ApplyResources(GridContextMenu_UnusedAsFK, "GridContextMenu_UnusedAsFK");
-            GridContextMenu_UnusedAsFK.Click += GridContextMenu_UnusedAsFK_Click;
             // 
             // DataGridViewForm
             // 

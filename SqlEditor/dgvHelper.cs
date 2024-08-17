@@ -5,24 +5,17 @@ namespace SqlEditor
 {
     public static class dgvHelper
     {
-        // Translations, readonly fields and Constraint checks from plugins
+        // Translations, translationCulture, readonly fields and Constraint checks from plugins
         public static Dictionary<string, string> translations = new Dictionary<string, string>();
-
         public static String translationCultureName = String.Empty;
-
         public static bool translate;  // Set in datagridviewform based on translationCultureName and UIculture
-
         public static List<(string, string)> readOnlyField = new List<(string, string)>();
-
         // update - <table, fieldName, DataRow, bool>
         public static List<Func<string, string, DataRow, bool>> updateConstraints = new List<Func<string, string, DataRow, bool>>();
-
         // insert - <table, List of fields + fieldvalues, bool> 
         public static List<Func<string, List<Tuple<String, String>>, bool>> insertConstraints = new List<Func<string, List<Tuple<String, String>>, bool>>();
-
         // delete - <table, record ID, bool>
         public static List<Func<string, int, bool>> deleteConstraints = new List<Func<string, int, bool>>();
-
 
         // Results of this coloring use in color combo boxes above
         public static void SetHeaderColorsOnWritePage(DataGridView dgv, string myTable, List<field> myFields)

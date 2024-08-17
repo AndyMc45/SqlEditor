@@ -13,7 +13,7 @@ namespace SqlEditor.TranscriptPlugin
     // The callback function opens frmTranscriptOptions - which allows user to do various things
     public class TransPlugin : IPlugin
     {
-        #region Variables
+        #region Variables - all required by interface
         public String Name() { return this.name; }
         private String name = String.Empty;
 
@@ -32,9 +32,9 @@ namespace SqlEditor.TranscriptPlugin
         public List<Func<string, int, bool>> DeleteConstraints() { return deleteConstraints; }
         private List<Func<string, int, bool>> deleteConstraints;
 
-
         #endregion
 
+        // Constructor - Called in main program when plugin loaded
         public TransPlugin(String name)
         {
             this.name = "Transcripts";
@@ -235,14 +235,14 @@ namespace SqlEditor.TranscriptPlugin
             int courseTermID = 0;
             // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.  See mainForm constructor. 
             DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
-            // Get the studentDegreeID and then call "PrepareToPrint"
+            // Try to get the courseTermID
             SqlFactory sqlCur = dgvForm.currentSql;
             // Return 0 if no table selected in main form
             if (dgvForm.currentSql == null) { return 0; }
-            // Try to get Course Term ID
+            // Return value in selected row
             if (dgvForm.dataGridView1.SelectedRows.Count == 1)
             {
-                if (dgvForm.currentSql.myTable == TableName.transcript)
+                if (dgvForm.currentSql.myTable == TableName.courseTermSection)
                 {
                     //Get studentDegreeID column
                     field fld = dataHelper.getForeignKeyFromRefTableName(dgvForm.currentSql.myTable, TableName.courseTerms);
@@ -262,7 +262,7 @@ namespace SqlEditor.TranscriptPlugin
                 }
                 else
                 {
-                    string err = String.Format(Properties.PluginResources.selectOneRowinTable0or1, TableName.transcript, TableName.courseTerms);
+                    string err = String.Format(Properties.PluginResources.selectOneRowinTable0or1, TableName.courseTermSection, TableName.courseTerms);
                     sbError.AppendLine(err);
                 }
             }

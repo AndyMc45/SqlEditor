@@ -7,7 +7,7 @@ using Unity;
 namespace SqlEditor
 {
 
-    public delegate void MainFormDelegate(Form dgvForm);
+    // public delegate void MainFormDelegate(Form dgvForm);
 
     internal static class Plugins
     {

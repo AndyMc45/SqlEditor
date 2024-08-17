@@ -3,7 +3,8 @@ namespace SqlEditor.PluginsInterface
 {
     public interface IPlugin
     {
-        // Interface requires two things - a string("Name()") and a ControlTemplate("PlugInControls()")
+        // Interface requires 6 things - a string("Name()") and a ControlTemplate("PlugInControls()")
+        // a MainForm and three functions (UpdateConstraints(), InsertConstraints(), and DeleteConstraints())
         String Name();
         ControlTemplate CntTemplate();
 
