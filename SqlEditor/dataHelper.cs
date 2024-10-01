@@ -428,7 +428,6 @@ namespace SqlEditor
 
         #region Getting information from FieldsDT and setting width: private methods
 
-
         private static void setIntValueFieldsDT(string tableName, string columnName, string columnToReturn, int value)
         {
             DataRow dr = getDataRowFromFieldsDT(tableName, columnName);

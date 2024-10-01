@@ -1,12 +1,13 @@
 ﻿using SqlEditor.PluginsInterface;
 using System.Reflection;
+using System.Data;
 using Unity;
 
 
 namespace SqlEditor
 {
 
-    public delegate void MainFormDelegate(Form dgvForm);
+    // public delegate void MainFormDelegate(Form dgvForm);
 
     internal static class Plugins
     {
@@ -26,7 +27,13 @@ namespace SqlEditor
             }
         }
 
-        static internal MenuStrip Load_Plugins(ref Dictionary<string, string> colHeaderTranslations, ref string translationCultureName, ref List<(string, string)> readOnlyFields)
+        static internal MenuStrip Load_Plugins(
+                    ref Dictionary<string, string> colHeaderTranslations, 
+                    ref string translationCultureName, 
+                    ref List<(string, string)> readOnlyFields, 
+                    ref List<Func<string, string, DataRow, bool>> updateConstraints, 
+                    ref List<Func<string, List<Tuple<String, String>>, bool>> insertConstraints,
+                    ref List<Func<string, int, bool>> deleteConstraints) 
         {
             // First delete plugin marked for deletion
             string deletePluginPath = AppData.GetKeyValue("deletePluginPath");
@@ -91,12 +98,13 @@ namespace SqlEditor
                     loadedPlugins = container.ResolveAll<IPlugin>();
                     if (loadedPlugins.Count() > 0)
                     {
+                        // Should check that a plugin is not loaded twice 
                         foreach (var loadedPlugin in loadedPlugins)
                         {
-                            // Tomorrow - redo the 'transcript existed above but not now
-                            // loadedPlugin.CntTemplate().menuStrip.Text = plugInMenus.Text;
+                            // Add menu strip
                             plugInMenus.Items.Add(loadedPlugin.CntTemplate().menuStrip);
-                            // First in is approved if there is a conflict
+
+                            // Translation - First in is approved if there is a conflict
                             foreach (string key in loadedPlugin.CntTemplate().ColumnHeaderTranslations.Keys)
                             {
                                 if (!colHeaderTranslations.ContainsKey(key))
@@ -105,15 +113,27 @@ namespace SqlEditor
                                 }
                             }
                             // The language of the translation - if two plugins have this, the last one wins!
-                            // The UICulture is set in the plugin.
-                            // If it is set to the translationCultureName, the headers will be translated
                             translationCultureName = loadedPlugin.CntTemplate().TranslationCultureName;
+
                             // ReadOnly Fields - added twice if in two plugins but unlikely and o.k.
                             foreach ((string, string) readOnly in loadedPlugin.CntTemplate().ReadOnlyFields)
                             {
                                 readOnlyFields.Add(readOnly);
                             }
 
+                            // Add Constraints
+                            foreach (Func<string, string, DataRow, bool> constraint in loadedPlugin.UpdateConstraints())
+                            { 
+                                updateConstraints.Add(constraint);
+                            }
+                            foreach (Func<string, List<Tuple<String, String>>, bool> constraint in loadedPlugin.InsertConstraints())
+                            {
+                                insertConstraints.Add(constraint);
+                            }
+                            foreach (Func<string, int, bool> constraint in loadedPlugin.DeleteConstraints())
+                            {
+                                deleteConstraints.Add(constraint);
+                            }
                         }
                     }
                 }

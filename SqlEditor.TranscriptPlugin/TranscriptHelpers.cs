@@ -94,7 +94,6 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
-
         public static void fillGradRequirementsDT(int studentDegreeID, ref StringBuilder sbErrors)
         {
             // 1. Create a table "StudentReq" - this table is not in the database.
@@ -390,9 +389,11 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("print class list", "列印課程學生");
             columnHeaderTranslations.Add("update studentdegrees table", "更新學生學位表");
             columnHeaderTranslations.Add("options", "選類");
-
+            columnHeaderTranslations.Add("check for transcript errors", "檢查成績單是否有錯誤");
+                        
             return columnHeaderTranslations;
         }
+
     }
 
     internal static class TableName
@@ -430,10 +431,12 @@ namespace SqlEditor.TranscriptPlugin
 
 
     }
+
     internal static class TableField
     {
         // Fields used in where statement
         internal static field GradRequirements_DegreeID { get => dataHelper.getFieldFromFieldsDT(TableName.gradRequirements, "degreeID"); }
+
         internal static field GradRequirements_handbookID { get => dataHelper.getFieldFromFieldsDT(TableName.gradRequirements, "handbookID"); }
 
     }

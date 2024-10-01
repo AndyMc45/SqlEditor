@@ -255,6 +255,15 @@ namespace SqlEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MF.
+        /// </summary>
+        public static string mainFilterShort {
+            get {
+                return ResourceManager.GetString("mainFilterShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You must pass test before O.K. button is enabled.
         /// </summary>
         public static string MustPassTestBeforeOKButton {

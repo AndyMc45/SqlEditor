@@ -5,12 +5,17 @@ namespace SqlEditor
 {
     public static class dgvHelper
     {
+        // Translations, translationCulture, readonly fields and Constraint checks from plugins
         public static Dictionary<string, string> translations = new Dictionary<string, string>();
-
-        public static bool translate;
-
+        public static String translationCultureName = String.Empty;
+        public static bool translate;  // Set in datagridviewform based on translationCultureName and UIculture
         public static List<(string, string)> readOnlyField = new List<(string, string)>();
-
+        // update - <table, fieldName, DataRow, bool>
+        public static List<Func<string, string, DataRow, bool>> updateConstraints = new List<Func<string, string, DataRow, bool>>();
+        // insert - <table, List of fields + fieldvalues, bool> 
+        public static List<Func<string, List<Tuple<String, String>>, bool>> insertConstraints = new List<Func<string, List<Tuple<String, String>>, bool>>();
+        // delete - <table, record ID, bool>
+        public static List<Func<string, int, bool>> deleteConstraints = new List<Func<string, int, bool>>();
 
         // Results of this coloring use in color combo boxes above
         public static void SetHeaderColorsOnWritePage(DataGridView dgv, string myTable, List<field> myFields)
@@ -86,8 +91,7 @@ namespace SqlEditor
 
         public static void SetNewColumnWidths(DataGridView dgv, List<field> myFields, bool narrowColumns)
         {
-            // Time consuming in transcript table - so only call this routine when really needed
-            // Also, this function takes 10 seconds for transcript table - so don't run it in loading page
+            // Time consuming in transcript table - so only call this routine when user directly asks to run it.
             for (int i = 0; i < myFields.Count; i++)   // Using myFields.Count and not dgv.Columns becauser use may add a column to dgv
             {
                 field fl = myFields[i];
@@ -95,8 +99,9 @@ namespace SqlEditor
                 int headerWidth;  // No default
                 System.Drawing.Font font = dgv.Font;
                 using (Graphics g = dgv.CreateGraphics())
-                {
-                    headerWidth = Math.Max(62, (int)g.MeasureString(headerText, font).Width);  // 62 the shortest
+                {   // 1/3 of headerStringWidth
+                    int headerStringWidth = (int)(Math.Round(g.MeasureString(headerText, font).Width / 3,0));
+                    headerWidth = Math.Max(62, headerStringWidth);  // 62 the shortest
                 }
                 int currentWidth = dgv.Columns[i].Width;
                 // Defaults
@@ -136,7 +141,7 @@ namespace SqlEditor
                         }
                         break;
                     default:
-                        // Get the longest of the first 40 items
+                        // Get 3/4 of longest of the first 40 items
                         int r = 0;
                         int longestWidth = 62; // default
                         using (Graphics g = dgv.CreateGraphics())
@@ -147,7 +152,7 @@ namespace SqlEditor
                                 if (r > 40) { break; }
                                 if (row.Cells[i].Value != null)
                                 {
-                                    int thisItemWidth = (int)g.MeasureString(row.Cells[i].Value.ToString(), font).Width;
+                                    int thisItemWidth = (int)Math.Round(g.MeasureString(row.Cells[i].Value.ToString(), font).Width * .75,0);
                                     longestWidth = Math.Max(thisItemWidth, longestWidth);
                                 }
                             }

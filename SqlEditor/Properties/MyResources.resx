@@ -182,6 +182,9 @@
     <value>Main Filter not set</value>
     <comment>Used in main research drop down</comment>
   </data>
+  <data name="mainFilterShort" xml:space="preserve">
+    <value>MF</value>
+  </data>
   <data name="MustPassTestBeforeOKButton" xml:space="preserve">
     <value>You must pass test before O.K. button is enabled</value>
   </data>
