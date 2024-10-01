@@ -538,7 +538,7 @@ namespace SqlEditor
             writeGrid_NewPage();
         }
 
-        internal void writeGrid_NewPage()
+        public void writeGrid_NewPage()
         {
             Stopwatch watch = new Stopwatch();
             if (formOptions.runTimer) { watch.Start(); }
