@@ -11,7 +11,7 @@
           "DocumentFormat.OpenXml": "3.0.2",
           "SqlEditor": "1.0.0",
           "SqlEditor.PluginsInterface": "1.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.17763.31"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.17763.34"
         },
         "runtime": {
           "SqlEditor.TranscriptPlugin.dll": {}
@@ -22,15 +22,15 @@
           }
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.31": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.34": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
             "assemblyVersion": "10.0.17763.24",
-            "fileVersion": "10.0.17763.31"
+            "fileVersion": "10.0.17763.34"
           },
           "WinRT.Runtime.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.4.44211"
+            "fileVersion": "2.0.8.46841"
           }
         }
       },
@@ -862,7 +862,10 @@
           "Unity": "5.11.10"
         },
         "runtime": {
-          "SqlEditor.dll": {}
+          "SqlEditor.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         },
         "resources": {
           "zh-Hant/SqlEditor.resources.dll": {
@@ -872,7 +875,10 @@
       },
       "SqlEditor.PluginsInterface/1.0.0": {
         "runtime": {
-          "SqlEditor.PluginsInterface.dll": {}
+          "SqlEditor.PluginsInterface.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }
@@ -883,7 +889,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.31": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.34": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

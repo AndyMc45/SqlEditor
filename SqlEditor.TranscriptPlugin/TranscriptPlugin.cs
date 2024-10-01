@@ -104,6 +104,13 @@ namespace SqlEditor.TranscriptPlugin
                 }
                 else
                 {
+                    // Update this studentDegreeID information - No message because rowsAffected is always 1.
+                    int rowsAffected = 0;
+                    string strResult1 = TranscriptMsSql.UpdateEveryChangedStudentDegreeStatus(studentDegreeID, ref rowsAffected);
+                    rowsAffected = 0;
+                    strResult1 = TranscriptMsSql.updateEveryChangedStudentCreditsLastTermQPA(studentDegreeID, ref rowsAffected);
+
+                    //Open form
                     frmTranscriptOptions fOptions = new frmTranscriptOptions();
                     fOptions.myJob = frmTranscriptOptions.Job.printTranscript;
                     fOptions.studentDegreeID = studentDegreeID;
@@ -148,13 +155,13 @@ namespace SqlEditor.TranscriptPlugin
                 {
                     // 2a. Upgrade StudentStatusID column
                     int rowsAffected = 0;
-                    string strResult = TranscriptHelper.UpdateEveryChangedStudentDegreeStatus(ref rowsAffected);
+                    string strResult = TranscriptMsSql.UpdateEveryChangedStudentDegreeStatus(ref rowsAffected);
                     if (strResult == String.Empty)
                     {
                         string strResult1 = String.Format(PluginResources.StDeTableUpdatedAndCount, Environment.NewLine, rowsAffected);
                         // 2b. Upgrade QPA-credit-LastTerm-Date columns
-                        TranscriptHelper.updateEveryChangedStudentFirstTermID(ref rowsAffected); // No message if error
-                        strResult = TranscriptHelper.updateEveryChangedStudentCreditsLastTermQPA(ref rowsAffected); // Give error msg from here
+                        TranscriptMsSql.updateEveryChangedStudentFirstTermID(ref rowsAffected); // No message if error
+                        strResult = TranscriptMsSql.updateEveryChangedStudentCreditsLastTermQPA(ref rowsAffected); // Give error msg from here
                         if (!String.IsNullOrEmpty(strResult))
                         {
                             MessageBox.Show(strResult1, PluginResources.partialSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -171,7 +178,7 @@ namespace SqlEditor.TranscriptPlugin
             {
                 // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
                 DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
-                TranscriptHelper.transcriptProblems(dgvForm);
+                TranscriptMsSql.transcriptProblems(dgvForm);
             }
             else
             {

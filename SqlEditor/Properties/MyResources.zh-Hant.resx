@@ -166,6 +166,9 @@
     <value>沒有主要篩選</value>
     <comment>Used in main research drop down</comment>
   </data>
+  <data name="mainFilterShort" xml:space="preserve">
+    <value>主篩 </value>
+  </data>
   <data name="MustPassTestBeforeOKButton" xml:space="preserve">
     <value>您必須通過測試才能啟用 "OK "按鈕。</value>
   </data>

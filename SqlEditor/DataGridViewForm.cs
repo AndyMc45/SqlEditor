@@ -1509,7 +1509,7 @@ namespace SqlEditor
                     if (wh.isSameWhereAs(newMainFilter)) { MainFilterList.Remove(wh); break; }
                 }
                 MainFilterList.Insert(0, newMainFilter);
-                lblMainFilter.Text = dgvHelper.TranslateString(currentSql.myTable) + " : ";
+                lblMainFilter.Text = MyResources.mainFilterShort + " " + dgvHelper.TranslateString(currentSql.myTable) + " : ";
                 cmbMainFilter.Refresh();
                 cmbMainFilter.Enabled = true;
                 cmbMainFilter.SelectedIndex = 0;
@@ -1565,7 +1565,7 @@ namespace SqlEditor
                                 if (wh.isSameWhereAs(newMainFilter)) { MainFilterList.Remove(wh); break; }
                             }
                             MainFilterList.Insert(0, newMainFilter);
-                            lblMainFilter.Text = dgvHelper.TranslateString(currentSql.myTable) + " : ";
+                            lblMainFilter.Text = MyResources.mainFilterShort + " " + dgvHelper.TranslateString(currentSql.myTable) + " : ";
                             cmbMainFilter.Refresh();
                             cmbMainFilter.Enabled = true;
                             cmbMainFilter.SelectedIndex = 0;
@@ -2360,7 +2360,7 @@ namespace SqlEditor
                 else
                 {   // Disable mnoOpenTable elements that don't contain this filter
                     where mfWhere = (where)cmbMainFilter.SelectedValue;
-                    lblMainFilter.Text = dgvHelper.TranslateString(mfWhere.fl.table) + " : ";
+                    lblMainFilter.Text = MyResources.mainFilterShort + " " + dgvHelper.TranslateString(mfWhere.fl.table) + " : ";
                     foreach (ToolStripItem tsi in mnuOpenTables.DropDownItems)
                     {
                         SqlFactory sqlFac = new SqlFactory(tsi.Name, 0, 0);
