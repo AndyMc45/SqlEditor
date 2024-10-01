@@ -390,7 +390,7 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("update studentdegrees table", "更新學生學位表");
             columnHeaderTranslations.Add("options", "選類");
             columnHeaderTranslations.Add("check for transcript errors", "檢查成績單是否有錯誤");
-                        
+
             return columnHeaderTranslations;
         }
 

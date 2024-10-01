@@ -216,101 +216,104 @@ namespace SqlEditor.TranscriptPlugin
                             int currentRow = 1;  // Starts at 1; first row is the title row
                             foreach (DataRow transDR in transcriptDT.Rows)
                             {
-                                // Get information about current term
-                                int termID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "termID"));
-                                List<string> tTermsColNames = new List<string> { "term", "termName", "eTermName", "startYear", "startMonth", "endYear", "endMonth" };
-                                Dictionary<string, string> tTermsColValues = TranscriptHelper.GetPkRowColumnValues(
-                                        TableName.terms, termID, tTermsColNames, ref sbErrors);
-                                string term = tTermsColValues["term"];
-                                if (termID != currentTermID)
+                                // Skip audited courses
+                                string statusKey = dataHelper.getColumnValueinDR(transDR, "statusKey");
+                                if (statusKey != "audit")
                                 {
-                                    string termName = tTermsColValues["termName"];
-                                    string startYear = tTermsColValues["startYear"];
-                                    string endYear = tTermsColValues["endYear"];
-                                    string termDate = startYear;
-                                    if (startYear != endYear)
+                                    // Get information about current term
+                                    int termID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "termID"));
+                                    List<string> tTermsColNames = new List<string> { "term", "termName", "eTermName", "startYear", "startMonth", "endYear", "endMonth" };
+                                    Dictionary<string, string> tTermsColValues = TranscriptHelper.GetPkRowColumnValues(
+                                            TableName.terms, termID, tTermsColNames, ref sbErrors);
+                                    string term = tTermsColValues["term"];
+                                    if (termID != currentTermID)
                                     {
-                                        termDate = string.Format("{0} - {1}", startYear, endYear);
+                                        string termName = tTermsColValues["termName"];
+                                        string startYear = tTermsColValues["startYear"];
+                                        string endYear = tTermsColValues["endYear"];
+                                        string termDate = startYear;
+                                        if (startYear != endYear)
+                                        {
+                                            termDate = string.Format("{0} - {1}", startYear, endYear);
+                                        }
+                                        // Translate to English
+                                        if (printJob == PrintJob.printTranscript) { termDate = termDate + "年 "; }
+                                        else if (printJob == PrintJob.printEnglishTranscript)
+                                        {
+                                            termDate = termDate + " ";
+                                            termName = tTermsColValues["eTermName"];
+                                        }
+                                        //Make this a new Term row and insert term in cell 2
+
+                                        RemoveInnerCellBorders(table, currentRow, 2, 6);
+                                        MergeTableCells(table, currentRow, 0, 1);
+                                        InsertTextInTable(table, currentRow, 2, termDate + termName, JustificationValues.Left);
+
+                                        // Prepare for next row    
+                                        TableRow newTermRow = new TableRow();
+                                        for (int i = 0; i < table.Elements<TableRow>().First().Elements<TableCell>().Count(); i++)
+                                        {
+                                            TableCell newCell = new TableCell(new Paragraph(new Run(new Text(string.Empty))));
+                                            newTermRow.Append(newCell);
+                                        }
+                                        table.Append(newTermRow);
+                                        currentRow = currentRow + 1;
+                                        currentTermID = termID;
                                     }
+
+                                    string courseName = dataHelper.getColumnValueinDR(transDR, "courseName");
+                                    string facultyName = dataHelper.getColumnValueinDR(transDR, "facultyName");
+                                    string department = dataHelper.getColumnValueinDR(transDR, "depName");
+                                    string credits = dataHelper.getColumnValueinDR(transDR, "credits");
+                                    string grade = dataHelper.getColumnValueinDR(transDR, "grade");
+                                    int requirementAreaID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "requirementAreaID"));
+                                    List<string> reqAreaColNames = new List<string> { "reqArea", "eReqArea" };
+                                    Dictionary<string, string> reqAreaColValues = TranscriptHelper.GetPkRowColumnValues(
+                                            TableName.requirementArea, requirementAreaID, reqAreaColNames, ref sbErrors);
+                                    string reqArea = reqAreaColValues["reqArea"];
+                                    string eReqArea = reqAreaColValues["eReqArea"];
+                                    // Round off the credits
+                                    decimal dCredits = Decimal.Parse(credits);
+                                    dCredits = Decimal.Round(dCredits, 2);
+                                    credits = dCredits.ToString();
                                     // Translate to English
-                                    if (printJob == PrintJob.printTranscript) { termDate = termDate + "年 "; }
-                                    else if (printJob == PrintJob.printEnglishTranscript)
+                                    if (printJob == PrintJob.printEnglishTranscript)
                                     {
-                                        termDate = termDate + " ";
-                                        termName = tTermsColValues["eTermName"];
+                                        if (!String.IsNullOrEmpty(eReqArea)) { reqArea = eReqArea; }
+                                        int courseNameID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "courseNameID"));
+                                        int facultyID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "facultyID"));
+                                        //Get English for courseName and facultyName
+                                        List<string> courseColNames = new List<string> { "eCourseName" };
+                                        Dictionary<string, string> courseColValues = TranscriptHelper.GetPkRowColumnValues(
+                                                TableName.courseNames, courseNameID, courseColNames, ref sbErrors);
+                                        string eCourseName = courseColValues["eCourseName"];
+                                        if (!String.IsNullOrEmpty(eCourseName)) { courseName = eCourseName; }
+                                        List<string> facultyColNames = new List<string> { "eFacultyName" };
+                                        Dictionary<string, string> facultyColValues = TranscriptHelper.GetPkRowColumnValues(
+                                                TableName.faculty, facultyID, facultyColNames, ref sbErrors);
+                                        string eFacultyName = facultyColValues["eFacultyName"];
+                                        if (!String.IsNullOrEmpty(eFacultyName)) { facultyName = eFacultyName; }
                                     }
-                                    //Make this a new Term row and insert term in cell 2
-
-                                    RemoveInnerCellBorders(table, currentRow, 2, 6);
-                                    MergeTableCells(table, currentRow, 0, 1);
-                                    InsertTextInTable(table, currentRow, 2, termDate + termName, JustificationValues.Left);
-
-                                    // Prepare for next row    
-                                    TableRow newTermRow = new TableRow();
+                                    InsertTextInTable(table, currentRow, 0, term);
+                                    InsertTextInTable(table, currentRow, 1, department);
+                                    InsertTextInTable(table, currentRow, 2, courseName, JustificationValues.Left);
+                                    InsertTextInTable(table, currentRow, 3, facultyName, JustificationValues.Left);
+                                    InsertTextInTable(table, currentRow, 4, credits);
+                                    InsertTextInTable(table, currentRow, 5, grade);
+                                    if (reqArea != department)
+                                    {
+                                        InsertTextInTable(table, currentRow, 6, reqArea, JustificationValues.Left);
+                                    }
+                                    // Prepare for next row - clone this before adding information
+                                    TableRow newRow = new TableRow();
                                     for (int i = 0; i < table.Elements<TableRow>().First().Elements<TableCell>().Count(); i++)
                                     {
                                         TableCell newCell = new TableCell(new Paragraph(new Run(new Text(string.Empty))));
-                                        newTermRow.Append(newCell);
+                                        newRow.Append(newCell);
                                     }
-                                    table.Append(newTermRow);
+                                    table.Append(newRow);
                                     currentRow = currentRow + 1;
-                                    currentTermID = termID;
-                                }
-
-                                string courseName = dataHelper.getColumnValueinDR(transDR, "courseName");
-                                string facultyName = dataHelper.getColumnValueinDR(transDR, "facultyName");
-                                string department = dataHelper.getColumnValueinDR(transDR, "depName");
-                                string credits = dataHelper.getColumnValueinDR(transDR, "credits");
-                                string grade = dataHelper.getColumnValueinDR(transDR, "grade");
-                                int requirementAreaID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "requirementAreaID"));
-                                List<string> reqAreaColNames = new List<string> { "reqArea", "eReqArea" };
-                                Dictionary<string, string> reqAreaColValues = TranscriptHelper.GetPkRowColumnValues(
-                                        TableName.requirementArea, requirementAreaID, reqAreaColNames, ref sbErrors);
-                                string reqArea = reqAreaColValues["reqArea"];
-                                string eReqArea = reqAreaColValues["eReqArea"];
-                                // Round off the credits
-                                decimal dCredits = Decimal.Parse(credits);
-                                dCredits = Decimal.Round(dCredits, 2);
-                                credits = dCredits.ToString();
-                                // Translate to English
-                                if (printJob == PrintJob.printEnglishTranscript)
-                                {
-                                    if (!String.IsNullOrEmpty(eReqArea)) { reqArea = eReqArea; }
-                                    int courseNameID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "courseNameID"));
-                                    int facultyID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "facultyID"));
-                                    //Get English for courseName and facultyName
-                                    List<string> courseColNames = new List<string> { "eCourseName" };
-                                    Dictionary<string, string> courseColValues = TranscriptHelper.GetPkRowColumnValues(
-                                            TableName.courseNames, courseNameID, courseColNames, ref sbErrors);
-                                    string eCourseName = courseColValues["eCourseName"];
-                                    if (!String.IsNullOrEmpty(eCourseName)) { courseName = eCourseName; }
-                                    List<string> facultyColNames = new List<string> { "eFacultyName" };
-                                    Dictionary<string, string> facultyColValues = TranscriptHelper.GetPkRowColumnValues(
-                                            TableName.faculty, facultyID, facultyColNames, ref sbErrors);
-                                    string eFacultyName = facultyColValues["eFacultyName"];
-                                    if (!String.IsNullOrEmpty(eFacultyName)) { facultyName = eFacultyName; }
-                                }
-                                InsertTextInTable(table, currentRow, 0, term);
-                                InsertTextInTable(table, currentRow, 1, department);
-                                InsertTextInTable(table, currentRow, 2, courseName, JustificationValues.Left);
-                                InsertTextInTable(table, currentRow, 3, facultyName, JustificationValues.Left);
-                                InsertTextInTable(table, currentRow, 4, credits);
-                                InsertTextInTable(table, currentRow, 5, grade);
-                                if (reqArea != department)
-                                {
-                                    InsertTextInTable(table, currentRow, 6, reqArea, JustificationValues.Left);
-                                }
-
-                                // Prepare for next row - clone this before adding information
-                                TableRow newRow = new TableRow();
-                                for (int i = 0; i < table.Elements<TableRow>().First().Elements<TableCell>().Count(); i++)
-                                {
-                                    TableCell newCell = new TableCell(new Paragraph(new Run(new Text(string.Empty))));
-                                    newRow.Append(newCell);
-                                }
-                                table.Append(newRow);
-
-                                currentRow = currentRow + 1;
+                                } // End if statusKey != "audit"
                             }
 
                             // E. Find Requirement table and fill it
