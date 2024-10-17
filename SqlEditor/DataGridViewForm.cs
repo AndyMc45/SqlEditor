@@ -84,14 +84,14 @@ namespace SqlEditor
             {
                 AppData.SaveKeyValue("PluginError", "hasError");  // Prepare for next load - undone below if no error
                 myLogger.LogInformation("Loading Plugins");
-                try 
+                try
                 {
                     // This loads plugins into Plugins.loadedPlugins AND return pluginMenus, translations, etc.
                     pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref dgvHelper.translationCultureName,
                         ref dgvHelper.readOnlyField, ref dgvHelper.updateConstraints,
                         ref dgvHelper.insertConstraints, ref dgvHelper.deleteConstraints);
                 }
-                catch(Exception ex) 
+                catch (Exception ex)
                 {
                     myLogger.LogInformation("Error loading plugin: {ex}", ex.Message);
                 }
@@ -186,7 +186,7 @@ namespace SqlEditor
             System.Drawing.Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
             if (workingArea.Width < tlp_pixelWidth)
             {
-                myLogger.LogInformation("Upadate TableLayOutPanel width: {width}",workingArea.Width.ToString());
+                myLogger.LogInformation("Upadate TableLayOutPanel width: {width}", workingArea.Width.ToString());
                 tableLayoutPanel.Width = workingArea.Width;
             }
 
@@ -227,7 +227,7 @@ namespace SqlEditor
 
             // 3. Load Database List (in files menu)
             myLogger.LogInformation("Loading DatabaseList");
-            load_mnuDatabaseList();  // Add previously open databases to databases menu dropdown list
+            Load_mnuDatabaseList();  // Add previously open databases to databases menu dropdown list
 
             // 4. Open Log file
             // openLogFile(); //errors ignored 
@@ -235,9 +235,10 @@ namespace SqlEditor
             // 5. Open last connection 
             myLogger.LogInformation("Opening Connection");
             string msg = OpenConnection();  // Returns any error msg
-            if (msg != string.Empty) {
+            if (msg != string.Empty)
+            {
                 myLogger.LogInformation("Error Opening connection: {msg}", msg);
-                msgText(msg); txtMessages.ForeColor = System.Drawing.Color.Red; 
+                msgText(msg); txtMessages.ForeColor = System.Drawing.Color.Red;
             }
 
             // 6. Set Mode and filters to "none".
@@ -364,7 +365,7 @@ namespace SqlEditor
                     csObject.comboString = csObject.comboString.Replace("{3}", password);
                 }
 
-                if(!foundError)
+                if (!foundError)
                 {
                     // Get password from user
 
@@ -1353,7 +1354,7 @@ namespace SqlEditor
                     }
                 }
                 AppData.storeConnectionStringList(csList);
-                load_mnuDatabaseList();
+                Load_mnuDatabaseList();
             }
         }
 
@@ -1416,7 +1417,7 @@ namespace SqlEditor
                 Application.Restart();
             }
         }
-        internal void load_mnuDatabaseList()
+        internal void Load_mnuDatabaseList()
         {
             //Get list from App.Data
             List<connectionString> csList = AppData.GetConnectionStringList();
@@ -1471,7 +1472,6 @@ namespace SqlEditor
                 }
             }
         }
-
         private string SelectFolder(string defaultFolder, bool allowNewFolder)
         {
             folderBrowserDialog1 = new FolderBrowserDialog();
@@ -1864,18 +1864,18 @@ namespace SqlEditor
             currentSql.myWheres.Clear();
             currentSql.strManualWhereClause = string.Empty;
 
-            // 2.  Add row to last filter if we have not added it yet
+            // 2.  If writing a newFilter, clear the old lastFilterDR values.
             DataRow lastFilterDR = dataHelper.getDataRowFromDataTable("Table", currentSql.myTable, dataHelper.lastFilterValuesDT);
-            if (lastFilterDR is null)
-            {
-                lastFilterDR = dataHelper.lastFilterValuesDT.NewRow();
-                dataHelper.setColumnValueInDR(lastFilterDR, "Table", currentSql.myTable);
-                dataHelper.lastFilterValuesDT.Rows.Add(lastFilterDR);
-            }
-
-            // Clear the old lastFilterDR values
             if (newLastFilter)
             {
+                // Add row to last filter if we have not added it yet(we only keep 1 row in dataHelper.LastFilterValuesDT)
+                if (lastFilterDR is null)
+                {
+                    lastFilterDR = dataHelper.lastFilterValuesDT.NewRow();
+                    dataHelper.setColumnValueInDR(lastFilterDR, "Table", currentSql.myTable);
+                    dataHelper.lastFilterValuesDT.Rows.Add(lastFilterDR);
+                }
+                // Clear the old lastFilterDR values
                 for (int ic = 1; ic < lastFilterDR.ItemArray.Length; ic++)
                 {
                     lastFilterDR.ItemArray[ic] = string.Empty;
@@ -3821,21 +3821,28 @@ namespace SqlEditor
 
         private void btnRapidMergeDKs_Extra()
         {
-            // Used to simplify merging duplicates table
-            if (currentSql.myTable == tableOptions.rapidlyMergingDKsTable && dataGridView1.Rows.Count == 2)
+            try
             {
-                rbMerge.Checked = true;
-                btnDeleteAddMerge_Click(null, null);
-                btnRapidMergeDKs_Extra();
+                // Used to simplify merging duplicate Display Keys when trying to add a DK - Not well checked or documented.
+                if (currentSql.myTable == tableOptions.rapidlyMergingDKsTable && dataGridView1.Rows.Count == 2)
+                {
+                    rbMerge.Checked = true;
+                    btnDeleteAddMerge_Click(null, null);
+                    btnRapidMergeDKs_Extra();
+                }
+                else
+                {
+                    writeGrid_NewTable("tableOptions.rapidlyMergingDKsTable", true);
+                    tableOptions.mergingDuplicateKeys = true;
+                    tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
+                    showDuplicateDispayKeys();
+                    rbMerge.Checked = true;
+                    btnDeleteAddMerge_Click(null, null);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                writeGrid_NewTable("tableOptions.rapidlyMergingDKsTable", true);
-                tableOptions.mergingDuplicateKeys = true;
-                tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
-                showDuplicateDispayKeys();
-                rbMerge.Checked = true;
-                btnDeleteAddMerge_Click(null, null);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
         private void mnuRapidlyMergeDKs_Click(object sender, EventArgs e)
@@ -3898,11 +3905,93 @@ namespace SqlEditor
             // SetToStoredColumnWidths();  // Takes too long for transcripts
         }
 
-        #endregion
-
         private void GridContextMenu_Opening_1(object sender, CancelEventArgs e)
         {
 
+        }
+
+        #endregion
+
+
+        private void mnuBatchInsert_Click(object sender, EventArgs e)
+        {
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+
+            if (currentSql != null)
+            {
+                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable),"Batch Insert",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
+                if (reply == DialogResult.Yes)
+                {
+                    // Get list of filtered DisplayKeys from GridFilterFields and their values
+                    for (int i = 0; i < cmbGridFilterFields.Length; i++)
+                    {
+                        if (cmbGridFilterFields[i].Enabled)
+                        {
+                            //cmbGridFilterFields - something is selected and all values are fields
+                            field selectedField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
+                            string whValue = string.Empty;
+                            bool displayKeyAndHasValue = false;
+                            if (dataHelper.isDisplayKey(selectedField))
+                            {
+                                // Step 1.  Determine if filter x has a value, and if not, clear old value from lastFilter row
+                                // DisplayKeys are ComboBoxStyle.DropDownList have integer values;
+                                if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList) // Always true but check just in case
+                                {
+                                    if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                                    {
+                                        whValue = cmbGridFilterValue[i].SelectedValue.ToString();
+                                        displayKeyAndHasValue = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    // Get list of display keys for current table that are selected
+                    frmListItems frmDisplayKeys = new frmListItems();
+                    frmDisplayKeys.myList = new List<string>();
+                    frmDisplayKeys.mySelectedList = new List<string>();
+                    DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
+                    DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
+                    List<string> columnList = new List<string>();
+                    foreach (DataRow dr in drsList)
+                    {
+                        columnList.Add(dr["ColumnName"].ToString());
+                    }
+                    List<string> dkColumnList = new List<string>();
+                    foreach (DataRow dr in drsSelectedList)
+                    {
+                        dkColumnList.Add(dr["ColumnName"].ToString());
+                    }
+                    frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
+                    frmDisplayKeys.Text = "Select the Display Key you want to change.";
+                    frmDisplayKeys.myList = columnList;
+                    frmDisplayKeys.mySelectedList = dkColumnList;
+                    frmDisplayKeys.ShowDialog();
+                    List<string> selectedDKs = frmDisplayKeys.mySelectedList;
+                    int intSelectedDirectory = frmDisplayKeys.returnIndex;
+                    frmDisplayKeys = null;
+                    if (intSelectedDirectory > -1)
+                    {
+                        //Select the DKs - NO - must turn unselected off
+                        foreach (String columnName in columnList)
+                        {
+                            // Set Dk in fields
+                            DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
+                            if (selectedDKs.Contains(columnName))
+                            {
+                                dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
+                            }
+                            else
+                            {
+                                dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

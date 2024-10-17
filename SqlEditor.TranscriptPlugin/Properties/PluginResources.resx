@@ -132,6 +132,9 @@
   <data name="btnPrintTranscript.Text" xml:space="preserve">
     <value>Print Transcript</value>
   </data>
+  <data name="chkIncludeAudits.Text" xml:space="preserve">
+    <value>Print Transcript</value>
+  </data>
   <data name="course" xml:space="preserve">
     <value>Course</value>
   </data>

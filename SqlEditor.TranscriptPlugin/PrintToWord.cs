@@ -131,7 +131,7 @@ namespace SqlEditor.TranscriptPlugin
             return pp;
         }
 
-        public static void printTranscript(PrintJob printJob, ref StringBuilder sbErrors)
+        public static void printTranscript(PrintJob printJob, bool includeAuditedCourses, ref StringBuilder sbErrors)
         {
             string transTemplate = AppData.GetKeyValue("TranscriptTemplate");
             if (printJob == PrintJob.printEnglishTranscript) { transTemplate = AppData.GetKeyValue("EnglishTranscriptTemplate"); }
@@ -218,7 +218,7 @@ namespace SqlEditor.TranscriptPlugin
                             {
                                 // Skip audited courses
                                 string statusKey = dataHelper.getColumnValueinDR(transDR, "statusKey");
-                                if (statusKey != "audit")
+                                if (statusKey != "audit"  || includeAuditedCourses)
                                 {
                                     // Get information about current term
                                     int termID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "termID"));

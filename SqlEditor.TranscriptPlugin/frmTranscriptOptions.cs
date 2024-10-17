@@ -308,7 +308,7 @@ namespace SqlEditor.TranscriptPlugin
 
         private void btnPrintTranscript_Click(object sender, EventArgs e)
         {
-            PrintToWord.printTranscript(PrintJob.printTranscript, ref sbErrors);
+            PrintToWord.printTranscript(PrintJob.printTranscript, chkIncludeAudits.Checked, ref sbErrors);
             if (sbErrors.Length > 0)
             {
                 MessageBox.Show(sbErrors.ToString(), "Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -316,7 +316,7 @@ namespace SqlEditor.TranscriptPlugin
         }
         private void btnPrintEnglishTranscript_Click(object sender, EventArgs e)
         {
-            PrintToWord.printTranscript(PrintJob.printEnglishTranscript, ref sbErrors);
+            PrintToWord.printTranscript(PrintJob.printEnglishTranscript, chkIncludeAudits.Checked, ref sbErrors);
             if (sbErrors.Length > 0)
             {
                 MessageBox.Show(sbErrors.ToString(), "Errors", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -490,7 +490,7 @@ namespace SqlEditor.TranscriptPlugin
             btnPrintTranscript.Text = Properties.PluginResources.btnPrintTranscript_Text;
             btnPrintCourseGrades.Text = Properties.PluginResources.btnPrintCourseGrades_Text;
             btnPrintEnglishTranscript.Text = Properties.PluginResources.btnEnglishPrintTranscript_Text;
-
+            chkIncludeAudits.Text = Properties.PluginResources.chkIncludeAudits_Text;
             lblLanguage.Text = Properties.PluginResources.lblLanguage_Text;
             lblOptions.Text = Properties.PluginResources.lblOptions_Text;
             lblRestartMsg.Text = Properties.PluginResources.lblRestartMsg_Text;
