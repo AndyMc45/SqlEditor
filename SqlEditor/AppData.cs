@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualBasic;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SqlEditor
 {
@@ -115,15 +117,49 @@ namespace SqlEditor
             return false;
         }
 
+        public static void SavePasswordKeyValue(int i, string pwValue)
+        {
+            string encrypted = EncryptionHelper.EncryptString(pwValue);
+            Interaction.SaveSetting(appName, "Password", i.ToString(), encrypted);
+        }
+        public static string GetPasswordKeyValue(int i)
+        {
+            String pwValue = String.Empty;
+            String pwEncrypted = Interaction.GetSetting(appName, "Password", i.ToString(),"_end");
+            if (!String.IsNullOrEmpty(pwEncrypted) && pwEncrypted != "_end") {
+                try
+                {
+                    pwValue = EncryptionHelper.DecryptString(pwEncrypted);
+                }
+                catch { }
+            }
+            return pwValue; 
+        }
+
+        public static void StorePasswordKeyValues(List<string> pwValues)  //Be Careful: lists are passed by ref
+        {
+            // CLear old values
+            string[,] oldSettings = Interaction.GetAllSettings(appName, "Password");
+            if(oldSettings!= null) 
+            { 
+                Interaction.DeleteSetting(appName, "Password");
+            }
+            // Store new values - skip first value which is the empty string.  Limit to last 10
+            for (int i = 1; i < 10 && i < pwValues.Count; i++)
+            {
+                SavePasswordKeyValue(i, pwValues[i]);
+            }
+        }
+
         public static void SaveKeyValue(string key, string keyValue)
         {
             Interaction.SaveSetting(appName, "SingleValue", key, keyValue);
         }
 
+
         public static string GetKeyValue(string key)
         {
             // string dir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
             return Interaction.GetSetting(appName, "SingleValue", key, string.Empty);
         }
 
@@ -140,6 +176,7 @@ namespace SqlEditor
             }
             return strList;
         }
+
 
     }
 }

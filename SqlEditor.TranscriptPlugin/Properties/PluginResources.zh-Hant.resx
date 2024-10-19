@@ -132,9 +132,6 @@
   <data name="btnPrintTranscript.Text" xml:space="preserve">
     <value>成績單列印</value>
   </data>
-  <data name="btnPrintTranscript.Text1" xml:space="preserve">
-    <value>成績單列印</value>
-  </data>
   <data name="course" xml:space="preserve">
     <value>課程</value>
   </data>
@@ -199,7 +196,7 @@
     <value>在 {0} 表（{1} 表的後代）中選擇 學生</value>
   </data>
   <data name="StDeTableUpdatedAndCount" xml:space="preserve">
-    <value>已經跟新學生學位表，跟新： {1} 學生。.</value>
+    <value>已經跟新學生學位表{0}，跟新： {1} 學生。.</value>
   </data>
   <data name="tabActions.Text" xml:space="preserve">
     <value>列印</value>
@@ -233,5 +230,8 @@
   </data>
   <data name="updateSuccess" xml:space="preserve">
     <value>跟新一半成功</value>
+  </data>
+  <data name="btnPrintTranscript.Text1" xml:space="preserve">
+    <value>成績單列印</value>
   </data>
 </root>
