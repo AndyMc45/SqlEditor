@@ -43,7 +43,6 @@
             GridContextMenu_TimesUsedAsFK = new ToolStripMenuItem();
             GridContextMenu_UnusedAsFK = new ToolStripMenuItem();
             toolSripSeparator2 = new ToolStripSeparator();
-            GridContextMenu_RestoreFilters = new ToolStripMenuItem();
             GridContextMenu_ClearFilters = new ToolStripMenuItem();
             lblManualFilter = new Label();
             lblMainFilter = new Label();
@@ -103,8 +102,9 @@
             mnuClose = new ToolStripMenuItem();
             mnuOpenTables = new ToolStripMenuItem();
             mnuTools = new ToolStripMenuItem();
-            mnuPrintCurrentTable = new ToolStripMenuItem();
             mnuBatchInsert = new ToolStripMenuItem();
+            mnuBatchEdit = new ToolStripMenuItem();
+            mnuPrintCurrentTable = new ToolStripMenuItem();
             mnuIT_Tools = new ToolStripMenuItem();
             mnuDatabaseInfo = new ToolStripMenuItem();
             mnuToolsBackupDatabase = new ToolStripMenuItem();
@@ -208,7 +208,7 @@
             // GridContextMenu
             // 
             GridContextMenu.ImageScalingSize = new Size(20, 20);
-            GridContextMenu.Items.AddRange(new ToolStripItem[] { GridContextMenu_SetAsMainFilter, GridContextMenu_SetFKasMainFIlter, toolStripSeparator1, GridContextMenu_OrderCombolByPK, GridContextMenu_TimesUsedAsFK, GridContextMenu_UnusedAsFK, toolSripSeparator2, GridContextMenu_RestoreFilters, GridContextMenu_ClearFilters });
+            GridContextMenu.Items.AddRange(new ToolStripItem[] { GridContextMenu_SetAsMainFilter, GridContextMenu_SetFKasMainFIlter, toolStripSeparator1, GridContextMenu_OrderCombolByPK, GridContextMenu_TimesUsedAsFK, GridContextMenu_UnusedAsFK, toolSripSeparator2, GridContextMenu_ClearFilters });
             GridContextMenu.Name = "contextMenuStrip1";
             resources.ApplyResources(GridContextMenu, "GridContextMenu");
             GridContextMenu.Opening += GridContextMenu_Opening_1;
@@ -254,12 +254,6 @@
             // 
             toolSripSeparator2.Name = "toolSripSeparator2";
             resources.ApplyResources(toolSripSeparator2, "toolSripSeparator2");
-            // 
-            // GridContextMenu_RestoreFilters
-            // 
-            GridContextMenu_RestoreFilters.Name = "GridContextMenu_RestoreFilters";
-            resources.ApplyResources(GridContextMenu_RestoreFilters, "GridContextMenu_RestoreFilters");
-            GridContextMenu_RestoreFilters.Click += GridContextMenu_RestoreFilters_Click;
             // 
             // GridContextMenu_ClearFilters
             // 
@@ -838,21 +832,26 @@
             // 
             // mnuTools
             // 
-            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuPrintCurrentTable, mnuBatchInsert });
+            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuBatchInsert, mnuBatchEdit, mnuPrintCurrentTable });
             mnuTools.Name = "mnuTools";
             resources.ApplyResources(mnuTools, "mnuTools");
-            // 
-            // mnuPrintCurrentTable
-            // 
-            mnuPrintCurrentTable.Name = "mnuPrintCurrentTable";
-            resources.ApplyResources(mnuPrintCurrentTable, "mnuPrintCurrentTable");
-            mnuPrintCurrentTable.Click += mnuPrintCurrentTable_Click;
             // 
             // mnuBatchInsert
             // 
             mnuBatchInsert.Name = "mnuBatchInsert";
             resources.ApplyResources(mnuBatchInsert, "mnuBatchInsert");
             mnuBatchInsert.Click += mnuBatchInsert_Click;
+            // 
+            // mnuBatchEdit
+            // 
+            mnuBatchEdit.Name = "mnuBatchEdit";
+            resources.ApplyResources(mnuBatchEdit, "mnuBatchEdit");
+            // 
+            // mnuPrintCurrentTable
+            // 
+            mnuPrintCurrentTable.Name = "mnuPrintCurrentTable";
+            resources.ApplyResources(mnuPrintCurrentTable, "mnuPrintCurrentTable");
+            mnuPrintCurrentTable.Click += mnuPrintCurrentTable_Click;
             // 
             // mnuIT_Tools
             // 
@@ -1102,7 +1101,6 @@
         private ToolStripMenuItem GridContextMenu_TimesUsedAsFK;
         private ToolStripButton toolStripButtonColumnWidth;
         private ToolStripSeparator toolSripSeparator2;
-        private ToolStripMenuItem GridContextMenu_RestoreFilters;
         private ToolStripMenuItem GridContextMenu_ClearFilters;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem GridContextMenu_OrderCombolByPK;
@@ -1126,6 +1124,7 @@
         private Button btnExtra;
         private ToolStripMenuItem GridContextMenu_UnusedAsFK;
         private ToolStripMenuItem mnuBatchInsert;
+        private ToolStripMenuItem mnuBatchEdit;
         //private Button button2;
     }
 }

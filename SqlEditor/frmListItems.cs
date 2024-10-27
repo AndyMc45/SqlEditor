@@ -37,9 +37,10 @@ namespace SqlEditor
             {
                 System.Drawing.Font font = listBox1.Font;
                 int vertScrollBarWidth = 15;
-                List<string> itemsList = new List<string>();
+                List<string> itemsList = new List<string>(); // Only used to find widest text
                 foreach (string str in listBox1.Items) { itemsList.Add(str); };
-                itemsList.Add(this.Text);
+                itemsList.Add(this.Text); // Makes box as wide as the text, but doesn't include close button
+                lblText.Text = this.Text; // Use because the caption may be too small
                 foreach (string s in itemsList)
                 {
                     int newWidth = (int)g.MeasureString(s, font).Width + vertScrollBarWidth;
@@ -50,7 +51,7 @@ namespace SqlEditor
                 }
             }
             listBox1.Width = width;
-            this.Width = width + 100;
+            this.Width = width + listBox1.Left + listBox1.Left + 15;
             // listing strings to select - maybe databases or tables or anything
             this.StartPosition = FormStartPosition.Manual;
             //Method 2. The manual way

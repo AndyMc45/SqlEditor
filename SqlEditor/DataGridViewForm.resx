@@ -178,12 +178,6 @@
   <data name="toolSripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>301, 6</value>
   </data>
-  <data name="GridContextMenu_RestoreFilters.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_RestoreFilters.Text" xml:space="preserve">
-    <value>Restore last filter</value>
-  </data>
   <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
     <value>304, 30</value>
   </data>
@@ -191,7 +185,7 @@
     <value>Clear all filters</value>
   </data>
   <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>305, 226</value>
+    <value>305, 196</value>
   </data>
   <data name="&gt;&gt;GridContextMenu.Name" xml:space="preserve">
     <value>GridContextMenu</value>
@@ -1744,17 +1738,23 @@
   <data name="mnuOpenTables.Text" xml:space="preserve">
     <value>Tables</value>
   </data>
-  <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
-  </data>
-  <data name="mnuPrintCurrentTable.Text" xml:space="preserve">
-    <value>Save Grid to Excel</value>
-  </data>
   <data name="mnuBatchInsert.Size" type="System.Drawing.Size, System.Drawing">
     <value>238, 30</value>
   </data>
   <data name="mnuBatchInsert.Text" xml:space="preserve">
     <value>Batch Insert</value>
+  </data>
+  <data name="mnuBatchEdit.Size" type="System.Drawing.Size, System.Drawing">
+    <value>238, 30</value>
+  </data>
+  <data name="mnuBatchEdit.Text" xml:space="preserve">
+    <value>Batch Edit</value>
+  </data>
+  <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
+    <value>238, 30</value>
+  </data>
+  <data name="mnuPrintCurrentTable.Text" xml:space="preserve">
+    <value>Save Grid to Excel</value>
   </data>
   <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 29</value>
@@ -2035,12 +2035,6 @@
   <data name="&gt;&gt;toolSripSeparator2.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;GridContextMenu_RestoreFilters.Name" xml:space="preserve">
-    <value>GridContextMenu_RestoreFilters</value>
-  </data>
-  <data name="&gt;&gt;GridContextMenu_RestoreFilters.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;GridContextMenu_ClearFilters.Name" xml:space="preserve">
     <value>GridContextMenu_ClearFilters</value>
   </data>
@@ -2101,16 +2095,22 @@
   <data name="&gt;&gt;mnuTools.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;mnuPrintCurrentTable.Name" xml:space="preserve">
-    <value>mnuPrintCurrentTable</value>
-  </data>
-  <data name="&gt;&gt;mnuPrintCurrentTable.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="&gt;&gt;mnuBatchInsert.Name" xml:space="preserve">
     <value>mnuBatchInsert</value>
   </data>
   <data name="&gt;&gt;mnuBatchInsert.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mnuBatchEdit.Name" xml:space="preserve">
+    <value>mnuBatchEdit</value>
+  </data>
+  <data name="&gt;&gt;mnuBatchEdit.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mnuPrintCurrentTable.Name" xml:space="preserve">
+    <value>mnuPrintCurrentTable</value>
+  </data>
+  <data name="&gt;&gt;mnuPrintCurrentTable.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;mnuIT_Tools.Name" xml:space="preserve">

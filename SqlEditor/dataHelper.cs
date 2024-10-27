@@ -616,7 +616,7 @@ namespace SqlEditor
         public DbType dbType { get; set; }
         public int size { get; set; }
         public fieldType fType { get; set; }
-        public field ValueMember { get { return this; } }  //Field itself - ValueMember used when binding Combos to fields
+        public field ValueMember { get { return this; } }  //Field itself-despite '0', used when binding Combos to fields.(?) 
         public string ColumnName { get; set; }  // Name Microsoft puts at the top of the column
         public List<field> FKancestors { get { return fkAncestors; } set { fkAncestors = value; } }
         private List<field> fkAncestors = new List<field>();

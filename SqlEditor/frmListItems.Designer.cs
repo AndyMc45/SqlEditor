@@ -27,6 +27,7 @@ namespace SqlEditor
             ToolTipMain = new ToolTip(components);
             cmdOK = new Button();
             listBox1 = new ListBox();
+            lblText = new Label();
             SuspendLayout();
             // 
             // cmdOK
@@ -34,9 +35,9 @@ namespace SqlEditor
             cmdOK.AllowDrop = true;
             cmdOK.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             cmdOK.BackColor = SystemColors.Control;
-            cmdOK.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            cmdOK.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmdOK.ForeColor = SystemColors.ControlText;
-            cmdOK.Location = new Point(224, 217);
+            cmdOK.Location = new Point(280, 299);
             cmdOK.Name = "cmdOK";
             cmdOK.RightToLeft = RightToLeft.No;
             cmdOK.Size = new Size(89, 40);
@@ -50,25 +51,35 @@ namespace SqlEditor
             // 
             listBox1.AllowDrop = true;
             listBox1.BackColor = SystemColors.Window;
-            listBox1.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            listBox1.Font = new Font("Microsoft Sans Serif", 8.25F);
             listBox1.ForeColor = SystemColors.WindowText;
-            listBox1.ItemHeight = 20;
-            listBox1.Location = new Point(24, 24);
+            listBox1.ItemHeight = 17;
+            listBox1.Location = new Point(24, 43);
             listBox1.Name = "listBox1";
             listBox1.RightToLeft = RightToLeft.No;
-            listBox1.Size = new Size(345, 144);
+            listBox1.Size = new Size(345, 140);
             listBox1.TabIndex = 0;
+            // 
+            // lblText
+            // 
+            lblText.AutoSize = true;
+            lblText.Location = new Point(21, 13);
+            lblText.Name = "lblText";
+            lblText.Size = new Size(161, 17);
+            lblText.TabIndex = 2;
+            lblText.Text = "Replaced by the caption";
             // 
             // frmListItems
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(10F, 20F);
+            AutoScaleDimensions = new SizeF(8F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
-            ClientSize = new Size(397, 268);
+            ClientSize = new Size(397, 351);
+            Controls.Add(lblText);
             Controls.Add(cmdOK);
             Controls.Add(listBox1);
-            Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            Font = new Font("Microsoft Sans Serif", 8.25F);
             Location = new Point(3, 22);
             Name = "frmListItems";
             RightToLeft = RightToLeft.No;
@@ -76,7 +87,10 @@ namespace SqlEditor
             Text = "Caption";
             Load += frmListItems_Load;
             ResumeLayout(false);
+            PerformLayout();
         }
         #endregion
+
+        private Label lblText;
     }
 }
