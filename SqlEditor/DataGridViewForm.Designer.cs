@@ -325,7 +325,6 @@
             cmbGridFilterValue_3.Name = "cmbGridFilterValue_3";
             cmbGridFilterValue_3.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_3.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_3.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_3.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterFields_4
@@ -349,7 +348,6 @@
             cmbGridFilterValue_4.Name = "cmbGridFilterValue_4";
             cmbGridFilterValue_4.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_4.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_4.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_4.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterFields_5
@@ -373,7 +371,6 @@
             cmbGridFilterValue_1.Name = "cmbGridFilterValue_1";
             cmbGridFilterValue_1.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_1.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_1.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_1.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterValue_5
@@ -384,7 +381,6 @@
             cmbGridFilterValue_5.Name = "cmbGridFilterValue_5";
             cmbGridFilterValue_5.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_5.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_5.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_5.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterValue_2
@@ -395,7 +391,6 @@
             cmbGridFilterValue_2.Name = "cmbGridFilterValue_2";
             cmbGridFilterValue_2.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_2.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_2.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_2.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterFields_2
@@ -419,7 +414,6 @@
             cmbGridFilterValue_0.Name = "cmbGridFilterValue_0";
             cmbGridFilterValue_0.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_0.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_0.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_0.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterFields_3
@@ -511,7 +505,6 @@
             cmbGridFilterValue_6.Name = "cmbGridFilterValue_6";
             cmbGridFilterValue_6.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_6.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_6.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_6.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterFields_6
@@ -534,7 +527,6 @@
             cmbGridFilterValue_7.Name = "cmbGridFilterValue_7";
             cmbGridFilterValue_7.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_7.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_7.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_7.Enter += cmbGridFilterValue_Enter;
             // 
             // cmbGridFilterFields_8
@@ -557,7 +549,6 @@
             cmbGridFilterValue_8.Name = "cmbGridFilterValue_8";
             cmbGridFilterValue_8.DropDown += AdjustWidthComboBox_DropDown;
             cmbGridFilterValue_8.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
-            cmbGridFilterValue_8.TextChanged += cmbGridFilterValue_TextChanged;
             cmbGridFilterValue_8.Enter += cmbGridFilterValue_Enter;
             // 
             // lblCmbFilterField_3
@@ -573,6 +564,7 @@
             cmbComboFilterValue_3.FormattingEnabled = true;
             cmbComboFilterValue_3.Name = "cmbComboFilterValue_3";
             cmbComboFilterValue_3.DropDown += AdjustWidthComboBox_DropDown;
+            cmbComboFilterValue_3.SelectedIndexChanged += cmbComboFilterValue_SelectedIndexChanged;
             cmbComboFilterValue_3.TextChanged += cmbComboFilterValue_TextChanged;
             cmbComboFilterValue_3.Enter += cmbComboFilterValue_Enter;
             cmbComboFilterValue_3.Leave += cmbComboFilterValue_Leave;
@@ -591,6 +583,7 @@
             cmbComboFilterValue_4.FormattingEnabled = true;
             cmbComboFilterValue_4.Name = "cmbComboFilterValue_4";
             cmbComboFilterValue_4.DropDown += AdjustWidthComboBox_DropDown;
+            cmbComboFilterValue_4.SelectedIndexChanged += cmbComboFilterValue_SelectedIndexChanged;
             cmbComboFilterValue_4.TextChanged += cmbComboFilterValue_TextChanged;
             cmbComboFilterValue_4.Enter += cmbComboFilterValue_Enter;
             cmbComboFilterValue_4.Leave += cmbComboFilterValue_Leave;
@@ -609,7 +602,7 @@
             cmbComboFilterValue_5.FormattingEnabled = true;
             cmbComboFilterValue_5.Name = "cmbComboFilterValue_5";
             cmbComboFilterValue_5.DropDown += AdjustWidthComboBox_DropDown;
-            cmbComboFilterValue_5.SelectedIndexChanged += cmbGridFilterValue_SelectedIndexChanged;
+            cmbComboFilterValue_5.SelectedIndexChanged += cmbComboFilterValue_SelectedIndexChanged;
             cmbComboFilterValue_5.TextChanged += cmbComboFilterValue_TextChanged;
             cmbComboFilterValue_5.Enter += cmbComboFilterValue_Enter;
             cmbComboFilterValue_5.Leave += cmbComboFilterValue_Leave;
@@ -628,6 +621,7 @@
             cmbComboFilterValue_0.FormattingEnabled = true;
             cmbComboFilterValue_0.Name = "cmbComboFilterValue_0";
             cmbComboFilterValue_0.DropDown += AdjustWidthComboBox_DropDown;
+            cmbComboFilterValue_0.SelectedIndexChanged += cmbComboFilterValue_SelectedIndexChanged;
             cmbComboFilterValue_0.TextChanged += cmbComboFilterValue_TextChanged;
             cmbComboFilterValue_0.Enter += cmbComboFilterValue_Enter;
             cmbComboFilterValue_0.Leave += cmbComboFilterValue_Leave;
@@ -646,6 +640,7 @@
             cmbComboFilterValue_1.FormattingEnabled = true;
             cmbComboFilterValue_1.Name = "cmbComboFilterValue_1";
             cmbComboFilterValue_1.DropDown += AdjustWidthComboBox_DropDown;
+            cmbComboFilterValue_1.SelectedIndexChanged += cmbComboFilterValue_SelectedIndexChanged;
             cmbComboFilterValue_1.TextChanged += cmbComboFilterValue_TextChanged;
             cmbComboFilterValue_1.Enter += cmbComboFilterValue_Enter;
             cmbComboFilterValue_1.Leave += cmbComboFilterValue_Leave;
@@ -664,6 +659,7 @@
             cmbComboFilterValue_2.FormattingEnabled = true;
             cmbComboFilterValue_2.Name = "cmbComboFilterValue_2";
             cmbComboFilterValue_2.DropDown += AdjustWidthComboBox_DropDown;
+            cmbComboFilterValue_2.SelectedIndexChanged += cmbComboFilterValue_SelectedIndexChanged;
             cmbComboFilterValue_2.TextChanged += cmbComboFilterValue_TextChanged;
             cmbComboFilterValue_2.Enter += cmbComboFilterValue_Enter;
             cmbComboFilterValue_2.Leave += cmbComboFilterValue_Leave;

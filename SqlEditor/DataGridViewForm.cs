@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using SqlEditor.Properties;
 
@@ -67,7 +66,7 @@ namespace SqlEditor
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Entire Form constructor, events, and Log file
 
@@ -327,7 +326,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Opening and closing Connection 
         private string OpenConnection()
@@ -428,7 +427,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Write to Gird
 
@@ -617,7 +616,8 @@ namespace SqlEditor
 
         public void writeGrid_NewPage()
         {
-            Stopwatch watch = new Stopwatch(); if (formOptions.runTimer) { watch.Start(); } msgTimer("New Page. ");
+            Stopwatch watch = new Stopwatch(); if (formOptions.runTimer) { watch.Start(); }
+            msgTimer("New Page. ");
 
             // 1. Get the Sql command for grid
             //    CENTRAL and Only USE OF sqlCurrent.returnSql IN PROGRAM
@@ -919,7 +919,7 @@ namespace SqlEditor
             }
             currentSql.strManualWhereClause = txtManualFilter.Text;
         }
-    
+
         internal void SetToStoredColumnWidths()
         {
             // dataGridView1.RowHeadersWidth = 27; //default
@@ -938,12 +938,12 @@ namespace SqlEditor
             }
 
         }
-        
+
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
-        #region Setting up Filters, Colors, TablePanel
+        #region Form setup - Filters, Colors, TablePanel
         private void SetTableLayoutPanelHeight()
         {
             // tableLayoutPanel.RowStyles[4] = new RowStyle(SizeType.Absolute, 19);
@@ -1276,6 +1276,7 @@ namespace SqlEditor
                 }
             }
         }
+
         private void ClearAllComboFilters(bool loadingNewTable, bool changingComboFilterTable)
         {
             // When calling this, set tableOptions.doNotRebindGridFV = true;
@@ -1308,7 +1309,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region EVENTS - Main Menu events
 
@@ -1573,7 +1574,7 @@ namespace SqlEditor
                 Application.Restart();
             }
         }
- 
+
         internal void Load_mnuDatabaseList()
         {
             //Get list from App.Data
@@ -1629,7 +1630,7 @@ namespace SqlEditor
                 }
             }
         }
- 
+
         private string SelectFolder(string defaultFolder, bool allowNewFolder)
         {
             folderBrowserDialog1 = new FolderBrowserDialog();
@@ -1646,7 +1647,7 @@ namespace SqlEditor
         }
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region EVENTS - Context Menu events
         private void GridContextMenu_OrderComboByPK_Click(object sender, EventArgs e)
@@ -1883,8 +1884,8 @@ namespace SqlEditor
         }
 
         #endregion
-        
-//----------------------------------------------------------------------------------------------------------------------
+
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region EVENTS - Update and restore filters
         private bool UpdateLastFilter()
@@ -2070,7 +2071,7 @@ namespace SqlEditor
                                         break;
                                     }
                                 }
-                            }            
+                            }
                             // Select value may be text or a primary key of the table in the dropdownlist
                             if (fld != null && cGFVi != string.Empty)
                             {
@@ -2180,7 +2181,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Events - DatagridView Events
 
@@ -2454,9 +2455,9 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
-        #region Events - Filter events & related functions
+        #region Events - Filter cmb events & related functions
 
         // (A) Basic ideas
         //      1. Manually changing GridFFcombo will set up GridFVcombo, select the empty-string and rewrite the grid.
@@ -2548,12 +2549,12 @@ namespace SqlEditor
                 {
                     for (int i = 0; i < cmbGridFilterFields.Count(); i++)
                     {
-                        // Rebind corresponding GFV. This will write grid if writingTable and doNotRebindGFV are both false 
+                        // Rebind corresponding GFV.
+                        // This will write grid if not writingTable 
                         if (cmbGridFilterFields[i] == cmb)
                         {
-                            tableOptions.doNotWriteGrid = true;
+                            // Will rewrite the grid IF filter changed  
                             RebindOneGridFilterValueCombo(i, false);
-                            tableOptions.doNotWriteGrid = false;
 
                             // Then Change color (first combo only) - either pink or yellow
                             if (i == 0)
@@ -2579,11 +2580,11 @@ namespace SqlEditor
         private void cmbGridFilterValue_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox cmb = (ComboBox)sender;
-            if (cmb.DropDownStyle == ComboBoxStyle.DropDownList)
+            if (cmb.SelectedIndex > -1)  // If data source null
             {
-                if (cmb.SelectedIndex > -1)  // If data source null
+                if (!tableOptions.writingTable && !tableOptions.doNotWriteGrid)
                 {
-                    if (!(tableOptions.writingTable || tableOptions.doNotWriteGrid))
+                    if (UpdateLastFilter())
                     {
                         writeGrid_NewFilter(true);
                     }
@@ -2591,18 +2592,18 @@ namespace SqlEditor
             }
         }
 
-        private void cmbGridFilterValue_TextChanged(object sender, EventArgs e)
+        private void cmbComboFilterValue_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ComboBox cmb = (ComboBox)sender;
-            if (cmb.DropDownStyle == ComboBoxStyle.DropDown)
+            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
+            if (tableOptions != null)
             {
-                if (!(tableOptions.writingTable || tableOptions.doNotWriteGrid))
+                if (UpdateLastFilter())
                 {
-                    // writeGrid_NewFilter();  // Using Reload button
+                    RebindAllGridFilterValueCombos();
+                    tableOptions.currentComboFilterValue_isDirty = false;
+                    writeGrid_NewFilter(true);
                 }
             }
-
-
         }
 
         private void cmbGridFilterValue_Enter(object sender, EventArgs e)
@@ -2801,57 +2802,41 @@ namespace SqlEditor
             }
         }
 
-        // Manual set "is dirty"=true-->Update GridFV on leave cell.
-        // Programatic: sets "is dirty", but does nothing because no leave event
+        // My comboFilter "is dirty" no longer in us, because "leave cell" hard to grasp
         private void cmbComboFilterValue_TextChanged(object sender, EventArgs e)
         {
-            // When leaving cell, the drop down content of empty grid filter values will be updated
+            // No longer in use
             tableOptions.currentComboFilterValue_isDirty = true;
-
-            // Note: set ccfv_isDirty to false on entering cell and true when text changed
-            // If this event (TextChanged) called programmatically, user never leaves cell; so ccfv_isDirty=true does nothing
         }
-
         private void cmbComboFilterValue_Enter(object sender, EventArgs e)
         {
             // Text_change will make this true, and then leave event will update GRID filter value dropdowns
             tableOptions.currentComboFilterValue_isDirty = false;
         }
-
         private void cmbComboFilterValue_Leave(object sender, EventArgs e)
         {
-            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            if (tableOptions != null)
-            {
-                if (tableOptions.currentComboFilterValue_isDirty)
-                {
-                    tableOptions.doNotWriteGrid = true;
-                    RebindAllGridFilterValueCombos();
-                    tableOptions.doNotWriteGrid = false;
-                    tableOptions.currentComboFilterValue_isDirty = false;
-                }
-            }
+            // Moved his to index change
         }
 
         private void BindAllComboFilterValueCombos()
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            for (int i = 0; i< cmbComboFilterValue.Length; i++)
+            for (int i = 0; i < cmbComboFilterValue.Length; i++)
             {
                 if (cmbComboFilterValue[i].Enabled)
                 {
                     RebindOneComboFilterValueCombo(i);
                 }
-            }        
+            }
         }
- 
+
         // Load the combo with all distinct values; Called by cmbComboTableList_SelectedIndexChanged
         // Will rebind all GridFV; If selectedIndex change is called programmatically use "doNotRebindGridFV = true".
         private void RebindOneComboFilterValueCombo(int i)
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
             ComboBox cmb = cmbComboFilterValue[i];
-                field fi = (field)cmb.Tag;  // Non-FK myTable
+            field fi = (field)cmb.Tag;  // Non-FK myTable
             List<string> strList = new List<string>();
             FillComboDT(fi, comboValueType.textField_refTable);
             strList = dataHelper.comboDT.AsEnumerable().Select(x => x["DisplayMember"].ToString()).ToList();
@@ -3004,9 +2989,9 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
-        #region Add-Delete-Merge Button
+        #region Buttons - Add / Delete / Merge 
         private void btnDeleteAddMerge_Click(object sender, EventArgs e)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -3385,9 +3370,9 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
-        #region 5 Radio buttons and other Buttons (Reload, Wide columns)
+        #region Buttons - View/Edit/Delete/Merge and Reload/Wide columns
 
         private void rbView_CheckedChanged(object sender, EventArgs e)
         {
@@ -3490,9 +3475,9 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
-        #region 5 paging buttons & RecordsPerPage (RPP)
+        #region Buttons - 5 paging & RecordsPerPage
         // Paging - <<
         private void txtRecordsPerPage_Leave(object sender, EventArgs e)
         {
@@ -3572,7 +3557,7 @@ namespace SqlEditor
         }
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Other functions and methods
 
@@ -3608,54 +3593,54 @@ namespace SqlEditor
 
         private void callSqlWheresForCombo(field PkField)  // PK used to get inner joins 
         {   // Adds all the filters - FK, DK, non-Key and
-            //ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
+            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
 
-            //// Clear any old filters from currentSql
-            //currentSql.myComboWheres.Clear();
+            // Clear any old filters from currentSql
+            currentSql.myComboWheres.Clear();
 
-            ////Main filter - add this where to the currentSql)
-            //if (cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
-            //{
-            //    where mfWhere = (where)cmbMainFilter.SelectedValue;
+            //Main filter - add this where to the currentSql)
+            if (cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
+            {
+                where mfWhere = (where)cmbMainFilter.SelectedValue;
 
-            //    if (Convert.ToInt32(mfWhere.whereValue) > 0)
-            //    {
-            //        if (currentSql.MainFilterTableIsInComboSql(mfWhere, PkField, out string tableAlias))
-            //        {
-            //            mfWhere.fl.tableAlias = tableAlias;
-            //            currentSql.myComboWheres.Add(mfWhere);
-            //        }
-            //    }
-            //}
-            //// cmbComboFilterFields  (6 fields)
-            //for (int i = 0; i < cmbComboFilterValue.Length; i++)
-            //{
-            //    if (cmbComboFilterValue[i].Enabled)  // True iff visible
-            //    {
-            //        if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
-            //        {
-            //            if (cmbComboFilterValue[i].Text != String.Empty) // ComboFV is a non-PK non-FK
-            //            {
-            //                field comboFF = (field)cmbComboFilterValue[i].Tag;
-            //                field PKcomboFF = dataHelper.getTablePrimaryKeyField(comboFF.table);
-            //                PKcomboFF.tableAlias = comboFF.tableAlias;
-            //                if (currentSql.TableIsInMyInnerJoins(PkField, comboFF.tableAlias))  // Should always be true
-            //                {
-            //                    where wh = new where(comboFF, cmbComboFilterValue[i].Text);
-            //                    if (dataHelper.TryParseToDbType(wh.whereValue, comboFF.dbType))
-            //                    {
-            //                        currentSql.myComboWheres.Add(wh);
-            //                    }
-            //                    else
-            //                    {
-            //                        string erroMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
-            //                        msgTextError(erroMsg);
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
+                if (Convert.ToInt32(mfWhere.whereValue) > 0)
+                {
+                    if (currentSql.MainFilterTableIsInComboSql(mfWhere, PkField, out string tableAlias))
+                    {
+                        mfWhere.fl.tableAlias = tableAlias;
+                        currentSql.myComboWheres.Add(mfWhere);
+                    }
+                }
+            }
+            // cmbComboFilterFields  (6 fields)
+            for (int i = 0; i < cmbComboFilterValue.Length; i++)
+            {
+                if (cmbComboFilterValue[i].Enabled)  // True iff visible
+                {
+                    if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
+                    {
+                        if (cmbComboFilterValue[i].Text != String.Empty) // ComboFV is a non-PK non-FK
+                        {
+                            field comboFF = (field)cmbComboFilterValue[i].Tag;
+                            field PKcomboFF = dataHelper.getTablePrimaryKeyField(comboFF.table);
+                            PKcomboFF.tableAlias = comboFF.tableAlias;
+                            if (currentSql.TableIsInMyInnerJoins(PkField, comboFF.tableAlias))  // Should always be true
+                            {
+                                where wh = new where(comboFF, cmbComboFilterValue[i].Text);
+                                if (dataHelper.TryParseToDbType(wh.whereValue, comboFF.dbType))
+                                {
+                                    currentSql.myComboWheres.Add(wh);
+                                }
+                                else
+                                {
+                                    string erroMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
+                                    msgTextError(erroMsg);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void FillComboDT(field fl, comboValueType cmbValueType)
@@ -3728,7 +3713,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Debugging functions
 
@@ -3792,7 +3777,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region IT menu events
 
@@ -4019,7 +4004,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         #region Events that are unused or do nothing (accidently entered here or storing)
         private void GridContextMenu_FindInChild_Click(object sender, EventArgs e)
@@ -4072,7 +4057,7 @@ namespace SqlEditor
 
         #endregion
 
-//----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
 
         private void mnuBatchInsert_Click(object sender, EventArgs e)
         {
@@ -4083,7 +4068,7 @@ namespace SqlEditor
 
             if (currentSql != null)
             {
-                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable),"Batch Insert",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
+                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (reply == DialogResult.Yes)
                 {
                     // Get list of filtered DisplayKeys from GridFilterFields and their values
