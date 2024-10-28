@@ -38,6 +38,7 @@ namespace SqlEditor
     public partial class DataGridViewForm : Form
     {
         #region Variables
+
         private FormOptions? formOptions;
         private ConnectionOptions? connectionOptions;
         private TableOptions? tableOptions;  // Many: writingTable, doNotWriteTable, tableHasForiegnKeys, FKFieldInEditingControl, etc. 
@@ -66,8 +67,7 @@ namespace SqlEditor
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Entire Form constructor, events, and Log file
 
@@ -327,8 +327,7 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Opening and closing Connection 
         private string OpenConnection()
@@ -429,8 +428,7 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Write to Gird
 
@@ -513,7 +511,7 @@ namespace SqlEditor
                 // Use "firstTimeWritingTable = true" to shut this off.
                 tableOptions.writingTable = true; // Shuts off the rebinding of cmbGridFilterValues
                 cmbComboTableList.DataSource = foreignKeyList;
-                GridContextMenu_RestoreFilters_ComboTableListFilter();
+                RestoreFilters_ComboTableListFilter();
                 tableOptions.writingTable = false;
             }
 
@@ -564,7 +562,7 @@ namespace SqlEditor
                 }
             }
             //6. Restore last grid filters
-            GridContextMenu_RestoreFilters_GridFilters();
+            RestoreFilters_GridFilters();
 
             //7. Set programMode to ProgramMode.view
             rbView.Checked = true;
@@ -776,129 +774,11 @@ namespace SqlEditor
                 // This will color the cmbComboFieldFields and Values.
                 // I have already added any lastFilter cmbComboFieldValues to the currentSql.myWheres
                 // This will put them in the combobox values
-                GridContextMenu_RestoreFilters_ComboFilters();
+                RestoreFilters_ComboFilters();
             }
             tableOptions.writingTable = false;
 
             if (formOptions.runTimer) { watch.Stop(); }; msgTimer(" NewPage6: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
-        }
-
-        private bool UpdateLastFilter()
-        {
-            bool filterRowChanged = false;
-            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
-            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            bool newLastFilter = true;
-            string whValue = string.Empty;  // Default
-
-            // 2.  Get last filder
-            //     Created lastFilterDR on table load, and so this should never be null.
-            DataRow lastFilterDR = dataHelper.getDataRowFromDataTable("Table", currentSql.myTable, dataHelper.lastFilterValuesDT);
-
-            //3. Main filter - add this where to the currentSql)
-            if (cmbMainFilter.Enabled && cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
-            {
-                where mfWhere = (where)cmbMainFilter.SelectedValue;
-                // Store the old Main Filter
-                if (dataHelper.getColumnValueinDR(lastFilterDR, "cMF") != mfWhere.whereValue)
-                {
-                    dataHelper.setColumnValueInDR(lastFilterDR, "cMF", mfWhere.whereValue);
-                    filterRowChanged = true;
-                }
-            }
-
-            // 4. cmbGridFilterFields - Currently 9.
-            for (int i = 0; i < cmbGridFilterFields.Length; i++)
-            {
-                if (cmbGridFilterFields[i].Enabled)
-                {
-                    //cmbGridFilterFields - something is selected (SelectedIndex > -1) and all values are fields 
-                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue;
-                    // For ComboStyle.DropDown the text is the value 
-                    if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown)
-                    {
-                        // User can add value -
-                        // Add second clause because selected value might be String.Empty (?)
-                        if (cmbGridFilterValue[i].Text != string.Empty || cmbGridFilterValue[i].SelectedIndex > 0)
-                        {
-                            whValue = cmbGridFilterValue[i].Text;
-                        }
-                        else
-                        {
-                            whValue = string.Empty;
-                        }
-                    }
-                    // ComboBoxStyle.DropDownList have integer values;
-                    else if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)  // Only other option
-                    {
-                        if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
-                        {
-                            whValue = cmbGridFilterValue[i].SelectedValue.ToString();
-                        }
-                        else
-                        {
-                            whValue = "0";
-                        }
-                    }
-                    if (dataHelper.getColumnValueinDR(lastFilterDR, "cGFF" + i.ToString()) != selectedField.fieldName
-                        || dataHelper.getColumnValueinDR(lastFilterDR, "cGFV" + i.ToString()) != whValue)
-                    {
-                        dataHelper.setColumnValueInDR(lastFilterDR, "cGFF" + i.ToString(), selectedField.fieldName);
-                        dataHelper.setColumnValueInDR(lastFilterDR, "cGFV" + i.ToString(), whValue);
-                        filterRowChanged = true;
-                    }
-                }
-            }
-
-            // 5. cmbComboFilterFields - Currently 6.  These are all string values; no FK
-            for (int i = 0; i < cmbComboFilterValue.Length; i++)
-            {
-                if (cmbComboFilterValue[i].Enabled)  // True off visible
-                {
-                    if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
-                    {
-                        // ComboFV is a non-PK non-FK.  The selected object is the text
-                        field comboFF = (field)cmbComboFilterValue[i].Tag;
-                        whValue = cmbComboFilterValue[i].Text;
-                        // Don't write a bad whValue
-                        if (dataHelper.TryParseToDbType(whValue, comboFF.dbType))
-                        {
-                            if (dataHelper.getColumnValueinDR(lastFilterDR, "lCFF" + i.ToString()) != comboFF.fieldName
-                                || dataHelper.getColumnValueinDR(lastFilterDR, "cCFV" + i.ToString()) != whValue)
-                            {
-                                dataHelper.setColumnValueInDR(lastFilterDR, "lCFF" + i.ToString(), comboFF.fieldName);
-                                dataHelper.setColumnValueInDR(lastFilterDR, "cCFV" + i.ToString(), whValue);
-                                filterRowChanged = true;
-                            }
-                        }
-                    }
-                }
-            }
-            // cmbComboTableList
-            if (cmbComboTableList.SelectedIndex > -1)
-            {
-                field fl = (field)cmbComboTableList.SelectedValue;
-                whValue = fl.fieldName;
-            }
-            else
-            {
-                whValue = String.Empty;
-            }
-            if (dataHelper.getColumnValueinDR(lastFilterDR, "cCTL") != whValue)
-            {
-                dataHelper.setColumnValueInDR(lastFilterDR, "cCTL", whValue);
-                filterRowChanged = true;
-            }
-            //Manual filter
-            whValue = txtManualFilter.Text;
-
-            if (dataHelper.getColumnValueinDR(lastFilterDR, "manualFilter") != whValue)
-            {
-                dataHelper.setColumnValueInDR(lastFilterDR, "manualFilter", whValue);
-                filterRowChanged = true;
-            }
-            return filterRowChanged;
         }
 
         private void SetSqlWheresFromFilters()
@@ -1061,8 +941,7 @@ namespace SqlEditor
         
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Setting up Filters, Colors, TablePanel
         private void SetTableLayoutPanelHeight()
@@ -1429,8 +1308,7 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region EVENTS - Main Menu events
 
@@ -1695,6 +1573,7 @@ namespace SqlEditor
                 Application.Restart();
             }
         }
+ 
         internal void Load_mnuDatabaseList()
         {
             //Get list from App.Data
@@ -1750,6 +1629,7 @@ namespace SqlEditor
                 }
             }
         }
+ 
         private string SelectFolder(string defaultFolder, bool allowNewFolder)
         {
             folderBrowserDialog1 = new FolderBrowserDialog();
@@ -1766,8 +1646,7 @@ namespace SqlEditor
         }
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region EVENTS - Context Menu events
         private void GridContextMenu_OrderComboByPK_Click(object sender, EventArgs e)
@@ -2003,7 +1882,130 @@ namespace SqlEditor
             }
         }
 
-        private void GridContextMenu_RestoreFilters_GridFilters()
+        #endregion
+        
+//----------------------------------------------------------------------------------------------------------------------
+
+        #region EVENTS - Update and restore filters
+        private bool UpdateLastFilter()
+        {
+            bool filterRowChanged = false;
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
+            bool newLastFilter = true;
+            string whValue = string.Empty;  // Default
+
+            // 2.  Get last filder
+            //     Created lastFilterDR on table load, and so this should never be null.
+            DataRow lastFilterDR = dataHelper.getDataRowFromDataTable("Table", currentSql.myTable, dataHelper.lastFilterValuesDT);
+
+            //3. Main filter - add this where to the currentSql)
+            if (cmbMainFilter.Enabled && cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
+            {
+                where mfWhere = (where)cmbMainFilter.SelectedValue;
+                // Store the old Main Filter
+                if (dataHelper.getColumnValueinDR(lastFilterDR, "cMF") != mfWhere.whereValue)
+                {
+                    dataHelper.setColumnValueInDR(lastFilterDR, "cMF", mfWhere.whereValue);
+                    filterRowChanged = true;
+                }
+            }
+
+            // 4. cmbGridFilterFields - Currently 9.
+            for (int i = 0; i < cmbGridFilterFields.Length; i++)
+            {
+                if (cmbGridFilterFields[i].Enabled)
+                {
+                    //cmbGridFilterFields - something is selected (SelectedIndex > -1) and all values are fields 
+                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue;
+                    // For ComboStyle.DropDown the text is the value 
+                    if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown)
+                    {
+                        // User can add value -
+                        // Add second clause because selected value might be String.Empty (?)
+                        if (cmbGridFilterValue[i].Text != string.Empty || cmbGridFilterValue[i].SelectedIndex > 0)
+                        {
+                            whValue = cmbGridFilterValue[i].Text;
+                        }
+                        else
+                        {
+                            whValue = string.Empty;
+                        }
+                    }
+                    // ComboBoxStyle.DropDownList have integer values;
+                    else if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)  // Only other option
+                    {
+                        if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                        {
+                            whValue = cmbGridFilterValue[i].SelectedValue.ToString();
+                        }
+                        else
+                        {
+                            whValue = "0";
+                        }
+                    }
+                    if (dataHelper.getColumnValueinDR(lastFilterDR, "cGFF" + i.ToString()) != selectedField.fieldName
+                        || dataHelper.getColumnValueinDR(lastFilterDR, "cGFV" + i.ToString()) != whValue)
+                    {
+                        dataHelper.setColumnValueInDR(lastFilterDR, "cGFF" + i.ToString(), selectedField.fieldName);
+                        dataHelper.setColumnValueInDR(lastFilterDR, "cGFV" + i.ToString(), whValue);
+                        filterRowChanged = true;
+                    }
+                }
+            }
+
+            // 5. cmbComboFilterFields - Currently 6.  These are all string values; no FK
+            for (int i = 0; i < cmbComboFilterValue.Length; i++)
+            {
+                if (cmbComboFilterValue[i].Enabled)  // True off visible
+                {
+                    if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
+                    {
+                        // ComboFV is a non-PK non-FK.  The selected object is the text
+                        field comboFF = (field)cmbComboFilterValue[i].Tag;
+                        whValue = cmbComboFilterValue[i].Text;
+                        // Don't write a bad whValue
+                        if (dataHelper.TryParseToDbType(whValue, comboFF.dbType))
+                        {
+                            if (dataHelper.getColumnValueinDR(lastFilterDR, "lCFF" + i.ToString()) != comboFF.fieldName
+                                || dataHelper.getColumnValueinDR(lastFilterDR, "cCFV" + i.ToString()) != whValue)
+                            {
+                                dataHelper.setColumnValueInDR(lastFilterDR, "lCFF" + i.ToString(), comboFF.fieldName);
+                                dataHelper.setColumnValueInDR(lastFilterDR, "cCFV" + i.ToString(), whValue);
+                                filterRowChanged = true;
+                            }
+                        }
+                    }
+                }
+            }
+            // cmbComboTableList
+            if (cmbComboTableList.SelectedIndex > -1)
+            {
+                field fl = (field)cmbComboTableList.SelectedValue;
+                whValue = fl.fieldName;
+            }
+            else
+            {
+                whValue = String.Empty;
+            }
+            if (dataHelper.getColumnValueinDR(lastFilterDR, "cCTL") != whValue)
+            {
+                dataHelper.setColumnValueInDR(lastFilterDR, "cCTL", whValue);
+                filterRowChanged = true;
+            }
+            //Manual filter
+            whValue = txtManualFilter.Text;
+
+            if (dataHelper.getColumnValueinDR(lastFilterDR, "manualFilter") != whValue)
+            {
+                dataHelper.setColumnValueInDR(lastFilterDR, "manualFilter", whValue);
+                filterRowChanged = true;
+            }
+            return filterRowChanged;
+        }
+
+        private void RestoreFilters_GridFilters()
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
@@ -2072,26 +2074,23 @@ namespace SqlEditor
                             // Select value may be text or a primary key of the table in the dropdownlist
                             if (fld != null && cGFVi != string.Empty)
                             {
-                                if (dataHelper.isDisplayKey(fld))  // May be text or FK
+                                // Text - note using the text not the PK of the text
+                                if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown)
                                 {
-                                    // Text - note using the text not the PK of the text
-                                    if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown)
+                                    cmbGridFilterValue[i].Text = cGFVi;
+                                }
+                                else // DropDownList DK - value is always an integer
+                                {
+                                    foreach (DataRowView vItem in cmbGridFilterValue[i].Items)
                                     {
-                                        cmbGridFilterValue[i].Text = cGFVi;
-                                    }
-                                    else // DropDownList DK - value is always an integer
-                                    {
-                                        foreach (DataRowView vItem in cmbGridFilterValue[i].Items)
+                                        if (vItem.Row.ItemArray[1] != null)  //? null for first blank item?
                                         {
-                                            if (vItem.Row.ItemArray[1] != null)  //? null for first blank item?
+                                            string value = vItem.Row.ItemArray[1].ToString();  // Should be integer
+                                            if (value == cGFVi)
                                             {
-                                                string value = vItem.Row.ItemArray[1].ToString();  // Should be integer
-                                                if (value == cGFVi)
-                                                {
-                                                    tableOptions.doNotWriteGrid = true;
-                                                    cmbGridFilterValue[i].SelectedItem = vItem;
-                                                    tableOptions.doNotWriteGrid = false;
-                                                }
+                                                tableOptions.doNotWriteGrid = true;
+                                                cmbGridFilterValue[i].SelectedItem = vItem;
+                                                tableOptions.doNotWriteGrid = false;
                                             }
                                         }
                                     }
@@ -2103,7 +2102,7 @@ namespace SqlEditor
             }
         }
 
-        private void GridContextMenu_RestoreFilters_ComboTableListFilter()
+        private void RestoreFilters_ComboTableListFilter()
         {
             if (tableOptions != null)  // Make sure there is a table selected
             {
@@ -2131,10 +2130,9 @@ namespace SqlEditor
             }
         }
 
-        private bool GridContextMenu_RestoreFilters_ComboFilters()
+        private void RestoreFilters_ComboFilters()
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            bool comboBoxUpdate = false;
             if (tableOptions != null)  // Make sure there is a table selected
             {
                 //Get last filter
@@ -2171,22 +2169,18 @@ namespace SqlEditor
                                 {
                                     // ComboFV is a non - PK non - FK - the selected value is the text
                                     cmbComboFilterValue[i].Text = cCFVi;
-                                    comboBoxUpdate = true;
                                     dataHelper.setColumnValueInDR(lastFilterDR, "cCFV" + i.ToString(), cCFVi);
-
                                 }
                             }
                         }
                     }
                 }
             }
-            return comboBoxUpdate;
         }
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Events - DatagridView Events
 
@@ -2460,10 +2454,9 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-        #region Events - Grid and combo filter events & related functions
+        #region Events - Filter events & related functions
 
         // (A) Basic ideas
         //      1. Manually changing GridFFcombo will set up GridFVcombo, select the empty-string and rewrite the grid.
@@ -2544,10 +2537,6 @@ namespace SqlEditor
             }
         }
 
-        //  Grid FILTERS COMBOS EVENTS-----------------------------------------------------------------------------------------
-        //                                      GRID FILTERS COMBOS EVENTS          
-        //----------------------------------------------------------------------------------------------------------------------
-
         public void cmbGridFilterFields_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -2587,7 +2576,6 @@ namespace SqlEditor
             }
         }
 
-        // Calls Write_NewFilter - unless no-write flag set to true or programMode is "add".
         private void cmbGridFilterValue_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox cmb = (ComboBox)sender;
@@ -2630,7 +2618,6 @@ namespace SqlEditor
                 }
             }
         }
-
 
         // Only rebind empty filters - no change in Grid because rebinding GridFV selects the same first value = string.empty
         private void RebindAllGridFilterValueCombos()
@@ -2739,8 +2726,6 @@ namespace SqlEditor
             }
         }
 
-        //  COMBO FILTERS COMBOS EVENTS-----------------------------------------------------------------------------------------
-
         // Unbind all CFV, set rebinding=true, set up and bind new CFV, rebind empty GFV and warn about others
         private void cmbComboTableList_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -2816,7 +2801,8 @@ namespace SqlEditor
             }
         }
 
-        // Manual set "is dirty"=true-->Update GridFV on leave cell. Programatic: sets "is dirty", but does nothing because no leave 
+        // Manual set "is dirty"=true-->Update GridFV on leave cell.
+        // Programatic: sets "is dirty", but does nothing because no leave event
         private void cmbComboFilterValue_TextChanged(object sender, EventArgs e)
         {
             // When leaving cell, the drop down content of empty grid filter values will be updated
@@ -2847,7 +2833,6 @@ namespace SqlEditor
             }
         }
 
-
         private void BindAllComboFilterValueCombos()
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
@@ -2859,6 +2844,7 @@ namespace SqlEditor
                 }
             }        
         }
+ 
         // Load the combo with all distinct values; Called by cmbComboTableList_SelectedIndexChanged
         // Will rebind all GridFV; If selectedIndex change is called programmatically use "doNotRebindGridFV = true".
         private void RebindOneComboFilterValueCombo(int i)
@@ -2947,10 +2933,78 @@ namespace SqlEditor
             }
         }
 
+        private void txtManualFilter_TextChanged(object sender, EventArgs e)
+        {
+            if (!txtManualFilter.Enabled) { return; }
+
+            string text = txtManualFilter.Text;
+            if (text.Length == 0) { return; }
+
+            // Show fields in 
+            if (text.Length > 3)
+            {
+                if (text.Substring(text.Length - 2, 2) == "].")
+                {
+                    foreach (string key in aliasTableDictionary.Keys)
+                    {
+                        if (text.Length > key.Length + 2)
+                        {
+                            if (text.Substring(text.Length - (key.Length + 3)) == String.Format("[{0}].", key))
+                            {
+                                txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
+                                txtManualFilter.AutoCompleteCustomSource = null;
+                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
+                                AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
+                                foreach (string fieldName in aliasTableDictionary[key])
+                                {
+                                    lstStrings.Add(text + "[" + fieldName + "]");
+
+                                }
+                                txtManualFilter.AutoCompleteCustomSource = lstStrings;
+                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                                return;
+                            }
+                        }
+                    }
+                    return;  // Found ]. but not with a table
+                }
+
+            }
+            else
+            {
+                bool showTables = false;
+                if (text == "[") { showTables = true; }
+                else if (text.Length > 3)
+                {
+                    if (text.Substring(text.Length - 1) == "[" && text.Substring(text.Length - 2) != ".[")
+                    { showTables = true; }
+                }
+                if (showTables)
+                {
+                    txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
+                    txtManualFilter.AutoCompleteCustomSource = null;
+                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
+                    AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
+                    foreach (string key in aliasTableDictionary.Keys)
+                    {
+                        lstStrings.Add(text + key + "].");
+                    }
+                    txtManualFilter.AutoCompleteCustomSource = lstStrings;
+                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                }
+            }
+        }
+
+        public void setTxtManualFilterText(string text)
+        {
+            // Show filter
+            if (!mnuShowITTools.Checked) { mnuShowITTools.Checked = true; }
+            txtManualFilter.Text = text;
+        }
+
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Add-Delete-Merge Button
         private void btnDeleteAddMerge_Click(object sender, EventArgs e)
@@ -3331,8 +3385,7 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region 5 Radio buttons and other Buttons (Reload, Wide columns)
 
@@ -3437,8 +3490,7 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region 5 paging buttons & RecordsPerPage (RPP)
         // Paging - <<
@@ -3520,8 +3572,7 @@ namespace SqlEditor
         }
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Other functions and methods
 
@@ -3677,8 +3728,7 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Debugging functions
 
@@ -3742,78 +3792,9 @@ namespace SqlEditor
 
         #endregion
 
-        //----------------------------------------------------------------------------------------------------------------------
-        //----------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------
 
-
-        private void txtManualFilter_TextChanged(object sender, EventArgs e)
-        {
-            if (!txtManualFilter.Enabled) { return; }
-
-            string text = txtManualFilter.Text;
-            if (text.Length == 0) { return; }
-
-            // Show fields in 
-            if (text.Length > 3)
-            {
-                if (text.Substring(text.Length - 2, 2) == "].")
-                {
-                    foreach (string key in aliasTableDictionary.Keys)
-                    {
-                        if (text.Length > key.Length + 2)
-                        {
-                            if (text.Substring(text.Length - (key.Length + 3)) == String.Format("[{0}].", key))
-                            {
-                                txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
-                                txtManualFilter.AutoCompleteCustomSource = null;
-                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
-                                AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
-                                foreach (string fieldName in aliasTableDictionary[key])
-                                {
-                                    lstStrings.Add(text + "[" + fieldName + "]");
-
-                                }
-                                txtManualFilter.AutoCompleteCustomSource = lstStrings;
-                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                                return;
-                            }
-                        }
-                    }
-                    return;  // Found ]. but not with a table
-                }
-
-            }
-            else
-            {
-                bool showTables = false;
-                if (text == "[") { showTables = true; }
-                else if (text.Length > 3)
-                {
-                    if (text.Substring(text.Length - 1) == "[" && text.Substring(text.Length - 2) != ".[")
-                    { showTables = true; }
-                }
-                if (showTables)
-                {
-                    txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
-                    txtManualFilter.AutoCompleteCustomSource = null;
-                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
-                    AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
-                    foreach (string key in aliasTableDictionary.Keys)
-                    {
-                        lstStrings.Add(text + key + "].");
-                    }
-                    txtManualFilter.AutoCompleteCustomSource = lstStrings;
-                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                }
-            }
-        }
-
-        public void setTxtManualFilterText(string text)
-        {
-            // Show filter
-            if (!mnuShowITTools.Checked) { mnuShowITTools.Checked = true; }
-            txtManualFilter.Text = text;
-        }
+        #region IT menu events
 
         private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
         {
@@ -4036,6 +4017,9 @@ namespace SqlEditor
             }
         }
 
+        #endregion
+
+//----------------------------------------------------------------------------------------------------------------------
 
         #region Events that are unused or do nothing (accidently entered here or storing)
         private void GridContextMenu_FindInChild_Click(object sender, EventArgs e)
@@ -4085,8 +4069,10 @@ namespace SqlEditor
 
         }
 
+
         #endregion
 
+//----------------------------------------------------------------------------------------------------------------------
 
         private void mnuBatchInsert_Click(object sender, EventArgs e)
         {
