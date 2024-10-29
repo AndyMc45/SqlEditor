@@ -991,7 +991,7 @@
             toolStripButtonColumnWidth.DoubleClickEnabled = true;
             toolStripButtonColumnWidth.Margin = new Padding(10, 0, 10, 0);
             toolStripButtonColumnWidth.Name = "toolStripButtonColumnWidth";
-            toolStripButtonColumnWidth.Click += toolStripColumnWidth_Click;
+            toolStripButtonColumnWidth.Click += btnColumnWidth_Click;
             // 
             // DataGridViewForm
             // 

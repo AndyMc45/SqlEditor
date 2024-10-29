@@ -2988,7 +2988,113 @@ namespace SqlEditor
 
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Button - Add-Delete-Merge and functions to do these 3 things 
+        #region Buttons - All except Add-Delete_Merge (rbView,rbAdd, Reload, Wide columns)
+
+        private void rbView_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbView.Checked)
+            {
+                programMode = ProgramMode.view;
+                dataGridView1.MultiSelect = false;
+                dataGridView1.EditMode = DataGridViewEditMode.EditProgrammatically;
+                btnDeleteAddMerge.Enabled = false;
+                SetFiltersColumnsTablePanel();  // Calls SetColumnReadOnly() - which turns on and off col.ReadOnly
+            }
+        }
+
+        private void rbDelete_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbDelete.Checked)
+            {
+                programMode = ProgramMode.delete;
+                dataGridView1.MultiSelect = false;
+                dataGridView1.EditMode = DataGridViewEditMode.EditProgrammatically;
+                btnDeleteAddMerge.Enabled = true;
+                btnDeleteAddMerge.Text = "Delete row";
+                // Add deleteCommand
+                MsSql.SetDeleteCommand(currentSql.myTable, dataHelper.currentDT);
+                SetFiltersColumnsTablePanel();
+            }
+        }
+
+        private void rbEdit_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbEdit.Checked)
+            {
+                int selectedRow = 0;
+                if (dataGridView1.SelectedRows.Count > 0)
+                {
+                    selectedRow = dataGridView1.SelectedRows[0].Index;
+                }
+                programMode = ProgramMode.edit;
+                dataGridView1.EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2;
+                dataGridView1.MultiSelect = false;
+                foreach (DataGridViewColumn column in dataGridView1.Columns)
+                {
+                    column.ReadOnly = true;
+                }
+                btnDeleteAddMerge.Enabled = false;
+                SetFiltersColumnsTablePanel();  // Calls SetColReadOnlyProperty()
+                writeGrid_NewPage();  // Needed to add FK_cols
+                // Select the original row
+                if (selectedRow > 0 && dataGridView1.Rows.Count > selectedRow)
+                {
+                    dataGridView1.Rows[selectedRow].Selected = true;
+                }
+            }
+        }
+
+        private void rbAdd_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbAdd.Checked)
+            {
+                programMode = ProgramMode.add;
+                dataGridView1.MultiSelect = false;
+                dataGridView1.EditMode = DataGridViewEditMode.EditProgrammatically;
+                btnDeleteAddMerge.Enabled = true;
+                btnDeleteAddMerge.Text = "Add row";
+                SetFiltersColumnsTablePanel();
+            }
+        }
+
+        private void rbMerge_CheckedChanged(object sender, EventArgs e)
+        {
+            if (rbMerge.Checked)
+            {
+                programMode = ProgramMode.merge;
+                btnDeleteAddMerge.Enabled = true;
+                btnDeleteAddMerge.Text = "Merge 2 rows";
+                dataGridView1.MultiSelect = true;
+                SetFiltersColumnsTablePanel();
+            }
+        }
+
+        private void btnReload_Click(object sender, EventArgs e)
+        {
+            writeGrid_NewFilter(true);
+        }
+
+        private void btnColumnWidth_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                toolStripButtonColumnWidth.Enabled = false;
+                formOptions.narrowColumns = !formOptions.narrowColumns;
+                if (formOptions.narrowColumns) { toolStripButtonColumnWidth.Text = MyResources.wide; }
+                else { toolStripButtonColumnWidth.Text = MyResources.narrow; }
+                this.SuspendLayout();
+                dgvHelper.SetNewColumnWidths(dataGridView1, currentSql.myFields, formOptions.narrowColumns);
+                this.ResumeLayout(false);
+                toolStripButtonColumnWidth.Enabled = true;
+            }
+        }
+
+        #endregion
+
+        //----------------------------------------------------------------------------------------------------------------------
+
+        #region Button - Add-Delete-Merge Rows and functions to do these 3 things 
+
         private void btnDeleteAddMerge_Click(object sender, EventArgs e)
         {
             txtMessages.Text = string.Empty;
@@ -3013,9 +3119,10 @@ namespace SqlEditor
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
 
-            // 1. Check that all display keys and foreign keys are loaded - and build where list
+            // 1. Check that all display keys and foreign keys are loaded - and build wherelist and dkWhere list.
             List<where> whereList = new List<where>(); // Used when adding row
             List<where> dkWhere = new List<where>();  // Used to check for repeat displaykeys
+            bool hasError = false;
 
             for (int i = 0; i < cmbGridFilterFields.Length; i++)  // Skip the first gridFilter - all others are display or FK's
             {
@@ -3031,7 +3138,8 @@ namespace SqlEditor
                             if (i > 0)  // ignore the first yellow dropdown if empty
                             {
                                 MessageBox.Show(String.Format(Properties.MyResources.pleaseSelectAvalueFor0, cmbLabel), Properties.MyResources.mustSelectAvalue, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                return;
+                                hasError = true;
+                                break;
                             }
                         }
                         else
@@ -3042,7 +3150,6 @@ namespace SqlEditor
                             {
                                 dkWhere.Add(wh);
                             }
-
                         }
                     }
                     else  // cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList
@@ -3052,17 +3159,18 @@ namespace SqlEditor
                             if (i > 0)  // ignore the first yellow dropdown if empty
                             {
                                 MessageBox.Show(String.Format("Please select a value for {0}", cmbLabel), "Please select a value.", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                return;
+                                hasError = true;
+                                break;
                             }
                         }
                         else
                         {
                             //// Don't add first Grid filter if it is the primary key of this table
-                            if (!dataHelper.isTablePrimaryKeyField(cmbField)) // Vacuous - but in future myTable primary key might be in cmbGridFFcombo[0]
+                            if (!dataHelper.isTablePrimaryKeyField(cmbField))
                             {
                                 where wh = new where(cmbField, cmbGridFilterValue[i].SelectedValue.ToString());
                                 whereList.Add(wh);
-                                if (dataHelper.isDisplayKey(cmbField))  // Might be a foreign key
+                                if (dataHelper.isDisplayKey(cmbField))
                                 {
                                     dkWhere.Add(wh);
                                 }
@@ -3071,35 +3179,80 @@ namespace SqlEditor
                     }
                 }
             }
-
-            // Defective table has no display keys, but can add an item
-            if (dkWhere.Count > 0)
+            if (!hasError)
             {
-                // string newWhereClause = SqlFactory.SqlStatic.sqlWhereString(dkWhere, string.Empty, true);  // Only display keys enabled so filtered
-                // currentSql.strManualWhereClause = newWhereClause; // Next line Causes the following to search on this where only
-                currentSql.myWheres.Clear();
+                AddRow(dkWhere, whereList);
+            }
+            rbView.Checked = true;
+            writeGrid_NewFilter(true); // redoes currentSql.myWheres
+        }
+
+        private string AddRow(List<where> dkWhere, List<where> whereList)
+        {
+            // 2. Two add checks and then try to add the record
+            currentSql.myWheres.Clear();
+            String errorMsg = DisplayKeysAddCheck(dkWhere);
+            if (errorMsg != String.Empty)
+            {
+                return DisplayKeysAddCheck(dkWhere);
+            }
+            else
+            {
+                errorMsg = ConstraintsAddCheck(whereList);
+                if (errorMsg != String.Empty)
+                {
+                    return errorMsg;
+                }
+                else
+                {
+                    // Passed checks. Try to add the row
+                    try
+                    {
+                        MsSql.SetInsertCommand(currentSql.myTable, whereList, dataHelper.currentDT);  // knows to use currentDA
+                        MsSql.currentDA.InsertCommand.ExecuteNonQuery();
+                        // currentSql.strManualWhereClause = string.Empty;  // Old Logic
+                    }
+                    catch (Exception ex)
+                    {
+                        return "Database Error: " + ex.Message;
+                    }
+                }
+            }
+            return String.Empty;
+        }
+
+        private string DisplayKeysAddCheck(List<where> dkWhere)
+        {
+            if (dkWhere.Count == 0) // Defective table has no display keys, but can add an item
+            {
+                return String.Empty;  // Same as "true"
+            }
+            else
+            {
                 currentSql.myWheres = dkWhere;
                 string strSql = currentSql.returnSql(command.selectAll, true);
                 MsSqlWithDaDt dadt = new MsSqlWithDaDt(strSql);
                 string errorMsg = dadt.errorMsg;
                 if (errorMsg != string.Empty)
                 {
-                    msgTextError(errorMsg);
-                    MessageBox.Show(errorMsg, "ERROR in btnDeleteAddMerge_Click (Add)", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // MessageBox.Show(errorMsg, "ERROR in btnDeleteAddMerge_Click (Add)", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     // currentSql.strManualWhereClause = string.Empty;
-                    return;
+                    return errorMsg;
                 }
 
                 if (dadt.dt.Rows.Count > 0)
                 {
-                    MessageBox.Show(Properties.MyResources.youAlreadyHaveThisObjectInDatabase, Properties.MyResources.displayKeyValueArrayMustBeUnique, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    currentSql.strManualWhereClause = string.Empty;
-                    rbView.Checked = true;
-                    writeGrid_NewFilter(true); return;
+                    // MessageBox.Show(Properties.MyResources.youAlreadyHaveThisObjectInDatabase, Properties.MyResources.displayKeyValueArrayMustBeUnique, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // currentSql.strManualWhereClause = string.Empty; // Unnecessary - from old logic
+                    return Properties.MyResources.youAlreadyHaveThisObjectInDatabase + ".  (" + Properties.MyResources.displayKeyValueArrayMustBeUnique + ").";
                 }
             }
+            return String.Empty;
+        }
 
-            // 3. Check plugin Added Constraints
+        private string ConstraintsAddCheck(List<where> whereList)
+        {
+            // Check plugin Added Constraints
             bool constraintPassed = true;
             List<Tuple<string, string>> tupleList = new List<Tuple<string, string>>();
             foreach (where wh in whereList)
@@ -3110,30 +3263,12 @@ namespace SqlEditor
             foreach (Func<string, List<Tuple<string, string>>, bool> f in dgvHelper.insertConstraints)
             {
                 constraintPassed = f(currentSql.myTable, tupleList);
-                if (!constraintPassed) { break; }
-            }
-            if (constraintPassed)
-            {
-                //  3. O.K. add the row
-                try
+                if (!constraintPassed)
                 {
-                    MsSql.SetInsertCommand(currentSql.myTable, whereList, dataHelper.currentDT);  // knows to use currentDA
-                    MsSql.currentDA.InsertCommand.ExecuteNonQuery();
-                    currentSql.strManualWhereClause = string.Empty;
-                    rbView.Checked = true;
-                    writeGrid_NewFilter(true);
-                }
-                catch (Exception ex)
-                {
-                    msgTextError(ex.Message);
-                    MessageBox.Show(ex.Message, "DATABASE ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return "Conflict with plugin Add Constraint.";
                 }
             }
-            else
-            {
-                writeGrid_NewFilter(true);
-            }
-
+            return String.Empty;   // i.e. no error found
         }
 
         private void DeleteRow()
@@ -3187,7 +3322,7 @@ namespace SqlEditor
             // Get two PK values
             int firstPK = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[0].Value);
             int secondPK = Convert.ToInt32(dataGridView1.SelectedRows[1].Cells[0].Value);
-            if (TryMergeTwoRows(currentSql.myTable, firstPK, secondPK))
+            if (MergeTwoRows(currentSql.myTable, firstPK, secondPK))
             {
                 // User has asked to see dublicate keys and choosen to merge.
                 // ShowDublicateDisplayKeys will write an strStaticWhereClause to show dublicate keys
@@ -3203,7 +3338,8 @@ namespace SqlEditor
                 }
             }
         }
-        private bool TryMergeTwoRows(string table, int pk1, int pk2)
+
+        private bool MergeTwoRows(string table, int pk1, int pk2)
         {
             StringBuilder msgSB = new StringBuilder();
             // Set delete command, delete from currentDT and then call "update" to update the database
@@ -3380,111 +3516,6 @@ namespace SqlEditor
             return true;
         }
 
-
-        #endregion
-
-        //----------------------------------------------------------------------------------------------------------------------
-
-        #region Buttons - View/Edit/Delete/Merge and Reload/Wide columns
-
-        private void rbView_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rbView.Checked)
-            {
-                programMode = ProgramMode.view;
-                dataGridView1.MultiSelect = false;
-                dataGridView1.EditMode = DataGridViewEditMode.EditProgrammatically;
-                btnDeleteAddMerge.Enabled = false;
-                SetFiltersColumnsTablePanel();  // Calls SetColumnReadOnly() - which turns on and off col.ReadOnly
-            }
-        }
-
-        private void rbDelete_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rbDelete.Checked)
-            {
-                programMode = ProgramMode.delete;
-                dataGridView1.MultiSelect = false;
-                dataGridView1.EditMode = DataGridViewEditMode.EditProgrammatically;
-                btnDeleteAddMerge.Enabled = true;
-                btnDeleteAddMerge.Text = "Delete row";
-                // Add deleteCommand
-                MsSql.SetDeleteCommand(currentSql.myTable, dataHelper.currentDT);
-                SetFiltersColumnsTablePanel();
-            }
-        }
-
-        private void rbEdit_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rbEdit.Checked)
-            {
-                int selectedRow = 0;
-                if (dataGridView1.SelectedRows.Count > 0)
-                {
-                    selectedRow = dataGridView1.SelectedRows[0].Index;
-                }
-                programMode = ProgramMode.edit;
-                dataGridView1.EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2;
-                dataGridView1.MultiSelect = false;
-                foreach (DataGridViewColumn column in dataGridView1.Columns)
-                {
-                    column.ReadOnly = true;
-                }
-                btnDeleteAddMerge.Enabled = false;
-                SetFiltersColumnsTablePanel();  // Calls SetColReadOnlyProperty()
-                writeGrid_NewPage();  // Needed to add FK_cols
-                // Select the original row
-                if (selectedRow > 0 && dataGridView1.Rows.Count > selectedRow)
-                {
-                    dataGridView1.Rows[selectedRow].Selected = true;
-                }
-            }
-        }
-
-        private void rbAdd_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rbAdd.Checked)
-            {
-                programMode = ProgramMode.add;
-                dataGridView1.MultiSelect = false;
-                dataGridView1.EditMode = DataGridViewEditMode.EditProgrammatically;
-                btnDeleteAddMerge.Enabled = true;
-                btnDeleteAddMerge.Text = "Add row";
-                SetFiltersColumnsTablePanel();
-            }
-        }
-
-        private void rbMerge_CheckedChanged(object sender, EventArgs e)
-        {
-            if (rbMerge.Checked)
-            {
-                programMode = ProgramMode.merge;
-                btnDeleteAddMerge.Enabled = true;
-                btnDeleteAddMerge.Text = "Merge 2 rows";
-                dataGridView1.MultiSelect = true;
-                SetFiltersColumnsTablePanel();
-            }
-        }
-
-        private void btnReload_Click(object sender, EventArgs e)
-        {
-            writeGrid_NewFilter(true);
-        }
-
-        private void toolStripColumnWidth_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                toolStripButtonColumnWidth.Enabled = false;
-                formOptions.narrowColumns = !formOptions.narrowColumns;
-                if (formOptions.narrowColumns) { toolStripButtonColumnWidth.Text = MyResources.wide; }
-                else { toolStripButtonColumnWidth.Text = MyResources.narrow; }
-                this.SuspendLayout();
-                dgvHelper.SetNewColumnWidths(dataGridView1, currentSql.myFields, formOptions.narrowColumns);
-                this.ResumeLayout(false);
-                toolStripButtonColumnWidth.Enabled = true;
-            }
-        }
 
         #endregion
 
@@ -4154,12 +4185,12 @@ namespace SqlEditor
                         {
                             int selCmbNumber = Int32.Parse(filteredDisplayKeys[userSelectedIndex].whereValue);
                             string selectedColumnName = cmbGridFilterFields[selCmbNumber].Text;
-                            string oldDisplayMember = cmbGridFilterValues[selCmbNumber].Text; 
+                            string oldDisplayMember = cmbGridFilterValues[selCmbNumber].Text;
                             List<string> possibleDKvalues = new List<string>();
                             // SKip i=0 because this is the dummy
-                            for (int i = 1; i < cmbGridFilterValues[selCmbNumber].Items.Count; i++ )
+                            for (int i = 1; i < cmbGridFilterValues[selCmbNumber].Items.Count; i++)
                             {
-                                DataRowView drvItem = (DataRowView) cmbGridFilterValues[selCmbNumber].Items[i];
+                                DataRowView drvItem = (DataRowView)cmbGridFilterValues[selCmbNumber].Items[i];
                                 string ddStr = drvItem["DisplayMember"].ToString();
                                 possibleDKvalues.Add(ddStr);
                             }
@@ -4180,19 +4211,46 @@ namespace SqlEditor
                                 string newDisplayMember = drvItemSelected["DisplayMember"].ToString();
                                 int selPKselDK = Int32.Parse(strSelPKselDK);
                                 string ReplaceOldWithNew = String.Format("Add {0} rows: replace '{1}' with '{2}' in '{3}' column.",
-                                    strRows,oldDisplayMember,newDisplayMember,selectedColumnName);
+                                    strRows, oldDisplayMember, newDisplayMember, selectedColumnName);
                                 DialogResult replyFinal = MessageBox.Show(ReplaceOldWithNew, "Final Confirmation", MessageBoxButtons.OKCancel);
                                 if (replyFinal == DialogResult.OK)
                                 {
-                                    // Add rows
-
+                                    int rowsAdded = 0;
+                                    int rowsNotAdded = 0;
+                                    StringBuilder sb = new StringBuilder();
+                                    MessageBox.Show(dataHelper.currentDT.Rows.Count.ToString(), "Rows in currentDT");
+                                    foreach (DataRow dr in dataHelper.currentDT.Rows)
+                                    {
+                                        List<where> dkWheres = new List<where>();
+                                        List<where> whereList = new List<where>();
+                                        getAddWhereList(ref dkWheres, ref whereList);
+                                        String errorMsg = AddRow(dkWheres, whereList);
+                                        if (errorMsg == String.Empty)
+                                        {
+                                            rowsAdded += 1;
+                                        }
+                                        else
+                                        {
+                                            rowsNotAdded += 1;
+                                            sb.AppendLine();
+                                        }
+                                    }
+                                    string fullMessage = String.Format("Added {0} rows.  {1} had a problem.",
+                                        rowsAdded.ToString(), rowsNotAdded.ToString());
+                                    fullMessage = fullMessage + Environment.NewLine + sb.ToString();
+                                    MessageBox.Show(fullMessage, "Result", MessageBoxButtons.OK);
                                 }
                             }
-
                         }
                     }
                 }
             }
+        }
+        private void getAddWhereList(ref List<where> dkWheres, ref List<where> whereList)
+        {
+            // Get Where Lists that AddRow requires - the 'ref' is redundant because Lists are by ref.
+
+
         }
     }
 }
