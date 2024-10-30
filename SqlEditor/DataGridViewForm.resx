@@ -200,7 +200,7 @@
     <value>NoControl</value>
   </data>
   <data name="lblManualFilter.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 194</value>
+    <value>9, 181</value>
   </data>
   <data name="lblManualFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -299,7 +299,7 @@
     <value>4, 4, 4, 4</value>
   </data>
   <data name="lblGridFilter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>178, 46</value>
+    <value>178, 33</value>
   </data>
   <data name="lblGridFilter.TabIndex" type="System.Int32, mscorlib">
     <value>135</value>
@@ -380,7 +380,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterValue_3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>443, 112</value>
+    <value>443, 99</value>
   </data>
   <data name="cmbGridFilterValue_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -407,7 +407,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterFields_4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>629, 112</value>
+    <value>629, 99</value>
   </data>
   <data name="cmbGridFilterFields_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -434,7 +434,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterValue_4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>877, 112</value>
+    <value>877, 99</value>
   </data>
   <data name="cmbGridFilterValue_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -461,7 +461,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterFields_5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1063, 112</value>
+    <value>1063, 99</value>
   </data>
   <data name="cmbGridFilterFields_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -515,7 +515,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterValue_5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1311, 112</value>
+    <value>1311, 99</value>
   </data>
   <data name="cmbGridFilterValue_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -623,7 +623,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterFields_3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>195, 112</value>
+    <value>195, 99</value>
   </data>
   <data name="cmbGridFilterFields_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -848,7 +848,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="lblComboFilter.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 260</value>
+    <value>9, 247</value>
   </data>
   <data name="lblComboFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -881,7 +881,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterFields_7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>629, 153</value>
+    <value>629, 140</value>
   </data>
   <data name="cmbGridFilterFields_7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -908,7 +908,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterValue_6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>443, 153</value>
+    <value>443, 140</value>
   </data>
   <data name="cmbGridFilterValue_6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -935,7 +935,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterFields_6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>195, 153</value>
+    <value>195, 140</value>
   </data>
   <data name="cmbGridFilterFields_6.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -962,7 +962,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterValue_7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>877, 153</value>
+    <value>877, 140</value>
   </data>
   <data name="cmbGridFilterValue_7.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -989,7 +989,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterFields_8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1063, 153</value>
+    <value>1063, 140</value>
   </data>
   <data name="cmbGridFilterFields_8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -1016,7 +1016,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbGridFilterValue_8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1311, 153</value>
+    <value>1311, 140</value>
   </data>
   <data name="cmbGridFilterValue_8.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -1046,7 +1046,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>441, 299</value>
+    <value>441, 286</value>
   </data>
   <data name="lblCmbFilterField_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -1076,7 +1076,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbComboFilterValue_3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>627, 303</value>
+    <value>627, 290</value>
   </data>
   <data name="cmbComboFilterValue_3.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1106,7 +1106,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>813, 299</value>
+    <value>813, 286</value>
   </data>
   <data name="lblCmbFilterField_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -1136,7 +1136,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbComboFilterValue_4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>999, 303</value>
+    <value>999, 290</value>
   </data>
   <data name="cmbComboFilterValue_4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1166,7 +1166,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1185, 299</value>
+    <value>1185, 286</value>
   </data>
   <data name="lblCmbFilterField_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -1196,7 +1196,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbComboFilterValue_5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1371, 303</value>
+    <value>1371, 290</value>
   </data>
   <data name="cmbComboFilterValue_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1226,7 +1226,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_0.Location" type="System.Drawing.Point, System.Drawing">
-    <value>441, 256</value>
+    <value>441, 243</value>
   </data>
   <data name="lblCmbFilterField_0.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -1256,7 +1256,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbComboFilterValue_0.Location" type="System.Drawing.Point, System.Drawing">
-    <value>627, 260</value>
+    <value>627, 247</value>
   </data>
   <data name="cmbComboFilterValue_0.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1286,7 +1286,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>813, 256</value>
+    <value>813, 243</value>
   </data>
   <data name="lblCmbFilterField_1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -1316,7 +1316,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbComboFilterValue_1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>999, 260</value>
+    <value>999, 247</value>
   </data>
   <data name="cmbComboFilterValue_1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1346,7 +1346,7 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1185, 256</value>
+    <value>1185, 243</value>
   </data>
   <data name="lblCmbFilterField_2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
@@ -1376,7 +1376,7 @@
     <value>Top, Left, Right</value>
   </data>
   <data name="cmbComboFilterValue_2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1371, 260</value>
+    <value>1371, 247</value>
   </data>
   <data name="cmbComboFilterValue_2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1403,7 +1403,7 @@
     <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="cmbComboTableList.Location" type="System.Drawing.Point, System.Drawing">
-    <value>193, 260</value>
+    <value>193, 247</value>
   </data>
   <data name="cmbComboTableList.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
@@ -1427,7 +1427,7 @@
     <value>41</value>
   </data>
   <data name="btnBlackLine.Location" type="System.Drawing.Point, System.Drawing">
-    <value>443, 248</value>
+    <value>443, 235</value>
   </data>
   <data name="btnBlackLine.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
@@ -1484,7 +1484,7 @@
     <value>43</value>
   </data>
   <data name="txtManualFilter.Location" type="System.Drawing.Point, System.Drawing">
-    <value>193, 192</value>
+    <value>193, 179</value>
   </data>
   <data name="txtManualFilter.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -1847,7 +1847,7 @@
     <value>8, 4, 0, 4</value>
   </data>
   <data name="MainMenu1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1922, 37</value>
+    <value>1540, 37</value>
   </data>
   <data name="MainMenu1.TabIndex" type="System.Int32, mscorlib">
     <value>38</value>
@@ -1872,6 +1872,9 @@
   </data>
   <data name="toolStripBottom.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
+  </data>
+  <data name="txtRecordsPerPage.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 10.8pt</value>
   </data>
   <data name="txtRecordsPerPage.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 34</value>
@@ -1946,10 +1949,10 @@
     <value>寬表列</value>
   </data>
   <data name="toolStripBottom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 960</value>
+    <value>0, 811</value>
   </data>
   <data name="toolStripBottom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1922, 34</value>
+    <value>1540, 34</value>
   </data>
   <data name="toolStripBottom.TabIndex" type="System.Int32, mscorlib">
     <value>75</value>
@@ -1985,7 +1988,7 @@
     <value>10, 25</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1922, 994</value>
+    <value>1540, 845</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 6, 4, 6</value>

@@ -947,8 +947,8 @@
             // txtRecordsPerPage
             // 
             txtRecordsPerPage.Alignment = ToolStripItemAlignment.Right;
-            txtRecordsPerPage.Name = "txtRecordsPerPage";
             resources.ApplyResources(txtRecordsPerPage, "txtRecordsPerPage");
+            txtRecordsPerPage.Name = "txtRecordsPerPage";
             txtRecordsPerPage.Leave += txtRecordsPerPage_Leave;
             // 
             // toolStripButton4
