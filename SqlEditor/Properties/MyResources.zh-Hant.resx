@@ -228,4 +228,7 @@
   <data name="youNeedtoMergeRowIn0" xml:space="preserve">
     <value>您需要合併 {0} 中的行。</value>
   </data>
+  <data name="Delete" xml:space="preserve">
+    <value>刪 除</value>
+  </data>
 </root>

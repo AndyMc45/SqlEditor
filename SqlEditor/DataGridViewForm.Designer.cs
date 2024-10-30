@@ -89,7 +89,6 @@
             btnBlackLine = new Button();
             btnReload = new Button();
             txtManualFilter = new TextBox();
-            btnExtra = new Button();
             txtMessages = new TextBox();
             dataGridView1 = new DataGridView();
             MainMenu1 = new MenuStrip();
@@ -112,7 +111,7 @@
             mnuForeignKeyMissing = new ToolStripMenuItem();
             mnuDisplayKeysList = new ToolStripMenuItem();
             mnuDuplicateDisplayKeys = new ToolStripMenuItem();
-            mnuRapidlyMergeDKs = new ToolStripMenuItem();
+            mnuMergeDKs = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             mnuLoadPlugin = new ToolStripMenuItem();
             mnuRemovePlugin = new ToolStripMenuItem();
@@ -202,7 +201,6 @@
             tableLayoutPanel.Controls.Add(btnBlackLine, 8, 5);
             tableLayoutPanel.Controls.Add(btnReload, 23, 0);
             tableLayoutPanel.Controls.Add(txtManualFilter, 4, 4);
-            tableLayoutPanel.Controls.Add(btnExtra, 25, 0);
             tableLayoutPanel.Name = "tableLayoutPanel";
             // 
             // GridContextMenu
@@ -702,14 +700,6 @@
             txtManualFilter.Name = "txtManualFilter";
             txtManualFilter.TextChanged += txtManualFilter_TextChanged;
             // 
-            // btnExtra
-            // 
-            tableLayoutPanel.SetColumnSpan(btnExtra, 3);
-            resources.ApplyResources(btnExtra, "btnExtra");
-            btnExtra.Name = "btnExtra";
-            btnExtra.UseVisualStyleBackColor = true;
-            btnExtra.Click += btnExtra_Click;
-            // 
             // txtMessages
             // 
             txtMessages.BackColor = SystemColors.ControlLight;
@@ -842,6 +832,7 @@
             // 
             mnuBatchEdit.Name = "mnuBatchEdit";
             resources.ApplyResources(mnuBatchEdit, "mnuBatchEdit");
+            mnuBatchEdit.Click += mnuBatchEdit_Click;
             // 
             // mnuPrintCurrentTable
             // 
@@ -851,7 +842,7 @@
             // 
             // mnuIT_Tools
             // 
-            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuRapidlyMergeDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
+            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
             mnuIT_Tools.Name = "mnuIT_Tools";
             resources.ApplyResources(mnuIT_Tools, "mnuIT_Tools");
             // 
@@ -890,12 +881,12 @@
             resources.ApplyResources(mnuDuplicateDisplayKeys, "mnuDuplicateDisplayKeys");
             mnuDuplicateDisplayKeys.Click += mnuToolDuplicateDisplayKeys_Click;
             // 
-            // mnuRapidlyMergeDKs
+            // mnuMergeDKs
             // 
-            mnuRapidlyMergeDKs.CheckOnClick = true;
-            mnuRapidlyMergeDKs.Name = "mnuRapidlyMergeDKs";
-            resources.ApplyResources(mnuRapidlyMergeDKs, "mnuRapidlyMergeDKs");
-            mnuRapidlyMergeDKs.Click += mnuRapidlyMergeDKs_Click;
+            mnuMergeDKs.CheckOnClick = true;
+            mnuMergeDKs.Name = "mnuMergeDKs";
+            resources.ApplyResources(mnuMergeDKs, "mnuMergeDKs");
+            mnuMergeDKs.Click += mnuMergeDKs_Click;
             // 
             // toolStripSeparator3
             // 
@@ -947,8 +938,8 @@
             // txtRecordsPerPage
             // 
             txtRecordsPerPage.Alignment = ToolStripItemAlignment.Right;
-            resources.ApplyResources(txtRecordsPerPage, "txtRecordsPerPage");
             txtRecordsPerPage.Name = "txtRecordsPerPage";
+            resources.ApplyResources(txtRecordsPerPage, "txtRecordsPerPage");
             txtRecordsPerPage.Leave += txtRecordsPerPage_Leave;
             // 
             // toolStripButton4
@@ -1115,9 +1106,8 @@
         private ToolStripMenuItem mnuDisplayKeysList;
         private Button btnHiddenExtra;
         private ToolStripSeparator toolStripSeparator2;
-        private ToolStripMenuItem mnuRapidlyMergeDKs;
+        private ToolStripMenuItem mnuMergeDKs;
         private ToolStripSeparator toolStripSeparator3;
-        private Button btnExtra;
         private ToolStripMenuItem GridContextMenu_UnusedAsFK;
         private ToolStripMenuItem mnuBatchInsert;
         private ToolStripMenuItem mnuBatchEdit;

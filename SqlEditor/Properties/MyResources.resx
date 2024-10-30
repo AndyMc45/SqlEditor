@@ -246,4 +246,7 @@
   <data name="youNeedtoMergeRowIn0" xml:space="preserve">
     <value>You will need to merge rows in {0} first.</value>
   </data>
+  <data name="delete_" xml:space="preserve">
+    <value>Delete</value>
+  </data>
 </root>

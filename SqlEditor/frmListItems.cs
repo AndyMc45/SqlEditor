@@ -1,6 +1,8 @@
 //using System.Data;
 // using System.Data.SqlClient;
 
+using SqlEditor.Properties;
+
 namespace SqlEditor
 {
     internal partial class frmListItems
@@ -58,7 +60,6 @@ namespace SqlEditor
             this.Top = (Screen.PrimaryScreen.Bounds.Height - this.Height) / 2;
             this.Left = (Screen.PrimaryScreen.Bounds.Width - this.Width) / 2;
 
-
             if (myJob == job.SelectString)
             {
                 this.cmdOK.Text = "OK";
@@ -79,9 +80,8 @@ namespace SqlEditor
             }
             else if (myJob == job.DeleteConnections)   // deleting databases fromlist
             {
-                this.cmdOK.Text = "Delete";
+                this.cmdOK.Text = "Delete"; // MyResources.delete;
             }
-
         }
 
         private void cmdOK_Click(Object eventSender, EventArgs eventArgs)
