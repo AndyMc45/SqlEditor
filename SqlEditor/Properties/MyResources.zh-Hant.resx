@@ -186,7 +186,7 @@
     <value>修改的行數</value>
   </data>
   <data name="pleaseChooseDatabaseString" xml:space="preserve">
-    <value>請選擇其中包含"Database={1}”的字串</value>
+    <value>請選擇Database的名字</value>
   </data>
   <data name="pleaseSelectAvalueFor0" xml:space="preserve">
     <value>請為 {0} 選擇一個值</value>

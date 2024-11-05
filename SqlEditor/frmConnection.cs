@@ -145,9 +145,10 @@ namespace SqlEditor
             if (checkForServerAndUser(cs))
             {
                 // Check for a database string
-                if (cs.IndexOf("{1}") < 0 && txtDatabase.Text != "" )
+                if (cs.IndexOf("{1}") > -1 && txtDatabase.Text == "" )
                 {
                     MessageBox.Show(MyResources.pleaseChooseDatabaseString, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
 
                 //Password

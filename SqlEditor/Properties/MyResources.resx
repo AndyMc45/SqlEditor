@@ -201,7 +201,7 @@
     <value>Number of Rows modified</value>
   </data>
   <data name="pleaseChooseDatabaseString" xml:space="preserve">
-    <value>Please choose a string that has 'Database={1}' in it</value>
+    <value>Please enter the name of the database</value>
   </data>
   <data name="pleaseSelectAvalueFor0" xml:space="preserve">
     <value>Please select a value for {0}</value>
@@ -248,5 +248,8 @@
   </data>
   <data name="delete_" xml:space="preserve">
     <value>Delete</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value />
   </data>
 </root>
