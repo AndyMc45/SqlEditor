@@ -663,7 +663,6 @@ namespace SqlEditor
         public Tuple<string, string> baseKey { get { return Tuple.Create(this.table, this.fieldName); } }
     }
 
-
     public class where
     {
         public where(field fl, string whereValue)
@@ -734,7 +733,6 @@ namespace SqlEditor
         delete,
         merge
     }
-
 
     public enum DbTypeType
     {

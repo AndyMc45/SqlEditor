@@ -41,7 +41,6 @@
             toolStripSeparator1 = new ToolStripSeparator();
             GridContextMenu_OrderCombolByPK = new ToolStripMenuItem();
             GridContextMenu_TimesUsedAsFK = new ToolStripMenuItem();
-            GridContextMenu_UnusedAsFK = new ToolStripMenuItem();
             toolSripSeparator2 = new ToolStripSeparator();
             GridContextMenu_ClearFilters = new ToolStripMenuItem();
             lblManualFilter = new Label();
@@ -108,6 +107,7 @@
             mnuDatabaseInfo = new ToolStripMenuItem();
             mnuToolsBackupDatabase = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
+            mnuRowsUnusedAsFK = new ToolStripMenuItem();
             mnuForeignKeyMissing = new ToolStripMenuItem();
             mnuDisplayKeysList = new ToolStripMenuItem();
             mnuDuplicateDisplayKeys = new ToolStripMenuItem();
@@ -144,12 +144,13 @@
             // 
             // splitContainer1.Panel1
             // 
+            resources.ApplyResources(splitContainer1.Panel1, "splitContainer1.Panel1");
             splitContainer1.Panel1.Controls.Add(tableLayoutPanel);
             splitContainer1.Panel1.Controls.Add(txtMessages);
-            resources.ApplyResources(splitContainer1.Panel1, "splitContainer1.Panel1");
             // 
             // splitContainer1.Panel2
             // 
+            resources.ApplyResources(splitContainer1.Panel2, "splitContainer1.Panel2");
             splitContainer1.Panel2.Controls.Add(dataGridView1);
             // 
             // tableLayoutPanel
@@ -206,7 +207,7 @@
             // GridContextMenu
             // 
             GridContextMenu.ImageScalingSize = new Size(20, 20);
-            GridContextMenu.Items.AddRange(new ToolStripItem[] { GridContextMenu_SetAsMainFilter, GridContextMenu_SetFKasMainFIlter, toolStripSeparator1, GridContextMenu_OrderCombolByPK, GridContextMenu_TimesUsedAsFK, GridContextMenu_UnusedAsFK, toolSripSeparator2, GridContextMenu_ClearFilters });
+            GridContextMenu.Items.AddRange(new ToolStripItem[] { GridContextMenu_SetAsMainFilter, GridContextMenu_SetFKasMainFIlter, toolStripSeparator1, GridContextMenu_OrderCombolByPK, GridContextMenu_TimesUsedAsFK, toolSripSeparator2, GridContextMenu_ClearFilters });
             GridContextMenu.Name = "contextMenuStrip1";
             resources.ApplyResources(GridContextMenu, "GridContextMenu");
             GridContextMenu.Opening += GridContextMenu_Opening_1;
@@ -241,12 +242,6 @@
             GridContextMenu_TimesUsedAsFK.Name = "GridContextMenu_TimesUsedAsFK";
             resources.ApplyResources(GridContextMenu_TimesUsedAsFK, "GridContextMenu_TimesUsedAsFK");
             GridContextMenu_TimesUsedAsFK.Click += GridContextMenu_TimesUsedAsFK_Click;
-            // 
-            // GridContextMenu_UnusedAsFK
-            // 
-            GridContextMenu_UnusedAsFK.Name = "GridContextMenu_UnusedAsFK";
-            resources.ApplyResources(GridContextMenu_UnusedAsFK, "GridContextMenu_UnusedAsFK");
-            GridContextMenu_UnusedAsFK.Click += GridContextMenu_UnusedAsFK_Click;
             // 
             // toolSripSeparator2
             // 
@@ -842,7 +837,7 @@
             // 
             // mnuIT_Tools
             // 
-            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
+            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuRowsUnusedAsFK, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
             mnuIT_Tools.Name = "mnuIT_Tools";
             resources.ApplyResources(mnuIT_Tools, "mnuIT_Tools");
             // 
@@ -862,6 +857,12 @@
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
             resources.ApplyResources(toolStripSeparator2, "toolStripSeparator2");
+            // 
+            // mnuRowsUnusedAsFK
+            // 
+            mnuRowsUnusedAsFK.Name = "mnuRowsUnusedAsFK";
+            resources.ApplyResources(mnuRowsUnusedAsFK, "mnuRowsUnusedAsFK");
+            mnuRowsUnusedAsFK.Click += mnuRowsUnsedAsFK_Click;
             // 
             // mnuForeignKeyMissing
             // 
@@ -938,8 +939,8 @@
             // txtRecordsPerPage
             // 
             txtRecordsPerPage.Alignment = ToolStripItemAlignment.Right;
-            txtRecordsPerPage.Name = "txtRecordsPerPage";
             resources.ApplyResources(txtRecordsPerPage, "txtRecordsPerPage");
+            txtRecordsPerPage.Name = "txtRecordsPerPage";
             txtRecordsPerPage.Leave += txtRecordsPerPage_Leave;
             // 
             // toolStripButton4
@@ -988,8 +989,8 @@
             // 
             resources.ApplyResources(this, "$this");
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(toolStripBottom);
             Controls.Add(splitContainer1);
+            Controls.Add(toolStripBottom);
             Controls.Add(MainMenu1);
             KeyPreview = true;
             Name = "DataGridViewForm";
@@ -1108,9 +1109,9 @@
         private ToolStripSeparator toolStripSeparator2;
         private ToolStripMenuItem mnuMergeDKs;
         private ToolStripSeparator toolStripSeparator3;
-        private ToolStripMenuItem GridContextMenu_UnusedAsFK;
         private ToolStripMenuItem mnuBatchInsert;
         private ToolStripMenuItem mnuBatchEdit;
+        private ToolStripMenuItem mnuRowsUnusedAsFK;
         //private Button button2;
     }
 }

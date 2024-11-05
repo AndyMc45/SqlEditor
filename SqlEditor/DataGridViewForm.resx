@@ -118,24 +118,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="splitContainer1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="splitContainer1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="splitContainer1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 36</value>
+    <value>0, 37</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="splitContainer1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
+  <data name="splitContainer1.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>300, 300</value>
+  </data>
   <data name="splitContainer1.Orientation" type="System.Windows.Forms.Orientation, System.Windows.Forms">
     <value>Horizontal</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="splitContainer1.Panel1.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="splitContainer1.Panel1.AutoScrollMargin" type="System.Drawing.Size, System.Drawing">
+    <value>4, 4</value>
+  </data>
+  <data name="splitContainer1.Panel1.AutoScrollMinSize" type="System.Drawing.Size, System.Drawing">
+    <value>300, 10</value>
   </data>
   <data name="tableLayoutPanel.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="tableLayoutPanel.ColumnCount" type="System.Int32, mscorlib">
     <value>31</value>
   </data>
@@ -169,12 +181,6 @@
   <data name="GridContextMenu_TimesUsedAsFK.Text" xml:space="preserve">
     <value>Times used as FK</value>
   </data>
-  <data name="GridContextMenu_UnusedAsFK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_UnusedAsFK.Text" xml:space="preserve">
-    <value>Rows not used as FK</value>
-  </data>
   <data name="toolSripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>301, 6</value>
   </data>
@@ -185,7 +191,7 @@
     <value>Clear all filters</value>
   </data>
   <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>305, 196</value>
+    <value>305, 166</value>
   </data>
   <data name="&gt;&gt;GridContextMenu.Name" xml:space="preserve">
     <value>GridContextMenu</value>
@@ -1550,7 +1556,7 @@
     <value>2, 4, 2, 4</value>
   </data>
   <data name="txtMessages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>2220, 31</value>
+    <value>1915, 31</value>
   </data>
   <data name="txtMessages.TabIndex" type="System.Int32, mscorlib">
     <value>109</value>
@@ -1585,14 +1591,26 @@
   <data name="splitContainer1.Panel1MinSize" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
+  <data name="splitContainer1.Panel2.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="splitContainer1.Panel2.AutoScrollMargin" type="System.Drawing.Size, System.Drawing">
+    <value>3, 0</value>
+  </data>
+  <data name="splitContainer1.Panel2.AutoScrollMinSize" type="System.Drawing.Size, System.Drawing">
+    <value>300, 15</value>
+  </data>
+  <data name="splitContainer1.Panel2.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>None</value>
+  </data>
   <data name="dataGridView1.ColumnHeadersHeight" type="System.Int32, mscorlib">
     <value>29</value>
   </data>
   <data name="dataGridView1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Left</value>
+    <value>Fill</value>
   </data>
   <data name="dataGridView1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
+    <value>4, 4</value>
   </data>
   <data name="dataGridView1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 5, 4, 5</value>
@@ -1601,7 +1619,7 @@
     <value>51</value>
   </data>
   <data name="dataGridView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1922, 436</value>
+    <value>1532, 382</value>
   </data>
   <data name="dataGridView1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1617,6 +1635,12 @@
   </data>
   <data name="&gt;&gt;dataGridView1.ZOrder" xml:space="preserve">
     <value>0</value>
+  </data>
+  <data name="splitContainer1.Panel2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="splitContainer1.Panel2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
   </data>
   <data name="&gt;&gt;splitContainer1.Panel2.Name" xml:space="preserve">
     <value>splitContainer1.Panel2</value>
@@ -1634,10 +1658,10 @@
     <value>3</value>
   </data>
   <data name="splitContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>2220, 972</value>
+    <value>1540, 870</value>
   </data>
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
-    <value>531</value>
+    <value>475</value>
   </data>
   <data name="splitContainer1.SplitterWidth" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1655,7 +1679,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;splitContainer1.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>1</value>
   </data>
   <metadata name="MainMenu1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 1</value>
@@ -1746,6 +1770,12 @@
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>353, 6</value>
+  </data>
+  <data name="mnuRowsUnusedAsFK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>356, 30</value>
+  </data>
+  <data name="mnuRowsUnusedAsFK.Text" xml:space="preserve">
+    <value>Rows not used as FK</value>
   </data>
   <data name="mnuForeignKeyMissing.Size" type="System.Drawing.Size, System.Drawing">
     <value>356, 30</value>
@@ -1940,7 +1970,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;toolStripBottom.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <metadata name="saveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>512, 5</value>
@@ -1952,7 +1982,7 @@
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>25</value>
+    <value>83</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>10, 25</value>
@@ -1994,12 +2024,6 @@
     <value>GridContextMenu_TimesUsedAsFK</value>
   </data>
   <data name="&gt;&gt;GridContextMenu_TimesUsedAsFK.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;GridContextMenu_UnusedAsFK.Name" xml:space="preserve">
-    <value>GridContextMenu_UnusedAsFK</value>
-  </data>
-  <data name="&gt;&gt;GridContextMenu_UnusedAsFK.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolSripSeparator2.Name" xml:space="preserve">
@@ -2109,6 +2133,12 @@
   </data>
   <data name="&gt;&gt;toolStripSeparator2.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mnuRowsUnusedAsFK.Name" xml:space="preserve">
+    <value>mnuRowsUnusedAsFK</value>
+  </data>
+  <data name="&gt;&gt;mnuRowsUnusedAsFK.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;mnuForeignKeyMissing.Name" xml:space="preserve">
     <value>mnuForeignKeyMissing</value>

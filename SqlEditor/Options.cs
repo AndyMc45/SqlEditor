@@ -1,12 +1,14 @@
-﻿namespace SqlEditor
+﻿using System.DirectoryServices.ActiveDirectory;
+
+namespace SqlEditor
 {
     public class FormOptions
     {
         public FormOptions()   // After the program runs once, these options are stored in registry - no use changing here
         {
             debugging = false;
+            debugInt = 0;
             runTimer = false;
-            loadingMainFilter = false;
             narrowColumns = false;
             pageSize = 0;
             logFileName = string.Empty;
@@ -14,8 +16,8 @@
             excelFilesFolder = String.Empty;
         }
         public bool debugging { get; set; }
+        public int debugInt { get; set; }
         public bool runTimer { get; set; }
-        public bool loadingMainFilter { get; set; } //use updating to stop events when making programatic changes 
         public int pageSize { get; set; }
         public string logFileName { get; set; }
         public bool narrowColumns { get; set; }
@@ -48,31 +50,29 @@
     {
         internal TableOptions()
         {
-            writingTable = false;
-            doNotRebindGridFV = false;
+            writingNewTable = false;
+            writingNewFilter = false;
+            writingNewPage = false;
+            clearingAllFilters = false;
+            delayRebindGridFV = false;
+            delayWriteGrid = false;
             doNotWriteGrid = false;
-            // fixingDatabase = false;   // Manually set this - 
-            // strStaticWhereClause = string.Empty;
             FkFieldInEditingControl = null;
             tableHasForeignKeys = false;
-            firstTimeWritingTable = true;
-            currentComboFilterValue_isDirty = false;
-            allowDisplayKeyEdit = false;
             mergingDuplicateKeys = false;
-            rapidlyMergingDKsTable = String.Empty;
         }
         // internal bool fixingDatabase { get; set; }
         // internal string strStaticWhereClause { get; set; }
-        internal bool writingTable { get; set; }
+        internal bool writingNewTable { get; set; }
+        internal bool writingNewFilter { get; set; }
+        internal bool writingNewPage { get; set; }
+        internal bool clearingAllFilters { get; set; }
+        internal bool delayRebindGridFV { get; set; }
+        internal bool delayWriteGrid { get; set; }
+        internal bool doNotWriteGrid { get; set; }
         internal field? FkFieldInEditingControl { get; set; }
         internal bool tableHasForeignKeys { get; set; }
-        internal bool currentComboFilterValue_isDirty { get; set; }
-        internal bool doNotRebindGridFV { get; set; }
-        internal bool doNotWriteGrid { get; set; }
-        internal bool firstTimeWritingTable { get; set; }
-        internal bool allowDisplayKeyEdit { get; set; }
         internal bool mergingDuplicateKeys { get; set; }
-        internal string rapidlyMergingDKsTable { get; set; }
 
     }
 
