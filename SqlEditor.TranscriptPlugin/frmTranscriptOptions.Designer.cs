@@ -33,6 +33,7 @@
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabActions = new TabPage();
+            chkIncludeAudits = new CheckBox();
             btnPrintCourseGrades = new Button();
             btnPrintEnglishTranscript = new Button();
             btnPrintCourseRole = new Button();
@@ -68,7 +69,6 @@
             folderBrowserDialog1 = new FolderBrowserDialog();
             openFileDialog1 = new OpenFileDialog();
             saveFileDialog1 = new SaveFileDialog();
-            chkIncludeAudits = new CheckBox();
             tabControl1.SuspendLayout();
             tabActions.SuspendLayout();
             tabStudent.SuspendLayout();
@@ -113,6 +113,16 @@
             tabActions.TabIndex = 4;
             tabActions.Text = "Actions";
             tabActions.UseVisualStyleBackColor = true;
+            // 
+            // chkIncludeAudits
+            // 
+            chkIncludeAudits.AutoSize = true;
+            chkIncludeAudits.Location = new Point(26, 93);
+            chkIncludeAudits.Name = "chkIncludeAudits";
+            chkIncludeAudits.Size = new Size(227, 29);
+            chkIncludeAudits.TabIndex = 18;
+            chkIncludeAudits.Text = "Include Audited Courses";
+            chkIncludeAudits.UseVisualStyleBackColor = true;
             // 
             // btnPrintCourseGrades
             // 
@@ -542,16 +552,6 @@
             // openFileDialog1
             // 
             openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // chkIncludeAudits
-            // 
-            chkIncludeAudits.AutoSize = true;
-            chkIncludeAudits.Location = new Point(26, 93);
-            chkIncludeAudits.Name = "chkIncludeAudits";
-            chkIncludeAudits.Size = new Size(227, 29);
-            chkIncludeAudits.TabIndex = 18;
-            chkIncludeAudits.Text = "Include Audited Courses";
-            chkIncludeAudits.UseVisualStyleBackColor = true;
             // 
             // frmTranscriptOptions
             // 

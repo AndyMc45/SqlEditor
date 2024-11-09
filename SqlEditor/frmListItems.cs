@@ -107,6 +107,11 @@ namespace SqlEditor
             this.Close();
         }
 
+        private void frmListItems_Resize(object sender, EventArgs e)
+        {
+            
+        }
+
         //This form used for (1) deleting connections AND listing / selecting a from a list
         public enum job
         {

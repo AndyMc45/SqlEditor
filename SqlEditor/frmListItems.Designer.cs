@@ -37,7 +37,7 @@ namespace SqlEditor
             cmdOK.BackColor = SystemColors.Control;
             cmdOK.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmdOK.ForeColor = SystemColors.ControlText;
-            cmdOK.Location = new Point(284, 315);
+            cmdOK.Location = new Point(339, 188);
             cmdOK.Name = "cmdOK";
             cmdOK.RightToLeft = RightToLeft.No;
             cmdOK.Size = new Size(89, 40);
@@ -50,6 +50,7 @@ namespace SqlEditor
             // listBox1
             // 
             listBox1.AllowDrop = true;
+            listBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listBox1.BackColor = SystemColors.Window;
             listBox1.Font = new Font("Microsoft Sans Serif", 8.25F);
             listBox1.ForeColor = SystemColors.WindowText;
@@ -57,7 +58,7 @@ namespace SqlEditor
             listBox1.Location = new Point(24, 43);
             listBox1.Name = "listBox1";
             listBox1.RightToLeft = RightToLeft.No;
-            listBox1.Size = new Size(345, 259);
+            listBox1.Size = new Size(416, 123);
             listBox1.TabIndex = 0;
             // 
             // lblText
@@ -75,7 +76,7 @@ namespace SqlEditor
             AutoScaleDimensions = new SizeF(8F, 17F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
-            ClientSize = new Size(405, 383);
+            ClientSize = new Size(467, 253);
             Controls.Add(lblText);
             Controls.Add(cmdOK);
             Controls.Add(listBox1);
@@ -86,6 +87,7 @@ namespace SqlEditor
             StartPosition = FormStartPosition.CenterParent;
             Text = "Caption";
             Load += frmListItems_Load;
+            Resize += frmListItems_Resize;
             ResumeLayout(false);
             PerformLayout();
         }

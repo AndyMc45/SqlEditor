@@ -1321,7 +1321,7 @@ namespace SqlEditor
         #endregion
         
 
-        #region EVENTS - Main Menu events
+        #region MENU EVENTS - Main Menu events
 
         private void mnuPrintCurrentTable_Click(object sender, EventArgs e)
         {
@@ -1535,7 +1535,7 @@ namespace SqlEditor
 
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region EVENTS - Context Menu events
+        #region MENU EVENTS - Context Menu events
         private void GridContextMenu_OrderComboByPK_Click(object sender, EventArgs e)
         {
             formOptions.orderComboListsByPK = GridContextMenu_OrderCombolByPK.Checked;
@@ -1720,8 +1720,400 @@ namespace SqlEditor
         #endregion
 
         //----------------------------------------------------------------------------------------------------------------------
+ 
+        #region MENU EVENTS - IT menu events
 
-        #region EVENTS - UpdateLastFilter, Restorefilters
+        private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
+        {
+            if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
+            {
+                Application_Restart();
+            }
+            else
+            {
+                foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
+                {
+                    // txtManualFilter shown if mnuShowITTools.Checked;
+                    // So if you want them to show, check it if it is not checked
+                    if (mi.Name != mnuShowITTools.Name)
+                    {
+                        mi.Visible = mnuShowITTools.Checked;
+                        txtManualFilter.Visible = mnuShowITTools.Checked;
+                        lblManualFilter.Visible = mnuShowITTools.Checked;
+                        txtManualFilter.Enabled = mnuShowITTools.Checked;
+                    }
+                }
+                if (mnuShowITTools.Checked)
+                {
+                    SetTableLayoutPanelHeight();
+                    mnuIT_Tools.ShowDropDown();
+                    rbMerge.Visible = mnuShowITTools.Checked;
+                }
+            }
+        }
+
+        private void mnuLoadPlugin_Click(object sender, EventArgs e)
+        {
+            string myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string selectedFolder = SelectFolder(myDocumentsFolder, false);
+            if (selectedFolder != string.Empty)
+            {
+                if (Directory.Exists(selectedFolder))
+                {
+                    string directoryName = new DirectoryInfo(selectedFolder).Name;
+                    string appDataFolder = Application.CommonAppDataPath;
+                    if (Directory.Exists(appDataFolder))
+                    {
+                        string plugInFolder = String.Format("{0}\\{1}\\{2}", appDataFolder, "PluginsToConsume", directoryName);
+                        if (Directory.Exists(plugInFolder))
+                        {
+                            Directory.Delete(plugInFolder, true);
+                        }
+                        Directory.CreateDirectory(plugInFolder);
+                        CopyDirectory(selectedFolder, plugInFolder, true);
+                        Application_Restart();
+                    }
+                }
+            }
+        }
+
+        static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+        {
+            // Get information about the source directory
+            var dir = new DirectoryInfo(sourceDir);
+
+            // Check if the source directory exists
+            if (!dir.Exists) { return; }
+
+            // Cache directories before we start copying
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Create the destination directory
+            Directory.CreateDirectory(destinationDir);
+
+            // Get the files in the source directory and copy to the destination directory
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath);
+            }
+
+            // If recursive and copying subdirectories, recursively call this method
+            if (recursive)
+            {
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                    CopyDirectory(subDir.FullName, newDestinationDir, true);
+                }
+            }
+        }
+
+        private void mnuRemovePlugin_Click(object sender, EventArgs e)
+        {
+            // Get information about the source directory
+            string plugInDirectory = String.Format("{0}\\{1}", Application.CommonAppDataPath, "PluginsToConsume");
+            DirectoryInfo dirInfo = new DirectoryInfo(plugInDirectory);
+
+            // Check if the source directory exists
+            if (!dirInfo.Exists) { return; }
+            // Cache directories before we start copying
+            DirectoryInfo[] subDirsInfo = dirInfo.GetDirectories();
+            List<string> pluginDirectories = new List<string>();
+            foreach (DirectoryInfo subDir in subDirsInfo)
+            {
+                pluginDirectories.Add(subDir.FullName);
+            }
+
+            frmListItems directoryListForm = new frmListItems();
+            directoryListForm.myList = pluginDirectories;
+            directoryListForm.myJob = frmListItems.job.SelectString;
+            directoryListForm.Text = "Select Plugin";
+            directoryListForm.ShowDialog();
+            string selectedDirectory = directoryListForm.returnString;
+            int intSelectedDirectory = directoryListForm.returnIndex;
+            directoryListForm = null;
+            if (intSelectedDirectory > -1)
+            {
+                // Executed on next load
+                AppData.SaveKeyValue("deletePluginPath", selectedDirectory);
+                Application_Restart();
+            }
+        }
+
+        private void Application_Restart()
+        {
+            try
+            {
+                Application.Restart();
+                Environment.Exit(0);
+            }
+            catch { }
+        }
+
+        private void mnuForeignKeyMissing_Click(object sender, EventArgs e)
+        {
+            mnuIT_Tools.DropDown.Hide();
+            // Get list of Non-foriegn keys - with perhaps one intended as foreign key
+            DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_PK = 'False' AND is_FK = 'False' AND DataType = 'int'", currentSql.myTable));
+            if (drs.Count() > 0)
+            {
+                // 1. Get user choice for proposed FK
+                List<string> columnList = new List<string>();
+                foreach (DataRow dr in drs)
+                {
+                    columnList.Add(dr["ColumnName"].ToString());
+                }
+                frmListItems nonFK_ListForm = new frmListItems();
+                nonFK_ListForm.myList = columnList;
+                nonFK_ListForm.myJob = frmListItems.job.SelectString;
+                nonFK_ListForm.Text = "Select column you want to make a foreign key";
+                nonFK_ListForm.ShowDialog();
+                string selectedNonFK = nonFK_ListForm.returnString;
+                int selectedNonFKIndex = nonFK_ListForm.returnIndex;
+                nonFK_ListForm = null;
+                if (selectedNonFKIndex > -1 && !String.IsNullOrEmpty(selectedNonFK))
+                {
+                    // 2. Get user choice for proposed Ref Table
+                    DataRow[] drs2 = dataHelper.fieldsDT.Select("is_PK = 'True'");
+                    List<string> refTableList = new List<string>();
+                    foreach (DataRow dr2 in drs2)
+                    {
+                        refTableList.Add(dr2["TableName"].ToString());
+                    }
+                    frmListItems RefTable_ListForm = new frmListItems();
+                    RefTable_ListForm.myList = refTableList;
+                    RefTable_ListForm.myJob = frmListItems.job.SelectString;
+                    RefTable_ListForm.Text = "Select Reference Table";
+                    RefTable_ListForm.ShowDialog();
+                    string selectedRefTable = RefTable_ListForm.returnString;
+                    int selectedRefTableIndex = RefTable_ListForm.returnIndex;
+                    RefTable_ListForm = null;
+                    if (selectedRefTableIndex > -1)
+                    {
+                        DataRow dr = drs[selectedNonFKIndex];  // Index in form same as index in drs.
+                        // Get two inner join fields
+                        field refField = dataHelper.getTablePrimaryKeyField(selectedRefTable);
+                        field nonFkField = dataHelper.getFieldFromFieldsDT(currentSql.myTable, selectedNonFK);
+                        StringBuilder sbWhere = new StringBuilder();
+                        sbWhere.Append(" (NOT EXISTS (SELECT ");
+                        sbWhere.Append(refField.fieldName + " FROM " + refField.table + " AS " + refField.tableAlias);
+                        sbWhere.Append(" WHERE ");
+                        sbWhere.Append(dataHelper.QualifiedAliasFieldName(refField) + " = " + dataHelper.QualifiedAliasFieldName(nonFkField));
+                        sbWhere.Append("))");
+                        txtManualFilter.Text = sbWhere.ToString(); // Will change currentSql.returnSql();
+                        msgText(Properties.MyResources.eachOfDisplayedRowsHasEmptyFK + "  " + Properties.MyResources.ifNoDisplayedRowsNoEmptyFK);
+                        writeGrid_NewFilter(false);
+                    }
+                }
+            }
+        }
+
+        private void mnuRowsUnsedAsFK_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                //1.  Get table of unused rows
+                DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("RefTable = '{0}'", currentSql.myTable));
+                StringBuilder sb = new StringBuilder();
+                field pk = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
+                sb.AppendLine(String.Format("Select [{0}].[{1}] from {0} Where ", pk.table, pk.fieldName));
+                List<String> andConditions = new List<String>();
+                if (drs.Length > 0)
+                {
+                    foreach (DataRow row in drs)
+                    {
+                        String atomicStatement = String.Format("NOT EXISTS (Select * FROM {2} WHERE [{0}].[{1}] = [{2}].[{3}])",
+                            pk.table, pk.fieldName, row["TableName"], row["ColumnName"]);
+                        andConditions.Add(atomicStatement);
+                    }
+                    string whereCondition = String.Join(" AND ", andConditions);
+                    sb.AppendLine(whereCondition);
+
+                    //1. Get Datatable with ID numbers of unused rows
+                    string sqlString = sb.ToString();
+                    DataTable dt = new DataTable();
+                    MsSql.FillDataTable(dt, sqlString);
+                    if (dt.Rows.Count > 0)
+                    {
+                        List<String> orConditions = new List<String>();
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            String atomicStatement = String.Format("([{0}] = '{1}' OR [{0}] IS NULL)", pk.fieldName, row[pk.fieldName].ToString());
+                            orConditions.Add(atomicStatement);
+                        }
+                        whereCondition = String.Join(" OR ", orConditions);
+                        setTxtManualFilterText(whereCondition);
+                        writeGrid_NewFilter(false);
+                        // Message box
+                        String strMessage = "These rows are not being used as a foreign key.";
+                        MessageBox.Show(strMessage);
+                    }
+                    else
+                    {
+                        MessageBox.Show(String.Format("Every row in {0} is being used as Foreign Key.", currentSql.myTable));
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(String.Format("{0} not used as Foreign Key.", currentSql.myTable));
+                }
+            }
+        }
+
+        private void mnuToolsDatabaseInformation_Click(object sender, EventArgs e)
+        {
+            frmDatabaseInfo formDBI = new frmDatabaseInfo();
+            formDBI.ShowDialog();
+        }
+
+        private void mnuDisplayKeysList_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                // Get list of display keys for current table
+                frmListItems frmDisplayKeys = new frmListItems();
+                frmDisplayKeys.myList = new List<string>();
+                frmDisplayKeys.mySelectedList = new List<string>();
+                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
+                DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
+                List<string> columnList = new List<string>();
+                foreach (DataRow dr in drsList)
+                {
+                    columnList.Add(dr["ColumnName"].ToString());
+                }
+                List<string> dkColumnList = new List<string>();
+                foreach (DataRow dr in drsSelectedList)
+                {
+                    dkColumnList.Add(dr["ColumnName"].ToString());
+                }
+                frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
+                frmDisplayKeys.Text = "Edit Display Keys (internal list)";
+                frmDisplayKeys.myList = columnList;
+                frmDisplayKeys.mySelectedList = dkColumnList;
+                frmDisplayKeys.ShowDialog();
+                List<string> selectedDKs = frmDisplayKeys.mySelectedList;
+                int intSelectedDirectory = frmDisplayKeys.returnIndex;
+                frmDisplayKeys = null;
+                if (intSelectedDirectory > -1)
+                {
+                    //Select the DKs - NO - must turn unselected off
+                    foreach (String columnName in columnList)
+                    {
+                        // Set Dk in fields
+                        DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
+                        if (selectedDKs.Contains(columnName))
+                        {
+                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
+                        }
+                        else
+                        {
+                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
+                        }
+                    }
+                }
+            }
+        }
+
+        private void mnuMergeDKs_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                tableOptions.mergingDuplicateKeys = !tableOptions.mergingDuplicateKeys;
+                if (tableOptions.mergingDuplicateKeys)
+                {
+                    MergeDuplicateDKs();
+                }
+            }
+        }
+
+        private void mnuToolDuplicateDisplayKeys_Click(object sender, EventArgs e)
+        {
+            // Get display key list of strings from fields table
+            if (currentSql != null)
+            {
+                showDuplicateDispayKeys();
+            }
+
+        }
+
+        private void showDuplicateDispayKeys()
+        {
+            String filter = String.Format("TableName = '{0}' and is_DK = 'true'", currentSql.myTable);
+            DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
+
+            if (drsDKFieldsDT.Count() == 0) { msgText("No display keys!"); return; }
+
+            List<String> dkFields = new List<String>();
+            foreach (DataRow row in drsDKFieldsDT)
+            {
+                dkFields.Add(row["ColumnName"].ToString());
+            }
+            string fields = String.Join(",", dkFields);
+            string fields2 = fields + ", Count(*)";
+            String sqlSelectDuplicates = String.Format("Select {0} From {1} Group By {2} Having Count(*) > 1", fields2, currentSql.myTable, fields);
+            MsSqlWithDaDt DaDt = new MsSqlWithDaDt(sqlSelectDuplicates);
+            if (DaDt.errorMsg != string.Empty)
+            {
+                MessageBox.Show(DaDt.errorMsg, "ERROR in mnuToolDuplicateDisplayKeys_Click");
+                return;
+            }
+            if (DaDt.dt.Rows.Count == 0)
+            {
+                tableOptions.mergingDuplicateKeys = false;
+                mnuMergeDKs.Checked = false;
+                MessageBox.Show(Properties.MyResources.EverythingOkNoDuplicates);
+                return;
+            }
+            msgText("Count: " + DaDt.dt.Rows.Count.ToString());
+            List<String> andConditions = new List<String>();
+            foreach (DataRow row in DaDt.dt.Rows)
+            {
+                List<String> atomicStatements = new List<String>();
+                foreach (string dkField in dkFields)
+                {
+                    field fl = new field(currentSql.myTable, dkField, DbType.String, 0);
+                    String atomicStatement = String.Format("({0} = '{1}' OR {0} IS NULL)", dataHelper.QualifiedAliasFieldName(fl), row[dkField].ToString());
+                    atomicStatements.Add(atomicStatement);
+                }
+                andConditions.Add("(" + String.Join(" AND ", atomicStatements) + ")");
+            }
+            string whereCondition = String.Join(" OR ", andConditions);
+            tableOptions.clearingAllFilters = true;
+            ClearAllGridFilters();
+            tableOptions.clearingAllFilters = false;
+            txtManualFilter.Text = whereCondition;
+            // Set orderby
+            List<orderBy> obList = new List<orderBy>();
+            foreach (string flName in dkFields)
+            {
+                field fl = dataHelper.getFieldFromFieldsDT(currentSql.myTable, flName);
+                orderBy ob = new orderBy(fl, SortOrder.Ascending);
+                obList.Add(ob);
+            }
+            currentSql.myOrderBys = obList;
+            writeGrid_NewFilter(true);
+        }
+
+        private void MergeDuplicateDKs()
+        {
+            // Calleed by menu item - tableOptions.mergingDuplicateDKs set
+            try
+            {
+                showDuplicateDispayKeys();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        #endregion
+
+        //----------------------------------------------------------------------------------------------------------------------
+
+        #region LAST FILTER METHODSs
+
         private bool UpdateLastFilter()
         {
             bool filterRowChanged = false;
@@ -2259,7 +2651,7 @@ namespace SqlEditor
 
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Events - Filter cmb events & related functions
+        #region Events - Filter Combos
 
         // (A) Basic ideas
         //      1. Manually changing GridFFcombo will set up GridFVcombo, select the empty-string and rewrite the grid.
@@ -2793,7 +3185,7 @@ namespace SqlEditor
 
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Buttons - All except Add-Delete_Merge (rbView,rbAdd, Reload, Wide columns)
+        #region Buttons - rbView,rbAdd,reload,wide-columns
 
         private void rbView_CheckedChanged(object sender, EventArgs e)
         {
@@ -2898,7 +3290,7 @@ namespace SqlEditor
 
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Button - CRUD (Add-Delete-Merge functions) 
+        #region Button - Add-Delete-Merge (plus CRUD methods) 
 
         private void btnDeleteAddMerge_Click(object sender, EventArgs e)
         {
@@ -3629,397 +4021,6 @@ namespace SqlEditor
         private void dataGridView1_Enter(object sender, EventArgs e)
         {
             if (programMode == ProgramMode.edit) msgDebug(", EnterGrid");
-        }
-
-        #endregion
-
-        //----------------------------------------------------------------------------------------------------------------------
-
-        #region IT menu events
-
-        private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
-        {
-            if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
-            {
-                Application_Restart();
-            }
-            else
-            {
-                foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
-                {
-                    // txtManualFilter shown if mnuShowITTools.Checked;
-                    // So if you want them to show, check it if it is not checked
-                    if (mi.Name != mnuShowITTools.Name)
-                    {
-                        mi.Visible = mnuShowITTools.Checked;
-                        txtManualFilter.Visible = mnuShowITTools.Checked;
-                        lblManualFilter.Visible = mnuShowITTools.Checked;
-                        txtManualFilter.Enabled = mnuShowITTools.Checked;
-                    }
-                }
-                if (mnuShowITTools.Checked)
-                {
-                    SetTableLayoutPanelHeight();
-                    mnuIT_Tools.ShowDropDown();
-                    rbMerge.Visible = mnuShowITTools.Checked;
-                }
-            }
-        }
-
-        private void mnuLoadPlugin_Click(object sender, EventArgs e)
-        {
-            string myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string selectedFolder = SelectFolder(myDocumentsFolder, false);
-            if (selectedFolder != string.Empty)
-            {
-                if (Directory.Exists(selectedFolder))
-                {
-                    string directoryName = new DirectoryInfo(selectedFolder).Name;
-                    string appDataFolder = Application.CommonAppDataPath;
-                    if (Directory.Exists(appDataFolder))
-                    {
-                        string plugInFolder = String.Format("{0}\\{1}\\{2}", appDataFolder, "PluginsToConsume", directoryName);
-                        if (Directory.Exists(plugInFolder))
-                        {
-                            Directory.Delete(plugInFolder, true);
-                        }
-                        Directory.CreateDirectory(plugInFolder);
-                        CopyDirectory(selectedFolder, plugInFolder, true);
-                        Application_Restart();
-                    }
-                }
-            }
-        }
-
-        static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
-        {
-            // Get information about the source directory
-            var dir = new DirectoryInfo(sourceDir);
-
-            // Check if the source directory exists
-            if (!dir.Exists) { return; }
-
-            // Cache directories before we start copying
-            DirectoryInfo[] dirs = dir.GetDirectories();
-
-            // Create the destination directory
-            Directory.CreateDirectory(destinationDir);
-
-            // Get the files in the source directory and copy to the destination directory
-            foreach (FileInfo file in dir.GetFiles())
-            {
-                string targetFilePath = Path.Combine(destinationDir, file.Name);
-                file.CopyTo(targetFilePath);
-            }
-
-            // If recursive and copying subdirectories, recursively call this method
-            if (recursive)
-            {
-                foreach (DirectoryInfo subDir in dirs)
-                {
-                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
-                    CopyDirectory(subDir.FullName, newDestinationDir, true);
-                }
-            }
-        }
-
-        private void mnuRemovePlugin_Click(object sender, EventArgs e)
-        {
-            // Get information about the source directory
-            string plugInDirectory = String.Format("{0}\\{1}", Application.CommonAppDataPath, "PluginsToConsume");
-            DirectoryInfo dirInfo = new DirectoryInfo(plugInDirectory);
-
-            // Check if the source directory exists
-            if (!dirInfo.Exists) { return; }
-            // Cache directories before we start copying
-            DirectoryInfo[] subDirsInfo = dirInfo.GetDirectories();
-            List<string> pluginDirectories = new List<string>();
-            foreach (DirectoryInfo subDir in subDirsInfo)
-            {
-                pluginDirectories.Add(subDir.FullName);
-            }
-
-            frmListItems directoryListForm = new frmListItems();
-            directoryListForm.myList = pluginDirectories;
-            directoryListForm.myJob = frmListItems.job.SelectString;
-            directoryListForm.Text = "Select Plugin";
-            directoryListForm.ShowDialog();
-            string selectedDirectory = directoryListForm.returnString;
-            int intSelectedDirectory = directoryListForm.returnIndex;
-            directoryListForm = null;
-            if (intSelectedDirectory > -1)
-            {
-                // Executed on next load
-                AppData.SaveKeyValue("deletePluginPath", selectedDirectory);
-                Application_Restart();
-            }
-        }
-
-        private void Application_Restart()
-        {
-            try
-            {
-                Application.Restart();
-                Environment.Exit(0);
-            }
-            catch { }
-        }
-
-        private void mnuForeignKeyMissing_Click(object sender, EventArgs e)
-        {
-            mnuIT_Tools.DropDown.Hide();
-            // Get list of Non-foriegn keys - with perhaps one intended as foreign key
-            DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_PK = 'False' AND is_FK = 'False' AND DataType = 'int'", currentSql.myTable));
-            if (drs.Count() > 0)
-            {
-                // 1. Get user choice for proposed FK
-                List<string> columnList = new List<string>();
-                foreach (DataRow dr in drs)
-                {
-                    columnList.Add(dr["ColumnName"].ToString());
-                }
-                frmListItems nonFK_ListForm = new frmListItems();
-                nonFK_ListForm.myList = columnList;
-                nonFK_ListForm.myJob = frmListItems.job.SelectString;
-                nonFK_ListForm.Text = "Select column you want to make a foreign key";
-                nonFK_ListForm.ShowDialog();
-                string selectedNonFK = nonFK_ListForm.returnString;
-                int selectedNonFKIndex = nonFK_ListForm.returnIndex;
-                nonFK_ListForm = null;
-                if (selectedNonFKIndex > -1 && !String.IsNullOrEmpty(selectedNonFK))
-                {
-                    // 2. Get user choice for proposed Ref Table
-                    DataRow[] drs2 = dataHelper.fieldsDT.Select("is_PK = 'True'");
-                    List<string> refTableList = new List<string>();
-                    foreach (DataRow dr2 in drs2)
-                    {
-                        refTableList.Add(dr2["TableName"].ToString());
-                    }
-                    frmListItems RefTable_ListForm = new frmListItems();
-                    RefTable_ListForm.myList = refTableList;
-                    RefTable_ListForm.myJob = frmListItems.job.SelectString;
-                    RefTable_ListForm.Text = "Select Reference Table";
-                    RefTable_ListForm.ShowDialog();
-                    string selectedRefTable = RefTable_ListForm.returnString;
-                    int selectedRefTableIndex = RefTable_ListForm.returnIndex;
-                    RefTable_ListForm = null;
-                    if (selectedRefTableIndex > -1)
-                    {
-                        DataRow dr = drs[selectedNonFKIndex];  // Index in form same as index in drs.
-                        // Get two inner join fields
-                        field refField = dataHelper.getTablePrimaryKeyField(selectedRefTable);
-                        field nonFkField = dataHelper.getFieldFromFieldsDT(currentSql.myTable, selectedNonFK);
-                        StringBuilder sbWhere = new StringBuilder();
-                        sbWhere.Append(" (NOT EXISTS (SELECT ");
-                        sbWhere.Append(refField.fieldName + " FROM " + refField.table + " AS " + refField.tableAlias);
-                        sbWhere.Append(" WHERE ");
-                        sbWhere.Append(dataHelper.QualifiedAliasFieldName(refField) + " = " + dataHelper.QualifiedAliasFieldName(nonFkField));
-                        sbWhere.Append("))");
-                        txtManualFilter.Text = sbWhere.ToString(); // Will change currentSql.returnSql();
-                        msgText(Properties.MyResources.eachOfDisplayedRowsHasEmptyFK + "  " + Properties.MyResources.ifNoDisplayedRowsNoEmptyFK);
-                        writeGrid_NewFilter(false);
-                    }
-                }
-            }
-        }
-
-        private void mnuRowsUnsedAsFK_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                //1.  Get table of unused rows
-                DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("RefTable = '{0}'", currentSql.myTable));
-                StringBuilder sb = new StringBuilder();
-                field pk = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
-                sb.AppendLine(String.Format("Select [{0}].[{1}] from {0} Where ", pk.table, pk.fieldName));
-                List<String> andConditions = new List<String>();
-                if (drs.Length > 0)
-                {
-                    foreach (DataRow row in drs)
-                    {
-                        String atomicStatement = String.Format("NOT EXISTS (Select * FROM {2} WHERE [{0}].[{1}] = [{2}].[{3}])",
-                            pk.table, pk.fieldName, row["TableName"], row["ColumnName"]);
-                        andConditions.Add(atomicStatement);
-                    }
-                    string whereCondition = String.Join(" AND ", andConditions);
-                    sb.AppendLine(whereCondition);
-
-                    //1. Get Datatable with ID numbers of unused rows
-                    string sqlString = sb.ToString();
-                    DataTable dt = new DataTable();
-                    MsSql.FillDataTable(dt, sqlString);
-                    if (dt.Rows.Count > 0)
-                    {
-                        List<String> orConditions = new List<String>();
-                        foreach (DataRow row in dt.Rows)
-                        {
-                            String atomicStatement = String.Format("([{0}] = '{1}' OR [{0}] IS NULL)", pk.fieldName, row[pk.fieldName].ToString());
-                            orConditions.Add(atomicStatement);
-                        }
-                        whereCondition = String.Join(" OR ", orConditions);
-                        setTxtManualFilterText(whereCondition);
-                        writeGrid_NewFilter(false);
-                        // Message box
-                        String strMessage = "These rows are not being used as a foreign key.";
-                        MessageBox.Show(strMessage);
-                    }
-                    else
-                    {
-                        MessageBox.Show(String.Format("Every row in {0} is being used as Foreign Key.", currentSql.myTable));
-                    }
-                }
-                else
-                {
-                    MessageBox.Show(String.Format("{0} not used as Foreign Key.", currentSql.myTable));
-                }
-            }
-        }
-
-        private void mnuToolsDatabaseInformation_Click(object sender, EventArgs e)
-        {
-            frmDatabaseInfo formDBI = new frmDatabaseInfo();
-            formDBI.ShowDialog();
-        }
-
-        private void mnuDisplayKeysList_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                // Get list of display keys for current table
-                frmListItems frmDisplayKeys = new frmListItems();
-                frmDisplayKeys.myList = new List<string>();
-                frmDisplayKeys.mySelectedList = new List<string>();
-                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
-                DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
-                List<string> columnList = new List<string>();
-                foreach (DataRow dr in drsList)
-                {
-                    columnList.Add(dr["ColumnName"].ToString());
-                }
-                List<string> dkColumnList = new List<string>();
-                foreach (DataRow dr in drsSelectedList)
-                {
-                    dkColumnList.Add(dr["ColumnName"].ToString());
-                }
-                frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
-                frmDisplayKeys.Text = "Edit Display Keys (internal list)";
-                frmDisplayKeys.myList = columnList;
-                frmDisplayKeys.mySelectedList = dkColumnList;
-                frmDisplayKeys.ShowDialog();
-                List<string> selectedDKs = frmDisplayKeys.mySelectedList;
-                int intSelectedDirectory = frmDisplayKeys.returnIndex;
-                frmDisplayKeys = null;
-                if (intSelectedDirectory > -1)
-                {
-                    //Select the DKs - NO - must turn unselected off
-                    foreach (String columnName in columnList)
-                    {
-                        // Set Dk in fields
-                        DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
-                        if (selectedDKs.Contains(columnName))
-                        {
-                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
-                        }
-                        else
-                        {
-                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
-                        }
-                    }
-                }
-            }
-        }
-
-        private void mnuMergeDKs_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                tableOptions.mergingDuplicateKeys = !tableOptions.mergingDuplicateKeys;
-                if (tableOptions.mergingDuplicateKeys)
-                {
-                    MergeDuplicateDKs();
-                }
-            }
-        }
-
-        private void mnuToolDuplicateDisplayKeys_Click(object sender, EventArgs e)
-        {
-            // Get display key list of strings from fields table
-            if (currentSql != null)
-            {
-                showDuplicateDispayKeys();
-            }
-
-        }
-
-        private void showDuplicateDispayKeys()
-        {
-            String filter = String.Format("TableName = '{0}' and is_DK = 'true'", currentSql.myTable);
-            DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
-
-            if (drsDKFieldsDT.Count() == 0) { msgText("No display keys!"); return; }
-
-            List<String> dkFields = new List<String>();
-            foreach (DataRow row in drsDKFieldsDT)
-            {
-                dkFields.Add(row["ColumnName"].ToString());
-            }
-            string fields = String.Join(",", dkFields);
-            string fields2 = fields + ", Count(*)";
-            String sqlSelectDuplicates = String.Format("Select {0} From {1} Group By {2} Having Count(*) > 1", fields2, currentSql.myTable, fields);
-            MsSqlWithDaDt DaDt = new MsSqlWithDaDt(sqlSelectDuplicates);
-            if (DaDt.errorMsg != string.Empty)
-            {
-                MessageBox.Show(DaDt.errorMsg, "ERROR in mnuToolDuplicateDisplayKeys_Click");
-                return;
-            }
-            if (DaDt.dt.Rows.Count == 0)
-            {
-                tableOptions.mergingDuplicateKeys = false;
-                mnuMergeDKs.Checked = false;
-                MessageBox.Show(Properties.MyResources.EverythingOkNoDuplicates);
-                return;
-            }
-            msgText("Count: " + DaDt.dt.Rows.Count.ToString());
-            List<String> andConditions = new List<String>();
-            foreach (DataRow row in DaDt.dt.Rows)
-            {
-                List<String> atomicStatements = new List<String>();
-                foreach (string dkField in dkFields)
-                {
-                    field fl = new field(currentSql.myTable, dkField, DbType.String, 0);
-                    String atomicStatement = String.Format("({0} = '{1}' OR {0} IS NULL)", dataHelper.QualifiedAliasFieldName(fl), row[dkField].ToString());
-                    atomicStatements.Add(atomicStatement);
-                }
-                andConditions.Add("(" + String.Join(" AND ", atomicStatements) + ")");
-            }
-            string whereCondition = String.Join(" OR ", andConditions);
-            tableOptions.clearingAllFilters = true;            
-            ClearAllGridFilters();
-            tableOptions.clearingAllFilters = false;
-            txtManualFilter.Text = whereCondition;
-            // Set orderby
-            List<orderBy> obList = new List<orderBy>();
-            foreach (string flName in dkFields)
-            {
-                field fl = dataHelper.getFieldFromFieldsDT(currentSql.myTable, flName);
-                orderBy ob = new orderBy(fl,SortOrder.Ascending);
-                obList.Add(ob);
-            }
-            currentSql.myOrderBys = obList; 
-            writeGrid_NewFilter(true);
-        }
-
-        private void MergeDuplicateDKs()
-        {
-            // Calleed by menu item - tableOptions.mergingDuplicateDKs set
-            try 
-            { 
-                showDuplicateDispayKeys();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         #endregion

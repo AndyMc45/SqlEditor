@@ -59,9 +59,8 @@ namespace SqlEditor
             {
                 container = new UnityContainer();
                 // Get recursive list of dll files
-
-                List<string> dllFiles = GetListDllFiles(pluginFilePath);
-                // string[] files = Directory.GetFiles(pluginFilePath, "*.dll");
+                int currentDepth = 0;
+                List<string> dllFiles = GetListDllFiles(pluginFilePath, 1, ref currentDepth);
 
                 Int32 pluginCount = 1;
 
@@ -69,7 +68,9 @@ namespace SqlEditor
                 {
                     try
                     {
-                        Assembly assembly = Assembly.LoadFrom(file);
+                        Assembly assembly;
+                        try { assembly = Assembly.LoadFrom(file); }
+                        catch { break; }
 
                         IEnumerable<Type> types = GetLoadableTypes(assembly); // Double catch f
                         foreach (Type T in types)
@@ -87,9 +88,9 @@ namespace SqlEditor
                     }
                     catch (ReflectionTypeLoadException ex)
                     {
-
+                            MessageBox.Show(ex.Message, "Error loading plugin", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                }
+            }
                 // At this point the unity container has all the plugin data loaded onto it. 
                 // For each plugin, add its menustrip to plugInMenus
                 // For each plugin, add its translations to the ColumnHeader
@@ -141,7 +142,7 @@ namespace SqlEditor
             return plugInMenus;
         }
 
-        static List<string> GetListDllFiles(string sourceDir)
+        static List<string> GetListDllFiles(string sourceDir, int depthOfDirectorySearch, ref int currentDepth)
         {
             List<string> dllList = new List<string>();
             // Get information about the source directory
@@ -159,10 +160,14 @@ namespace SqlEditor
             {
                 dllList.Add(file.FullName);
             }
-            foreach (DirectoryInfo subDir in dirs)
+            if (currentDepth < depthOfDirectorySearch)
             {
-                List<string> subDllList = GetListDllFiles(subDir.FullName);
-                foreach (string dll in subDllList) { dllList.Add(dll); }  // Long way but clear
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    currentDepth++;
+                    List<string> subDllList = GetListDllFiles(subDir.FullName, depthOfDirectorySearch, ref currentDepth );
+                    foreach (string dll in subDllList) { dllList.Add(dll); }  // Long way but clear
+                }
             }
             return dllList;
         }

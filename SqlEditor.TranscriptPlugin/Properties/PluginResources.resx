@@ -133,7 +133,7 @@
     <value>Print Transcript</value>
   </data>
   <data name="chkIncludeAudits.Text" xml:space="preserve">
-    <value>Print Transcript</value>
+    <value>Include audited classes</value>
   </data>
   <data name="course" xml:space="preserve">
     <value>Course</value>
@@ -233,5 +233,8 @@
   </data>
   <data name="updateSuccess" xml:space="preserve">
     <value>Update Success</value>
+  </data>
+  <data name="btnPrintTranscript.Text1" xml:space="preserve">
+    <value />
   </data>
 </root>

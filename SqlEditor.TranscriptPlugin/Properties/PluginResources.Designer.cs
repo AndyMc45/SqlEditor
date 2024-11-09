@@ -106,7 +106,16 @@ namespace SqlEditor.TranscriptPlugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Print Transcript.
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string btnPrintTranscript_Text1 {
+            get {
+                return ResourceManager.GetString("btnPrintTranscript.Text1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include audited classes.
         /// </summary>
         public static string chkIncludeAudits_Text {
             get {

@@ -132,6 +132,9 @@
   <data name="btnPrintTranscript.Text" xml:space="preserve">
     <value>成績單列印</value>
   </data>
+  <data name="chkIncludeAudits.Text" xml:space="preserve">
+    <value>包括旁聽成績</value>
+  </data>
   <data name="course" xml:space="preserve">
     <value>課程</value>
   </data>

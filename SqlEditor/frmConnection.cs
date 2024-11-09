@@ -163,10 +163,10 @@ namespace SqlEditor
                     cs = cs.Replace("{3}", password);
                 }
 
-                cs = cs.Replace("{{0}", this.txtServer.Text);
-                cs = cs.Replace("{{1}", this.txtDatabase.Text);
-                cs = cs.Replace("{{2}", this.txtUserId.Text);
-                cs = cs.Replace("{{3}", password);
+                cs = cs.Replace("{0}", this.txtServer.Text);
+                cs = cs.Replace("{1}", this.txtDatabase.Text);
+                cs = cs.Replace("{2}", this.txtUserId.Text);
+                cs = cs.Replace("{3}", password);
 
                 //Try to open connection
                 try
@@ -200,10 +200,10 @@ namespace SqlEditor
             // Get the proposed combo string pattern
             string strCS = cmbStrings.Text;
             // Make substitutions
-            strCS = strCS.Replace("{{0}", this.txtServer.Text);
-            strCS = strCS.Replace("{{1}", this.txtDatabase.Text);
-            strCS = strCS.Replace("{{2}", this.txtUserId.Text);
-            strCS = strCS.Replace("{{3}", password);
+            strCS = strCS.Replace("{0}", this.txtServer.Text);
+            strCS = strCS.Replace("{1}", this.txtDatabase.Text);
+            strCS = strCS.Replace("{2}", this.txtUserId.Text);
+            strCS = strCS.Replace("{3}", password);
             // Create connection String object
             connectionString conString = new connectionString(cmbStrings.Text, this.txtServer.Text, this.txtUserId.Text,
                         this.txtDatabase.Text, MsSql.databaseType);
