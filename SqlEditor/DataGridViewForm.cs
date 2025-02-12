@@ -2845,7 +2845,7 @@ namespace SqlEditor
             {
                 if (UpdateLastFilter())
                 {
-                    writeGrid_NewFilter(true);
+                    writeGrid_NewFilter(false);
                 }
             }
         }
