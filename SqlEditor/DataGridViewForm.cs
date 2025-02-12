@@ -35,7 +35,7 @@ namespace SqlEditor
     //          -- Selecting a column also sets currentDA.UpdateCommand (i.e. currentSql's dataadapter's UpdateCommand)
     //          -- User clicks on an edit column - textbox appears for non-keys, drop-down appears for FK.
     //          -- When user exits the cell, call currentDA.Update()
-     // 
+    // 
 
     public partial class DataGridViewForm : Form
     {
@@ -786,8 +786,9 @@ namespace SqlEditor
             tableOptions.writingNewFilter = false;
             tableOptions.writingNewPage = false;
 
-            formOptions.debugInt += 1;
-            msgTextAdd(" WG:" + formOptions.debugInt.ToString());
+            
+            formOptions.debugInt += 1;  // Number of times a new page is written
+            msgDebug(" WNPage:" + formOptions.debugInt.ToString());
 
             if (formOptions.runTimer) { watch.Stop(); }; msgTimer(" NewPage6: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
         }
@@ -982,7 +983,7 @@ namespace SqlEditor
             }
             // New
             toolStripBottom.Visible = true;
-            
+
         }
 
         private void SetColumnsReadOnlyProperty()
@@ -1065,7 +1066,7 @@ namespace SqlEditor
                 }
             }
         }
-         
+
 
         // Results of this coloring use in color combo boxes above
         // Called when Write_NewPage (near end),
@@ -1319,7 +1320,7 @@ namespace SqlEditor
 
 
         #endregion
-        
+
 
         #region MENU EVENTS - Main Menu events
 
@@ -1720,7 +1721,7 @@ namespace SqlEditor
         #endregion
 
         //----------------------------------------------------------------------------------------------------------------------
- 
+
         #region MENU EVENTS - IT menu events
 
         private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
@@ -2788,14 +2789,14 @@ namespace SqlEditor
             if (tableOptions.writingNewTable) { return; }
 
             // Done in write_Grid for NewTable.  Will call WriteGrid_NewFilter
-            RebindAllComboFilterValueCombos();  
+            RebindAllComboFilterValueCombos();
         }
 
         public void cmbGridFilterFields_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(tableOptions.clearingAllFilters)
-            { 
-                return; 
+            if (tableOptions.clearingAllFilters)
+            {
+                return;
             }
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
@@ -2831,13 +2832,13 @@ namespace SqlEditor
                 }
             }
         }
-            
+
         private void cmbGridFilterValue_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (tableOptions.writingNewTable 
-                || tableOptions.clearingAllFilters    
+            if (tableOptions.writingNewTable
+                || tableOptions.clearingAllFilters
                 || tableOptions.delayWriteGrid)  // Delay for all "all calls" 
-                { return; }
+            { return; }
 
             ComboBox cmb = (ComboBox)sender;
             if (cmb.SelectedIndex > -1)  // If data source null
@@ -2851,7 +2852,7 @@ namespace SqlEditor
 
         private void cmbComboFilterValue_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if ((tableOptions.writingNewTable && !tableOptions.writingNewPage) 
+            if ((tableOptions.writingNewTable && !tableOptions.writingNewPage)
                 || tableOptions.clearingAllFilters)
             {
                 return;
@@ -2862,7 +2863,7 @@ namespace SqlEditor
                 {
                     RebindAllGridFilterValueCombos();
                     if (!tableOptions.delayWriteGrid && !tableOptions.doNotWriteGrid)
-                    { 
+                    {
                         writeGrid_NewFilter(true);
                     }
                 }
@@ -3381,7 +3382,7 @@ namespace SqlEditor
                 String errMessage = String.Empty;
                 errMessage = AddRow(dkWhere, whereList);
                 if (errMessage != String.Empty)
-                { 
+                {
                     errMessage = String.Format("Error in AddRow. ({0} Display Keys).{1}Error Message:{2}"
                     , dkWhere.Count.ToString(), Environment.NewLine, errMessage);
                     MessageBox.Show(errMessage, "Error in Add Row", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -3604,7 +3605,7 @@ namespace SqlEditor
                 {
                     reply = MessageBox.Show(msgSB.ToString(), "Merge two rows?", MessageBoxButtons.YesNo);
                 }
-                else  { reply = DialogResult.Yes; }
+                else { reply = DialogResult.Yes; }
                 if (reply == DialogResult.Yes)
                 {
                     foreach (DataRow dr in fieldsDTdrs)
@@ -4381,6 +4382,29 @@ namespace SqlEditor
                         }
                     }
                 }
+            }
+        }
+
+        private void btnExtra_Click(object sender, EventArgs e)
+        {
+            // This is usually hidden, but can be shown in designer and then used to test things
+            String strSql = "GetErrorExceedCreditLimitsAll";
+            String strMsg = MsSql.FillDataTable( dataHelper.extraDT, strSql, CommandType.StoredProcedure );
+
+            if (strMsg != String.Empty)
+            {
+                MessageBox.Show(strMsg, "Stored Procedure Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else if (dataHelper.extraDT.Rows.Count == 0)
+            {
+
+                MessageBox.Show("No records in stored procedure", "O.K.", MessageBoxButtons.OK);
+            }
+            else
+            {
+                frmDatabaseInfo formDBI = new frmDatabaseInfo();
+                formDBI.job = "Extra";
+                formDBI.ShowDialog();
             }
         }
     }

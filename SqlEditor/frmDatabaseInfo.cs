@@ -14,9 +14,14 @@ namespace SqlEditor
 
         private void frmDatabaseInfo_Load(object sender, EventArgs e)
         {
+
             if (String.IsNullOrEmpty(job))
             {
                 if (dataHelper.fieldsDT != null) { dgvMain.DataSource = dataHelper.fieldsDT; }
+            }
+            else if (job == "Extra")
+            {
+                if (dataHelper.extraDT != null) { dgvMain.DataSource = dataHelper.extraDT; }
             }
         }
 
@@ -63,6 +68,11 @@ namespace SqlEditor
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void cmdExtra_Click(object sender, EventArgs e)
+        {
+            if (dataHelper.extraDT != null) { dgvMain.DataSource = dataHelper.extraDT; }
         }
     }
 }

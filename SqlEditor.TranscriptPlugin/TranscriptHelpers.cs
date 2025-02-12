@@ -88,6 +88,7 @@ namespace SqlEditor.TranscriptPlugin
             PrintToWord.transcriptDT = new System.Data.DataTable();
             // I fill the transcript table into a datatable, and show it in the "transcript" tab
             string strError = MsSql.FillDataTable(PrintToWord.transcriptDT, sqlString);
+            // MessageBox.Show(sqlString);  // Use this to get the sql.  ^C will copy the content.
             if (strError != string.Empty)
             {
                 sbErrors.AppendLine(String.Format("ERROR filling transcript table: {0}", strError));
@@ -127,11 +128,11 @@ namespace SqlEditor.TranscriptPlugin
                 dataHelper.AddRowToFieldsDT("StudentReq", 7, "Earned", "Earned", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 8, "Needed", "Needed", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 9, "InProgress", "InProgress", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
-                //                dataHelper.AddRowToFieldsDT("StudentReq", 18, "Icredits", "Icredits", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                // dataHelper.AddRowToFieldsDT("StudentReq", 18, "Icredits", "Icredits", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
             }
 
             // 2.  Get the Student Requirements table via SQL
-            StringBuilder sb = MsSql.getFillStudentRequirementTableSql(studentDegreeID);
+            StringBuilder sb = TranscriptMsSql.getFillStudentRequirementTableSql(studentDegreeID);
             DataTable requirementsDT = new DataTable();
             String sqlString = sb.ToString();
             MsSql.FillDataTable(requirementsDT, sqlString);

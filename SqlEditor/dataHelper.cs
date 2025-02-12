@@ -16,6 +16,7 @@ namespace SqlEditor
         public static DataTable indexColumnsDT { get; set; }
         public static DataTable comboDT { get; set; }
         public static DataTable lastFilterValuesDT { get; set; }
+        public static DataTable extraDT { get; set; }
 
         public static void initializeDataTables()
         {
@@ -26,6 +27,7 @@ namespace SqlEditor
             indexesDT = new DataTable("indexesDT");
             indexColumnsDT = new DataTable("indexColumnsDT");
             comboDT = new DataTable("comboDT");
+            extraDT = new DataTable("extraDT");  // Don't use across time, and so can be redone at any time
             lastFilterValuesDT = new DataTable("lastFilterValuesDT");
             // Add columns to lastFilterValuesDt
             LastFilterValuesDT_AddColumns();

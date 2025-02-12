@@ -5,11 +5,122 @@ namespace SqlEditor.TranscriptPlugin
 {
     internal static class TranscriptMsSql
     {
+
+        public static StringBuilder getCTETranscriptSQL(int StudentDegreeID, string boolForCreditRows)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("   DECLARE @sd_ID int;");
+            sb.AppendLine(String.Format("   SET @sd_ID = {0}", StudentDegreeID.ToString()));
+            sb.AppendLine("");
+            sb.AppendLine("   DECLARE @sDegree_ID int;");
+            sb.AppendLine("   SET @sDegree_ID = (Select sd.degreeID from StudentDegrees as sd where sd.studentDegreeID = @sd_ID) ");
+            sb.AppendLine("");
+            sb.AppendLine("   DECLARE @sHandbook_ID int;");
+            sb.AppendLine("   SET @sHandbook_ID = (Select sd.handbookID from StudentDegrees as sd where sd.studentDegreeID = @sd_ID) ");
+            sb.AppendLine("");
+            sb.AppendLine("   DECLARE @BoolValue nchar(6);");
+            sb.AppendLine(String.Format("   SET @BoolValue = '{0}'", boolForCreditRows));
+            sb.AppendLine("");
+            sb.AppendLine("; with stTrans AS");
+            sb.AppendLine("(");
+            sb.AppendLine("   Select s.credits as sCredits, g.earnedCredits as eCredits, cDegreeLevel = cdl.degreeLevel, ");
+            sb.AppendLine("         cra.reqArea as cReqArea, cra.Ancestors as cReqAncestors, g.grade as cGrade, ");
+            sb.AppendLine("         g.creditsInQPA as cCreditsInQPA, g.QP as cGradeQP");
+            sb.AppendLine("      From Transcript as t  ");
+            sb.AppendLine("      inner join StudentDegrees as sd on t.studentDegreeID = sd.studentDegreeID AND sd.studentDegreeID = @sd_ID  -- Ian hua - Dao shuo");
+            sb.AppendLine("      inner join HandBooks as hb on sd.handbookID = hb.handbookID");
+            sb.AppendLine("      inner join Grades as g on t.gradeID = g.gradesID");
+            sb.AppendLine("      inner join GradeStatus as gs on t.gradeStatusID = gs.gradeStatusID");
+            sb.AppendLine("      inner join CourseTermSection as cts on t.courseTermSectionID = cts.courseTermSectionID");
+            sb.AppendLine("      inner join Section as s on s.sectionID = cts.sectionID");
+            sb.AppendLine("      Inner Join DegreeLevel as cdl on s.degreeLevelID = cdl.degreeLevelID ");
+            sb.AppendLine("      inner join CourseTerms as ct on ct.courseTermID = cts.courseTermID");
+            sb.AppendLine("      inner join Courses as c on c.courseID = ct.courseID");
+            sb.AppendLine("      inner join RequirementArea as cra on c.requirementAreaID = cra.requirementAreaID");
+            sb.AppendLine("   where gs.forCredit = @BoolValue");
+            sb.AppendLine(")");
+            return sb;
+        }
+
+        public static StringBuilder getFillStudentRequirementTableSql(int StudentDegreeID)
+        {
+            /// I added "courses" - but deleted the "Needed"-- calculate this in printout or datagrid ?
+            StringBuilder sb = getCTETranscriptSQL(StudentDegreeID, "True");
+            sb.AppendLine(" Select grt.cReqType as ReqType, grt.reqTypeDK as eReqTYpe, ra.reqArea as ReqArea, ra.eReqArea as eReqArea, dm.delMethName as DelMethName,");
+            sb.AppendLine("  dm.eDelMethName as eDelMethName, dm.deliveryLevel as rDeliveryLevel, gr.reqUnits as Required, gr.creditLimit as Limit");
+            sb.AppendLine("  , (Select Count(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ) ");
+            sb.AppendLine("  as Courses    ");
+            sb.AppendLine("  ,");
+            sb.AppendLine("  CASE");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'credits' or LOWER(grt.reqTypeDK) = 'hours' THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'qpa'THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'  ");
+            sb.AppendLine("    AND stTrans.cCreditsInQPA = 'True'");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'times' THEN 0");
+            sb.AppendLine("  Else 0 ");
+            sb.AppendLine("  END as Earned    ");
+            sb.AppendLine("  , ");
+            sb.AppendLine("  CASE");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'credits' or LOWER(grt.reqTypeDK) = 'hours' THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.cGrade = 'NG'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'times' THEN");
+            sb.AppendLine("  (Select Count(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.cGrade = 'NG'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  )");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'qpa' THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits * stTrans.cGradeQP) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'");
+            sb.AppendLine("    AND stTrans.cCreditsInQPA = 'True'");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  ELSE 0");
+            sb.AppendLine("  END as InProgress  ");
+            sb.AppendLine("  ,");
+            sb.AppendLine("  ra.zOrder");
+            sb.AppendLine(" ");
+            sb.AppendLine("  From GradRequirements as gr ");
+            sb.AppendLine("   Inner Join RequirementArea ra on gr.reqAreaID = ra.requirementAreaID");
+            sb.AppendLine("   Inner Join GradRequirementType as grt on gr.gradReqTypeID = grt.gradReqTypeID");
+            sb.AppendLine("   Inner Join DeliveryMethod as dm on gr.rDeliveryMethodID = dm.deliveryMethodID");
+            sb.AppendLine("   Inner Join Degrees as rDegree on gr.degreeID = rDegree.degreeID");
+            sb.AppendLine("   Inner Join DegreeLevel as rLevel on rDegree.degreeLevelID = rLevel.degreeLevelID");
+            sb.AppendLine("  where gr.degreeID = @sDegree_ID AND gr.handbookID = @sHandbook_ID");
+            sb.AppendLine("  ORDER BY ra.zOrder ");
+            return sb;
+        }
+
+
         public static void transcriptProblems(DataGridViewForm dgvForm)
         {
             if (dgvForm.currentSql != null && dgvForm.currentSql.myTable.ToLower() == "transcript")
             {
-                // 1.  Get first transcript problems into a data_table
+                // 1. Not for credit course has a earned Credit grade 
                 StringBuilder sb = new StringBuilder();
                 sb.Append("Select t.transcriptID ");
                 sb.Append("From Transcript as t ");
@@ -23,6 +134,7 @@ namespace SqlEditor.TranscriptPlugin
                 sb.Append("inner join DegreeLevel as cdl on s.degreeLevelID = cdl.degreeLevelID ");
                 sb.Append("Where(g.earnedCredits = 'true' or g.creditsInQPA = 'true') and gs.forCredit = 'false' ");
                 String strSQL = sb.ToString();
+                //Load data_table
                 DataTable dt = new DataTable();
                 MsSql.FillDataTable(dt, strSQL);
 
@@ -31,6 +143,7 @@ namespace SqlEditor.TranscriptPlugin
                 sbMessage.AppendLine("Summary: ");
                 string errMessage = string.Empty;
                 string successMessage = string.Empty;
+                // If there are error rows . . .
                 if (dt.Rows.Count > 0)
                 {
                     List<String> orConditions = new List<String>();
@@ -43,7 +156,7 @@ namespace SqlEditor.TranscriptPlugin
                     dgvForm.setTxtManualFilterText(whereCondition);
                     dgvForm.writeGrid_NewFilter(false);
                     // Message box
-                    errMessage = "Error: Students have grades in courses that are not for credit!!!";
+                    errMessage = "Error: Students auditing a course, but has a grade that earned Credit!!";
                     sbMessage.AppendLine(errMessage);
                     MessageBox.Show(sbMessage.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -53,7 +166,7 @@ namespace SqlEditor.TranscriptPlugin
                     sbMessage.AppendLine(successMessage);
                     MessageBox.Show(sbMessage.ToString(), "Test Passed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                // 2. Check for 2nd error
+                // 2. 2nd error - Student degree level is greater than course degree level
                 DialogResult reply = MessageBox.Show("Check for other errors?", "Check for errors", MessageBoxButtons.YesNo);
                 if (reply == DialogResult.Yes)
                 {
@@ -94,7 +207,7 @@ namespace SqlEditor.TranscriptPlugin
                         dgvForm.setTxtManualFilterText(whereCondition);
                         dgvForm.writeGrid_NewFilter(false);
                         // Message box
-                        errMessage = "Error: Graduate students can't take undergrad courses !!!";
+                        errMessage = "Error: Students can't take a course below their degree level !!!";
                         sbMessage.AppendLine(errMessage);
                         MessageBox.Show(errMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
@@ -104,6 +217,35 @@ namespace SqlEditor.TranscriptPlugin
                         sbMessage.AppendLine(successMessage);
                         MessageBox.Show(successMessage, "Test Passed", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
+                    // 2. 3rd error - Credits surpass the limit of a requirement
+                    reply = MessageBox.Show("Check if any students surpass a requirement credit limit.", "Check for errors", MessageBoxButtons.YesNo);
+                    if (reply == DialogResult.Yes)
+                    {
+                        String strSql = "GetErrorExceedCreditLimitsAll";
+                        // Stored Procedure with no parameters
+                        String strMsg = MsSql.FillDataTable(dataHelper.extraDT, strSql, CommandType.StoredProcedure);
+
+                        if (strMsg != String.Empty)
+                        {
+                            MessageBox.Show(strMsg, "Stored Procedure Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else if (dataHelper.extraDT.Rows.Count == 0)
+                        {
+                            successMessage = "Test Passed: All students within credit limits in all areas.";
+                            sbMessage.AppendLine(successMessage);
+                            MessageBox.Show(successMessage, "Test Passed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            errMessage = String.Format("Error: {0} students have surpassed a credit limit.",dataHelper.extraDT.Rows.Count.ToString());
+                            sbMessage.AppendLine(errMessage);
+                            MessageBox.Show(errMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            frmDatabaseInfo formDBI = new frmDatabaseInfo();
+                            formDBI.job = "Extra";
+                            formDBI.ShowDialog();
+                        }
+                    }
+
                     // Summary message
                     MessageBox.Show(sbMessage.ToString(), "Summary", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }

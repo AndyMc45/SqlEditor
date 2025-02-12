@@ -88,6 +88,7 @@
             btnBlackLine = new Button();
             btnReload = new Button();
             txtManualFilter = new TextBox();
+            btnExtra = new Button();
             txtMessages = new TextBox();
             dataGridView1 = new DataGridView();
             MainMenu1 = new MenuStrip();
@@ -202,6 +203,7 @@
             tableLayoutPanel.Controls.Add(btnBlackLine, 8, 5);
             tableLayoutPanel.Controls.Add(btnReload, 23, 0);
             tableLayoutPanel.Controls.Add(txtManualFilter, 4, 4);
+            tableLayoutPanel.Controls.Add(btnExtra, 24, 0);
             tableLayoutPanel.Name = "tableLayoutPanel";
             // 
             // GridContextMenu
@@ -695,6 +697,14 @@
             txtManualFilter.Name = "txtManualFilter";
             txtManualFilter.TextChanged += txtManualFilter_TextChanged;
             // 
+            // btnExtra
+            // 
+            tableLayoutPanel.SetColumnSpan(btnExtra, 2);
+            resources.ApplyResources(btnExtra, "btnExtra");
+            btnExtra.Name = "btnExtra";
+            btnExtra.UseVisualStyleBackColor = true;
+            btnExtra.Click += btnExtra_Click;
+            // 
             // txtMessages
             // 
             txtMessages.BackColor = SystemColors.ControlLight;
@@ -939,8 +949,8 @@
             // txtRecordsPerPage
             // 
             txtRecordsPerPage.Alignment = ToolStripItemAlignment.Right;
-            resources.ApplyResources(txtRecordsPerPage, "txtRecordsPerPage");
             txtRecordsPerPage.Name = "txtRecordsPerPage";
+            resources.ApplyResources(txtRecordsPerPage, "txtRecordsPerPage");
             txtRecordsPerPage.Leave += txtRecordsPerPage_Leave;
             // 
             // toolStripButton4
@@ -1112,6 +1122,7 @@
         private ToolStripMenuItem mnuBatchInsert;
         private ToolStripMenuItem mnuBatchEdit;
         private ToolStripMenuItem mnuRowsUnusedAsFK;
+        private Button btnExtra;
         //private Button button2;
     }
 }

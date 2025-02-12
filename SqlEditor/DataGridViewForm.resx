@@ -1516,6 +1516,33 @@
   <data name="&gt;&gt;txtManualFilter.ZOrder" xml:space="preserve">
     <value>44</value>
   </data>
+  <data name="btnExtra.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1434, 3</value>
+  </data>
+  <data name="btnExtra.Size" type="System.Drawing.Size, System.Drawing">
+    <value>94, 34</value>
+  </data>
+  <data name="btnExtra.TabIndex" type="System.Int32, mscorlib">
+    <value>193</value>
+  </data>
+  <data name="btnExtra.Text" xml:space="preserve">
+    <value>Extra</value>
+  </data>
+  <data name="btnExtra.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;btnExtra.Name" xml:space="preserve">
+    <value>btnExtra</value>
+  </data>
+  <data name="&gt;&gt;btnExtra.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;btnExtra.Parent" xml:space="preserve">
+    <value>tableLayoutPanel</value>
+  </data>
+  <data name="&gt;&gt;btnExtra.ZOrder" xml:space="preserve">
+    <value>45</value>
+  </data>
   <data name="tableLayoutPanel.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 34</value>
   </data>
@@ -1544,7 +1571,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="lblManualFilter" Row="4" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="lblMainFilter" Row="0" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbMainFilter" Row="0" RowSpan="1" Column="4" ColumnSpan="7" /&gt;&lt;Control Name="lblGridFilter" Row="1" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_0" Row="1" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterFields_1" Row="1" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_3" Row="2" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_4" Row="2" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_4" Row="2" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_5" Row="2" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_1" Row="1" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_5" Row="2" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_2" Row="1" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_2" Row="1" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_0" Row="1" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_3" Row="2" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="rbMerge" Row="0" RowSpan="1" Column="21" ColumnSpan="2" /&gt;&lt;Control Name="btnDeleteAddMerge" Row="0" RowSpan="1" Column="19" ColumnSpan="2" /&gt;&lt;Control Name="rbAdd" Row="0" RowSpan="1" Column="17" ColumnSpan="2" /&gt;&lt;Control Name="rbDelete" Row="0" RowSpan="1" Column="15" ColumnSpan="2" /&gt;&lt;Control Name="rbEdit" Row="0" RowSpan="1" Column="13" ColumnSpan="2" /&gt;&lt;Control Name="rbView" Row="0" RowSpan="1" Column="11" ColumnSpan="2" /&gt;&lt;Control Name="lblComboFilter" Row="6" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_7" Row="3" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_6" Row="3" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_6" Row="3" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_7" Row="3" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_8" Row="3" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_8" Row="3" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_3" Row="7" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_3" Row="7" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_4" Row="7" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_4" Row="7" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_5" Row="7" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_5" Row="7" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_0" Row="6" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_0" Row="6" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_1" Row="6" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_1" Row="6" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_2" Row="6" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_2" Row="6" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboTableList" Row="6" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="btnBlackLine" Row="5" RowSpan="1" Column="8" ColumnSpan="16" /&gt;&lt;Control Name="btnReload" Row="0" RowSpan="1" Column="23" ColumnSpan="1" /&gt;&lt;Control Name="txtManualFilter" Row="4" RowSpan="1" Column="4" ColumnSpan="20" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,5,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,Absolute,12,AutoSize,0,Absolute,22" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="lblManualFilter" Row="4" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="lblMainFilter" Row="0" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbMainFilter" Row="0" RowSpan="1" Column="4" ColumnSpan="7" /&gt;&lt;Control Name="lblGridFilter" Row="1" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_0" Row="1" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterFields_1" Row="1" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_3" Row="2" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_4" Row="2" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_4" Row="2" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_5" Row="2" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_1" Row="1" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_5" Row="2" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_2" Row="1" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_2" Row="1" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_0" Row="1" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_3" Row="2" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="rbMerge" Row="0" RowSpan="1" Column="21" ColumnSpan="2" /&gt;&lt;Control Name="btnDeleteAddMerge" Row="0" RowSpan="1" Column="19" ColumnSpan="2" /&gt;&lt;Control Name="rbAdd" Row="0" RowSpan="1" Column="17" ColumnSpan="2" /&gt;&lt;Control Name="rbDelete" Row="0" RowSpan="1" Column="15" ColumnSpan="2" /&gt;&lt;Control Name="rbEdit" Row="0" RowSpan="1" Column="13" ColumnSpan="2" /&gt;&lt;Control Name="rbView" Row="0" RowSpan="1" Column="11" ColumnSpan="2" /&gt;&lt;Control Name="lblComboFilter" Row="6" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_7" Row="3" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_6" Row="3" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_6" Row="3" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_7" Row="3" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_8" Row="3" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_8" Row="3" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_3" Row="7" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_3" Row="7" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_4" Row="7" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_4" Row="7" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_5" Row="7" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_5" Row="7" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_0" Row="6" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_0" Row="6" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_1" Row="6" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_1" Row="6" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_2" Row="6" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_2" Row="6" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboTableList" Row="6" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="btnBlackLine" Row="5" RowSpan="1" Column="8" ColumnSpan="16" /&gt;&lt;Control Name="btnReload" Row="0" RowSpan="1" Column="23" ColumnSpan="1" /&gt;&lt;Control Name="txtManualFilter" Row="4" RowSpan="1" Column="4" ColumnSpan="20" /&gt;&lt;Control Name="btnExtra" Row="0" RowSpan="1" Column="24" ColumnSpan="2" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,5,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,Absolute,12,AutoSize,0,AutoSize,0" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="txtMessages.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>
@@ -1619,7 +1646,7 @@
     <value>51</value>
   </data>
   <data name="dataGridView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1532, 382</value>
+    <value>1532, 339</value>
   </data>
   <data name="dataGridView1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1658,10 +1685,10 @@
     <value>3</value>
   </data>
   <data name="splitContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1540, 870</value>
+    <value>1540, 774</value>
   </data>
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
-    <value>475</value>
+    <value>422</value>
   </data>
   <data name="splitContainer1.SplitterWidth" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1873,9 +1900,6 @@
   <data name="toolStripBottom.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
   </data>
-  <data name="txtRecordsPerPage.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 10.8pt</value>
-  </data>
   <data name="txtRecordsPerPage.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 34</value>
   </data>
@@ -1933,7 +1957,7 @@
   <data name="toolStripButtonColumnWidth.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
         J/+f6DYF0yA+yQac6Db5f6hWCmwIiE+mC0wIu2DS2Vf/F1x6DefjwlgNyNr34r/0wkdgTMgQDAOQNRNj
         CIoBOg0rMTTDMLIhIHbriZeYBmDTiIxBGkEYxge5liQDsGGQqykyAISpZwAlmIEywMAAAAc1/Jwvt6sN
         AAAAAElFTkSuQmCC
@@ -1949,7 +1973,7 @@
     <value>寬表列</value>
   </data>
   <data name="toolStripBottom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 907</value>
+    <value>0, 811</value>
   </data>
   <data name="toolStripBottom.Size" type="System.Drawing.Size, System.Drawing">
     <value>1540, 34</value>
@@ -1982,13 +2006,13 @@
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>83</value>
+    <value>25</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>10, 25</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1540, 941</value>
+    <value>1540, 845</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 6, 4, 6</value>

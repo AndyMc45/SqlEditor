@@ -36,9 +36,10 @@
             cmdIndexes = new ToolStripButton();
             cmdIndexColumns = new ToolStripButton();
             cmdComboDT = new ToolStripButton();
+            cmdLastFilters = new ToolStripButton();
             btnExit = new ToolStripButton();
             dgvMain = new DataGridView();
-            cmdLastFilters = new ToolStripButton();
+            cmdExtra = new ToolStripButton();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvMain).BeginInit();
             SuspendLayout();
@@ -46,10 +47,10 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new Size(24, 24);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { cmdTables, cmdFields, cmdForeignKeys, cmdIndexes, cmdIndexColumns, cmdComboDT, cmdLastFilters, btnExit });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { cmdTables, cmdFields, cmdForeignKeys, cmdIndexes, cmdIndexColumns, cmdComboDT, cmdLastFilters, cmdExtra, btnExit });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(1478, 34);
+            toolStrip1.Size = new Size(1478, 32);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -108,6 +109,16 @@
             cmdComboDT.Text = "ComboDT";
             cmdComboDT.Click += cmdComboDT_Click;
             // 
+            // cmdLastFilters
+            // 
+            cmdLastFilters.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            cmdLastFilters.Image = (Image)resources.GetObject("cmdLastFilters.Image");
+            cmdLastFilters.ImageTransparentColor = Color.Magenta;
+            cmdLastFilters.Name = "cmdLastFilters";
+            cmdLastFilters.Size = new Size(100, 29);
+            cmdLastFilters.Text = "Last-Filters";
+            cmdLastFilters.Click += cmdLastFilters_Click;
+            // 
             // btnExit
             // 
             btnExit.DisplayStyle = ToolStripItemDisplayStyle.Text;
@@ -124,23 +135,22 @@
             dgvMain.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
             dgvMain.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dgvMain.Dock = DockStyle.Fill;
-            dgvMain.Location = new Point(0, 34);
+            dgvMain.Location = new Point(0, 32);
             dgvMain.Margin = new Padding(2);
             dgvMain.Name = "dgvMain";
             dgvMain.RowHeadersWidth = 62;
-            dgvMain.RowTemplate.Height = 33;
-            dgvMain.Size = new Size(1478, 416);
+            dgvMain.Size = new Size(1478, 418);
             dgvMain.TabIndex = 1;
             // 
-            // cmdLastFilters
+            // cmdExtra
             // 
-            cmdLastFilters.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            cmdLastFilters.Image = (Image)resources.GetObject("cmdLastFilters.Image");
-            cmdLastFilters.ImageTransparentColor = Color.Magenta;
-            cmdLastFilters.Name = "cmdLastFilters";
-            cmdLastFilters.Size = new Size(100, 29);
-            cmdLastFilters.Text = "Last-Filters";
-            cmdLastFilters.Click += cmdLastFilters_Click;
+            cmdExtra.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            cmdExtra.Image = (Image)resources.GetObject("cmdExtra.Image");
+            cmdExtra.ImageTransparentColor = Color.Magenta;
+            cmdExtra.Name = "cmdExtra";
+            cmdExtra.Size = new Size(54, 29);
+            cmdExtra.Text = "Extra";
+            cmdExtra.Click += cmdExtra_Click;
             // 
             // frmDatabaseInfo
             // 
@@ -173,5 +183,6 @@
         private ToolStripButton cmdComboDT;
         private ToolStripButton btnExit;
         private ToolStripButton cmdLastFilters;
+        private ToolStripButton cmdExtra;
     }
 }
