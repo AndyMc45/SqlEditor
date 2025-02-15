@@ -2540,7 +2540,7 @@ namespace SqlEditor
                 // Bind the combo
                 // Will not rewrite Grid because I set doNotRewriteGrid = true whenever I call this method
                 cmbGridFilterValue[i].DataSource = dataHelper.comboDT;
-
+                cmbGridFilterValue[i].BackColor = cmbGridFilterFields[i].BackColor;   //A guess, may have become red
                 if (selectOriginalValueAfterBinding)
                 {
                     // Restore old Value
@@ -2558,11 +2558,12 @@ namespace SqlEditor
                             int indexOfOldKey = -1;
                             for (int index = 1; index < cmbGridFV.Items.Count; index++)
                             {
-                                tableOptions.doNotRebindGridFV = true;   //doNotWriteGrid already true when this method called.
-                                cmbGridFV.SelectedIndex = index;
-                                tableOptions.doNotRebindGridFV = false;   // Same value as entering this method - see above
-                                if ((int)cmbGridFV.SelectedValue == oldKeyIntValue)
+                                DataRowView drv = (DataRowView)cmbGridFV.Items[index];
+                                if ((int)drv.Row.ItemArray[1] == oldKeyIntValue)
                                 {
+                                    tableOptions.doNotRebindGridFV = true;   //doNotWriteGrid already true when this method called.
+                                    cmbGridFV.SelectedIndex = index;
+                                    tableOptions.doNotRebindGridFV = false;   // Same value as entering this method - see above
                                     return;
                                 }
                             }
@@ -2768,6 +2769,12 @@ namespace SqlEditor
                         }
                     }
                 }
+                // Don't allow width to go past the end of the form
+                if (senderComboBox.Left + width > ClientSize.Width)
+                {
+                    width = ClientSize.Width - senderComboBox.Left;
+                }
+
                 senderComboBox.DropDownWidth = width;
             }
         }
@@ -3920,7 +3927,7 @@ namespace SqlEditor
 
             if (currentSql != null)
             {
-                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable),"Batch Insert",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
+                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (reply == DialogResult.Yes)
                 {
                     // Get list of filtered DisplayKeys from GridFilterFields and their values

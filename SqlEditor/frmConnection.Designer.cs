@@ -61,7 +61,7 @@ namespace SqlEditor
             // 
             cmdDatabaseList.AllowDrop = true;
             cmdDatabaseList.BackColor = SystemColors.Control;
-            cmdDatabaseList.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            cmdDatabaseList.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmdDatabaseList.ForeColor = SystemColors.ControlText;
             cmdDatabaseList.Location = new Point(664, 35);
             cmdDatabaseList.Name = "cmdDatabaseList";
@@ -79,13 +79,13 @@ namespace SqlEditor
             txtUserId.AllowDrop = true;
             txtUserId.BackColor = SystemColors.Window;
             txtUserId.Cursor = Cursors.IBeam;
-            txtUserId.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            txtUserId.Font = new Font("Microsoft Sans Serif", 8.25F);
             txtUserId.ForeColor = SystemColors.WindowText;
             txtUserId.Location = new Point(488, 35);
             txtUserId.MaxLength = 0;
             txtUserId.Name = "txtUserId";
             txtUserId.RightToLeft = RightToLeft.No;
-            txtUserId.Size = new Size(161, 23);
+            txtUserId.Size = new Size(161, 26);
             txtUserId.TabIndex = 15;
             // 
             // txtServer
@@ -94,13 +94,13 @@ namespace SqlEditor
             txtServer.AllowDrop = true;
             txtServer.BackColor = SystemColors.Window;
             txtServer.Cursor = Cursors.IBeam;
-            txtServer.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            txtServer.Font = new Font("Microsoft Sans Serif", 8.25F);
             txtServer.ForeColor = SystemColors.WindowText;
             txtServer.Location = new Point(8, 35);
             txtServer.MaxLength = 0;
             txtServer.Name = "txtServer";
             txtServer.RightToLeft = RightToLeft.No;
-            txtServer.Size = new Size(209, 23);
+            txtServer.Size = new Size(209, 26);
             txtServer.TabIndex = 12;
             // 
             // txtDatabase
@@ -109,24 +109,24 @@ namespace SqlEditor
             txtDatabase.AllowDrop = true;
             txtDatabase.BackColor = SystemColors.Window;
             txtDatabase.Cursor = Cursors.IBeam;
-            txtDatabase.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            txtDatabase.Font = new Font("Microsoft Sans Serif", 8.25F);
             txtDatabase.ForeColor = SystemColors.WindowText;
             txtDatabase.Location = new Point(264, 35);
             txtDatabase.MaxLength = 0;
             txtDatabase.Name = "txtDatabase";
             txtDatabase.RightToLeft = RightToLeft.No;
-            txtDatabase.Size = new Size(169, 23);
+            txtDatabase.Size = new Size(169, 26);
             txtDatabase.TabIndex = 8;
             // 
             // txtHelp
             // 
             txtHelp.AcceptsReturn = true;
             txtHelp.AllowDrop = true;
+            txtHelp.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtHelp.BackColor = SystemColors.Control;
             txtHelp.BorderStyle = BorderStyle.None;
             txtHelp.Cursor = Cursors.IBeam;
-            txtHelp.Dock = DockStyle.Bottom;
-            txtHelp.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            txtHelp.Font = new Font("Microsoft Sans Serif", 8.25F);
             txtHelp.ForeColor = SystemColors.WindowText;
             txtHelp.Location = new Point(0, 204);
             txtHelp.MaxLength = 0;
@@ -140,13 +140,14 @@ namespace SqlEditor
             // cmbStrings
             // 
             cmbStrings.AllowDrop = true;
+            cmbStrings.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             cmbStrings.BackColor = SystemColors.Window;
-            cmbStrings.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            cmbStrings.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmbStrings.ForeColor = SystemColors.WindowText;
             cmbStrings.Location = new Point(8, 96);
             cmbStrings.Name = "cmbStrings";
             cmbStrings.RightToLeft = RightToLeft.No;
-            cmbStrings.Size = new Size(809, 25);
+            cmbStrings.Size = new Size(809, 28);
             cmbStrings.TabIndex = 3;
             cmbStrings.SelectedIndexChanged += cmbStrings_SelectedIndexChanged;
             // 
@@ -154,7 +155,7 @@ namespace SqlEditor
             // 
             cmdTest.AllowDrop = true;
             cmdTest.BackColor = SystemColors.Control;
-            cmdTest.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            cmdTest.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmdTest.ForeColor = SystemColors.ControlText;
             cmdTest.Location = new Point(552, 151);
             cmdTest.Name = "cmdTest";
@@ -170,7 +171,7 @@ namespace SqlEditor
             // 
             cmdCancel.AllowDrop = true;
             cmdCancel.BackColor = SystemColors.Control;
-            cmdCancel.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            cmdCancel.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmdCancel.ForeColor = SystemColors.ControlText;
             cmdCancel.Location = new Point(752, 151);
             cmdCancel.Name = "cmdCancel";
@@ -186,7 +187,7 @@ namespace SqlEditor
             // 
             cmdOK.AllowDrop = true;
             cmdOK.BackColor = SystemColors.Control;
-            cmdOK.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            cmdOK.Font = new Font("Microsoft Sans Serif", 8.25F);
             cmdOK.ForeColor = SystemColors.ControlText;
             cmdOK.Location = new Point(652, 151);
             cmdOK.Name = "cmdOK";
@@ -202,7 +203,7 @@ namespace SqlEditor
             // 
             lblUserID.AllowDrop = true;
             lblUserID.BackColor = SystemColors.Control;
-            lblUserID.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            lblUserID.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblUserID.ForeColor = SystemColors.ControlText;
             lblUserID.Location = new Point(488, 15);
             lblUserID.Name = "lblUserID";
@@ -215,7 +216,7 @@ namespace SqlEditor
             // 
             lblServer.AllowDrop = true;
             lblServer.BackColor = SystemColors.Control;
-            lblServer.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            lblServer.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblServer.ForeColor = SystemColors.ControlText;
             lblServer.Location = new Point(8, 15);
             lblServer.Name = "lblServer";
@@ -228,7 +229,7 @@ namespace SqlEditor
             // 
             lblDatabase.AllowDrop = true;
             lblDatabase.BackColor = SystemColors.Control;
-            lblDatabase.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            lblDatabase.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblDatabase.ForeColor = SystemColors.ControlText;
             lblDatabase.Location = new Point(264, 15);
             lblDatabase.Name = "lblDatabase";
@@ -241,7 +242,7 @@ namespace SqlEditor
             // 
             lblConnection.AllowDrop = true;
             lblConnection.BackColor = SystemColors.Control;
-            lblConnection.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            lblConnection.Font = new Font("Microsoft Sans Serif", 8.25F);
             lblConnection.ForeColor = SystemColors.ControlText;
             lblConnection.Location = new Point(8, 67);
             lblConnection.Name = "lblConnection";
@@ -252,7 +253,7 @@ namespace SqlEditor
             // frmConnection
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(8F, 17F);
+            AutoScaleDimensions = new SizeF(10F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
             ClientSize = new Size(829, 250);
@@ -269,7 +270,7 @@ namespace SqlEditor
             Controls.Add(lblServer);
             Controls.Add(lblDatabase);
             Controls.Add(lblConnection);
-            Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+            Font = new Font("Microsoft Sans Serif", 8.25F);
             Location = new Point(4, 30);
             Name = "frmConnection";
             RightToLeft = RightToLeft.No;
