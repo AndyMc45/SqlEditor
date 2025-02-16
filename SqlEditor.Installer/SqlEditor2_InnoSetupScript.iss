@@ -147,6 +147,10 @@ Source: "..\..\SqlEditor\SqlEditor\bin\x64\Release\net8.0-windows10.0.17763.0\ru
 Source: "..\..\SqlEditor\SqlEditor\bin\x64\Release\net8.0-windows10.0.17763.0\runtimes\win-x86\native\WebView2Loader.dll"; DestDir: "{app}\runtimes\win-x86\native"; Flags: ignoreversion
 Source: "..\..\SqlEditor\SqlEditor\bin\x64\Release\net8.0-windows10.0.17763.0\zh-Hant\Microsoft.Data.SqlClient.resources.dll"; DestDir: "{app}\zh-Hant"; Flags: ignoreversion
 Source: "..\..\SqlEditor\SqlEditor\bin\x64\Release\net8.0-windows10.0.17763.0\zh-Hant\SqlEditor.resources.dll"; DestDir: "{app}\zh-Hant"; Flags: ignoreversion
+Source: "..\SqlEditor.TranscriptPlugin\bin\x64\Release\net8.0-windows10.0.17763.0\SqlEditor.TranscriptPlugin.dll"; DestDir: "{app}\Plugins\SqlTranscript"; Flags: ignoreversion
+Source: "..\SqlEditor.TranscriptPlugin\bin\x64\Release\net8.0-windows10.0.17763.0\SqlEditor.TranscriptPlugin.pdb"; DestDir: "{app}\Plugins\SqlTranscript"; Flags: ignoreversion
+Source: "..\SqlEditor.TranscriptPlugin\bin\x64\Release\net8.0-windows10.0.17763.0\SqlEditor.TranscriptPlugin.deps.json"; DestDir: "{app}\Plugins\SqlTranscript"; Flags: ignoreversion
+Source: "..\SqlEditor.TranscriptPlugin\bin\x64\Release\net8.0-windows10.0.17763.0\zh-Hant\SqlEditor.TranscriptPlugin.resources.dll"; DestDir: "{app}\Plugins\SqlTranscript\zh-Hant"; Flags: ignoreversion
 
 [Code]
 function InitializeSetup: Boolean;
