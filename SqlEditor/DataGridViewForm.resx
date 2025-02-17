@@ -143,13 +143,13 @@
     <value>317, 1</value>
   </metadata>
   <data name="GridContextMenu_SetAsMainFilter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
+    <value>304, 32</value>
   </data>
   <data name="GridContextMenu_SetAsMainFilter.Text" xml:space="preserve">
     <value>Set Item as main filter (^m)</value>
   </data>
   <data name="GridContextMenu_SetFKasMainFIlter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
+    <value>304, 32</value>
   </data>
   <data name="GridContextMenu_SetFKasMainFIlter.Text" xml:space="preserve">
     <value>Set an FK as main filter (^f)</value>
@@ -158,19 +158,19 @@
     <value>301, 6</value>
   </data>
   <data name="GridContextMenu_OrderCombolByPK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
+    <value>304, 32</value>
   </data>
   <data name="GridContextMenu_OrderCombolByPK.Text" xml:space="preserve">
     <value>Order dropdown lists by PK</value>
   </data>
   <data name="GridContextMenu_TimesUsedAsFK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
+    <value>304, 32</value>
   </data>
   <data name="GridContextMenu_TimesUsedAsFK.Text" xml:space="preserve">
     <value>Times used as FK</value>
   </data>
   <data name="GridContextMenu_UnusedAsFK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
+    <value>304, 32</value>
   </data>
   <data name="GridContextMenu_UnusedAsFK.Text" xml:space="preserve">
     <value>Rows not used as FK</value>
@@ -178,14 +178,20 @@
   <data name="toolSripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>301, 6</value>
   </data>
-  <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="GridContextMenu_RestoreFilters.Size" type="System.Drawing.Size, System.Drawing">
     <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_RestoreFilters.Text" xml:space="preserve">
+    <value>Restore last filter</value>
+  </data>
+  <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 32</value>
   </data>
   <data name="GridContextMenu_ClearFilters.Text" xml:space="preserve">
     <value>Clear all filters</value>
   </data>
   <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>305, 196</value>
+    <value>305, 226</value>
   </data>
   <data name="&gt;&gt;GridContextMenu.Name" xml:space="preserve">
     <value>GridContextMenu</value>
@@ -653,13 +659,13 @@
     <value>True</value>
   </data>
   <data name="rbMerge.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1265, 4</value>
+    <value>1263, 4</value>
   </data>
   <data name="rbMerge.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
   </data>
   <data name="rbMerge.Size" type="System.Drawing.Size, System.Drawing">
-    <value>84, 29</value>
+    <value>88, 29</value>
   </data>
   <data name="rbMerge.TabIndex" type="System.Int32, mscorlib">
     <value>121</value>
@@ -719,13 +725,13 @@
     <value>True</value>
   </data>
   <data name="rbAdd.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1025, 4</value>
+    <value>1023, 4</value>
   </data>
   <data name="rbAdd.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
   </data>
   <data name="rbAdd.Size" type="System.Drawing.Size, System.Drawing">
-    <value>67, 29</value>
+    <value>71, 29</value>
   </data>
   <data name="rbAdd.TabIndex" type="System.Int32, mscorlib">
     <value>119</value>
@@ -752,13 +758,13 @@
     <value>True</value>
   </data>
   <data name="rbDelete.Location" type="System.Drawing.Point, System.Drawing">
-    <value>893, 4</value>
+    <value>891, 4</value>
   </data>
   <data name="rbDelete.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
   </data>
   <data name="rbDelete.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 29</value>
+    <value>87, 29</value>
   </data>
   <data name="rbDelete.TabIndex" type="System.Int32, mscorlib">
     <value>120</value>
@@ -785,13 +791,13 @@
     <value>True</value>
   </data>
   <data name="rbEdit.Location" type="System.Drawing.Point, System.Drawing">
-    <value>779, 4</value>
+    <value>777, 4</value>
   </data>
   <data name="rbEdit.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
   </data>
   <data name="rbEdit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>63, 29</value>
+    <value>67, 29</value>
   </data>
   <data name="rbEdit.TabIndex" type="System.Int32, mscorlib">
     <value>118</value>
@@ -818,13 +824,13 @@
     <value>True</value>
   </data>
   <data name="rbView.Location" type="System.Drawing.Point, System.Drawing">
-    <value>652, 4</value>
+    <value>650, 4</value>
   </data>
   <data name="rbView.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 4, 2, 4</value>
   </data>
   <data name="rbView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 29</value>
+    <value>74, 29</value>
   </data>
   <data name="rbView.TabIndex" type="System.Int32, mscorlib">
     <value>117</value>
@@ -1691,49 +1697,49 @@
     <value>17, 1</value>
   </metadata>
   <data name="mnuConnectionList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
+    <value>303, 34</value>
   </data>
   <data name="mnuConnectionList.Text" xml:space="preserve">
     <value>Recent Connections</value>
   </data>
   <data name="mnuBlankLine3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
+    <value>303, 34</value>
   </data>
   <data name="mnuBlankLine3.Text" xml:space="preserve">
     <value>---------------------------</value>
   </data>
   <data name="mnuAddConnection.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
+    <value>303, 34</value>
   </data>
   <data name="mnuAddConnection.Text" xml:space="preserve">
     <value>Add Connection</value>
   </data>
   <data name="mnuDeleteConnection.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
+    <value>303, 34</value>
   </data>
   <data name="mnuDeleteConnection.Text" xml:space="preserve">
     <value>Delete Connection</value>
   </data>
   <data name="mnuConnections.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 30</value>
+    <value>212, 34</value>
   </data>
   <data name="mnuConnections.Text" xml:space="preserve">
     <value>Connections</value>
   </data>
   <data name="mnuClose.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 30</value>
+    <value>212, 34</value>
   </data>
   <data name="mnuClose.Text" xml:space="preserve">
     <value>&amp;Close</value>
   </data>
   <data name="mnuFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>60, 29</value>
+    <value>62, 29</value>
   </data>
   <data name="mnuFile.Text" xml:space="preserve">
     <value>Files</value>
   </data>
   <data name="mnuOpenTables.Size" type="System.Drawing.Size, System.Drawing">
-    <value>74, 29</value>
+    <value>76, 29</value>
   </data>
   <data name="mnuOpenTables.Text" xml:space="preserve">
     <value>Tables</value>
@@ -1751,91 +1757,91 @@
     <value>Batch Edit</value>
   </data>
   <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
+    <value>254, 34</value>
   </data>
   <data name="mnuPrintCurrentTable.Text" xml:space="preserve">
     <value>Save Grid to Excel</value>
   </data>
   <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>67, 29</value>
+    <value>69, 29</value>
   </data>
   <data name="mnuTools.Text" xml:space="preserve">
     <value>Tools</value>
   </data>
   <data name="mnuDatabaseInfo.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuDatabaseInfo.Text" xml:space="preserve">
     <value>Database Information</value>
   </data>
   <data name="mnuToolsBackupDatabase.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuToolsBackupDatabase.Text" xml:space="preserve">
     <value>Backup Database</value>
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>353, 6</value>
+    <value>369, 6</value>
   </data>
   <data name="mnuForeignKeyMissing.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuForeignKeyMissing.Text" xml:space="preserve">
     <value>Prepare a new Foreign Key</value>
   </data>
   <data name="mnuDisplayKeysList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuDisplayKeysList.Text" xml:space="preserve">
     <value>Edit list of display keys</value>
   </data>
   <data name="mnuDuplicateDisplayKeys.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuDuplicateDisplayKeys.Text" xml:space="preserve">
     <value>Check for Duplicate Display Keys</value>
   </data>
   <data name="mnuRapidlyMergeDKs.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuRapidlyMergeDKs.Text" xml:space="preserve">
     <value>Rapidly Merge DKs</value>
   </data>
   <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>353, 6</value>
+    <value>369, 6</value>
   </data>
   <data name="mnuLoadPlugin.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuLoadPlugin.Text" xml:space="preserve">
     <value>Load Plugin</value>
   </data>
   <data name="mnuRemovePlugin.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuRemovePlugin.Text" xml:space="preserve">
     <value>Remove Plugin</value>
   </data>
   <data name="mnuShowITTools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>356, 30</value>
+    <value>372, 34</value>
   </data>
   <data name="mnuShowITTools.Text" xml:space="preserve">
     <value>Show IT Tools</value>
   </data>
   <data name="mnuIT_Tools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 29</value>
+    <value>88, 29</value>
   </data>
   <data name="mnuIT_Tools.Text" xml:space="preserve">
     <value>IT Tools</value>
   </data>
   <data name="mnuHelpFile.Size" type="System.Drawing.Size, System.Drawing">
-    <value>163, 30</value>
+    <value>179, 34</value>
   </data>
   <data name="mnuHelpFile.Text" xml:space="preserve">
     <value>Help file</value>
   </data>
   <data name="mnuHelp.Size" type="System.Drawing.Size, System.Drawing">
-    <value>63, 29</value>
+    <value>65, 29</value>
   </data>
   <data name="mnuHelp.Text" xml:space="preserve">
     <value>Help</value>
@@ -1889,7 +1895,7 @@
     <value>Magenta</value>
   </data>
   <data name="toolStripButton4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>29, 31</value>
+    <value>34, 29</value>
   </data>
   <data name="toolStripButton4.Text" xml:space="preserve">
     <value>toolStripButton4</value>
@@ -1901,7 +1907,7 @@
     <value>Magenta</value>
   </data>
   <data name="toolStripButton3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 31</value>
+    <value>70, 29</value>
   </data>
   <data name="toolStripButton3.Text" xml:space="preserve">
     <value>Page #</value>
@@ -1916,7 +1922,7 @@
     <value>Magenta</value>
   </data>
   <data name="toolStripButton2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>29, 31</value>
+    <value>34, 29</value>
   </data>
   <data name="toolStripButton2.Text" xml:space="preserve">
     <value>toolStripButton2</value>
@@ -1930,7 +1936,7 @@
   <data name="toolStripButtonColumnWidth.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
+        YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAACRSURBVDhPY/j27dt/SjDYACcnJ7IwigEf3n8kCZNswPNb
         J/+f6DYF0yA+yQac6Db5f6hWCmwIiE+mC0wIu2DS2Vf/F1x6DefjwlgNyNr34r/0wkdgTMgQDAOQNRNj
         CIoBOg0rMTTDMLIhIHbriZeYBmDTiIxBGkEYxge5liQDsGGQqykyAISpZwAlmIEywMAAAAc1/Jwvt6sN
         AAAAAElFTkSuQmCC
