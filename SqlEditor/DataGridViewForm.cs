@@ -1830,7 +1830,7 @@ namespace SqlEditor
                                     }
                                     else
                                     {
-                                        // DropDownList - value is always an integer
+                                        // DropDownList - value is always an integer 
                                         foreach (DataRowView vItem in cmbGridFilterValue[i].Items)
                                         {
                                             if (vItem.Row.ItemArray[1] != null)
