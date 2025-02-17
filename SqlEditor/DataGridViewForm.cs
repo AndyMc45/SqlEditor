@@ -2864,7 +2864,7 @@ namespace SqlEditor
                     RebindAllGridFilterValueCombos();
                     if (!tableOptions.delayWriteGrid && !tableOptions.doNotWriteGrid)
                     {
-                        writeGrid_NewFilter(true);
+                        writeGrid_NewFilter(false);
                     }
                 }
             }

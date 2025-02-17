@@ -11,7 +11,7 @@
 #include "CodeDependencies.iss"
 
 #define MyAppName "SqlEditor"
-#define MyAppVersion "0.8"
+#define MyAppVersion "0.82"
 #define MyAppPublisher "McCafferty"
 #define MyAppURL "http://www.crts.edu/"
 #define MyAppExeName "SqlEditor.exe"
@@ -153,9 +153,9 @@ function InitializeSetup: Boolean;
 begin
  
 #ifdef Dependency_Path_NetCoreCheck
-  Dependency_AddDotNet80;
-  Dependency_AddDotNet80Asp;
-  Dependency_AddDotNet80Desktop;
+  // Dependency_AddDotNet80;
+  // Dependency_AddDotNet80Asp;
+  // Dependency_AddDotNet80Desktop;
 #endif
 
 //Dependency_AddDirectX;
