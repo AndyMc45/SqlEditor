@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/SqlEditor.Installer/SqlEditorSetup.exe
+/SqlEditor.Installer/TranscriptPlugIn/SqlEditor.TranscriptPlugin.dll
+/SqlEditor.Installer/TranscriptPlugIn/zh-Hant/SqlEditor.TranscriptPlugin.resources.dll
