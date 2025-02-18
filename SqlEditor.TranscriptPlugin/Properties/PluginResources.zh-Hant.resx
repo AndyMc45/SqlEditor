@@ -132,6 +132,9 @@
   <data name="btnPrintTranscript.Text" xml:space="preserve">
     <value>成績單列印</value>
   </data>
+  <data name="chkIncludeAudits.Text" xml:space="preserve">
+    <value>包括盤聽課程</value>
+  </data>
   <data name="course" xml:space="preserve">
     <value>課程</value>
   </data>
@@ -230,8 +233,5 @@
   </data>
   <data name="updateSuccess" xml:space="preserve">
     <value>跟新一半成功</value>
-  </data>
-  <data name="btnPrintTranscript.Text1" xml:space="preserve">
-    <value>成績單列印</value>
   </data>
 </root>

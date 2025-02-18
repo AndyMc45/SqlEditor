@@ -106,7 +106,7 @@ namespace SqlEditor.TranscriptPlugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Print Transcript.
+        ///   Looks up a localized string similar to Include Audited Courses.
         /// </summary>
         public static string chkIncludeAudits_Text {
             get {

@@ -9,9 +9,9 @@
       "SqlEditor.TranscriptPlugin/1.0.0": {
         "dependencies": {
           "DocumentFormat.OpenXml": "3.0.2",
-          "SqlEditor": "1.0.0",
+          "SqlEditor": "0.8.0",
           "SqlEditor.PluginsInterface": "1.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.17763.34"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.17763.57"
         },
         "runtime": {
           "SqlEditor.TranscriptPlugin.dll": {}
@@ -22,15 +22,15 @@
           }
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.34": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.57": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
-            "assemblyVersion": "10.0.17763.24",
-            "fileVersion": "10.0.17763.34"
+            "assemblyVersion": "10.0.17763.38",
+            "fileVersion": "10.0.17763.55"
           },
           "WinRT.Runtime.dll": {
-            "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.8.46841"
+            "assemblyVersion": "2.2.0.0",
+            "fileVersion": "2.2.0.48161"
           }
         }
       },
@@ -850,7 +850,7 @@
           }
         }
       },
-      "SqlEditor/1.0.0": {
+      "SqlEditor/0.8.0": {
         "dependencies": {
           "DocumentFormat.OpenXml": "3.0.2",
           "Microsoft.Data.SqlClient": "5.2.0",
@@ -863,8 +863,8 @@
         },
         "runtime": {
           "SqlEditor.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
+            "assemblyVersion": "0.8.0",
+            "fileVersion": "0.8.0.0"
           }
         },
         "resources": {
@@ -889,7 +889,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.34": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.17763.57": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
@@ -1398,7 +1398,7 @@
       "path": "unity/5.11.10",
       "hashPath": "unity.5.11.10.nupkg.sha512"
     },
-    "SqlEditor/1.0.0": {
+    "SqlEditor/0.8.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

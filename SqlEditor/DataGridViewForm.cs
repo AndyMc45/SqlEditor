@@ -462,12 +462,13 @@ namespace SqlEditor
                 msgText(dgvHelper.TranslateString("Table") + " : " + dgvHelper.TranslateString(currentSql.myTable));
             }
 
-            //2. Add row to last filter if we have not added it yet(we only keep 1 row in dataHelper.LastFilterValuesDT)
+            //2. Add row to last filter if we have not added it yet for this table (we keep 1 row in dataHelper.LastFilterValuesDT for each table)
             DataRow lastFilterDR = dataHelper.getDataRowFromDataTable("Table", currentSql.myTable, dataHelper.lastFilterValuesDT);
             if (lastFilterDR is null)
             {
                 lastFilterDR = dataHelper.lastFilterValuesDT.NewRow();
-                dataHelper.setColumnValueInDR(lastFilterDR, "Table", currentSql.myTable); // Contextual
+                // Add a row with table field = this table, should also add main filter somewhere
+                dataHelper.setColumnValueInDR(lastFilterDR, "Table", currentSql.myTable); 
                 dataHelper.lastFilterValuesDT.Rows.Add(lastFilterDR);
             }
 
@@ -580,7 +581,7 @@ namespace SqlEditor
             if (formOptions.runTimer) { watch.Stop(); }
 
             //9. WriteGrid - next step
-            writeGrid_NewFilter(false);
+            writeGrid_NewFilter(false); 
         }
 
         public void writeGrid_NewFilter(bool newLastFilter)
@@ -589,7 +590,9 @@ namespace SqlEditor
             SetSqlWheresFromFilters();
             // Do after above, because on first load cmbCombo filters use Last Filter
             // since the combo filters are not yet added.
-            if (newLastFilter) { UpdateLastFilter(); }
+            if (newLastFilter) { 
+                UpdateLastFilter(); 
+            }
 
             // 2. Get record Count
             string strSql = currentSql.returnSql(command.count);
@@ -792,7 +795,7 @@ namespace SqlEditor
             bool newLastFilter = true;
             string whValue = string.Empty;  // Default
 
-            // 2.  Get last filder
+            // 2.  Get last filter
             //     Created lastFilterDR on table load, and so this should never be null.
             DataRow lastFilterDR = dataHelper.getDataRowFromDataTable("Table", currentSql.myTable, dataHelper.lastFilterValuesDT);
 
@@ -1998,8 +2001,7 @@ namespace SqlEditor
             if (tableOptions != null)  // Make sure there is a table selected
             {
                 ClearFilters(false, true, true);
-
-                writeGrid_NewFilter(false);
+                writeGrid_NewFilter(false); 
             }
         }
 
@@ -2038,7 +2040,8 @@ namespace SqlEditor
                     string mainFilter = dataHelper.getColumnValueinDR(lastFilterDR, "cMF");
                     foreach (where item in cmbMainFilter.Items)
                     {
-                        if (item.fl.table == currentSql.myTable && item.whereValue == mainFilter)
+                        // if (item.fl.table == currentSql.myTable && item.whereValue == mainFilter)
+                        if (item.whereValue == mainFilter)
                         {
                             formOptions.loadingMainFilter = true;
                             cmbMainFilter.SelectedItem = item;
@@ -3118,7 +3121,8 @@ namespace SqlEditor
                         MessageBox.Show(Properties.MyResources.youAlreadyHaveThisObjectInDatabase, Properties.MyResources.displayKeyValueArrayMustBeUnique, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         currentSql.strManualWhereClause = string.Empty;
                         rbView.Checked = true;
-                        writeGrid_NewFilter(true); return;
+                        writeGrid_NewFilter(true); 
+                        return;
                     }
                 }
 
@@ -3565,54 +3569,54 @@ namespace SqlEditor
 
         private void callSqlWheresForCombo(field PkField)  // PK used to get inner joins 
         {   // Adds all the filters - FK, DK, non-Key and
-            //ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
+            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
 
-            //// Clear any old filters from currentSql
-            //currentSql.myComboWheres.Clear();
+            // Clear any old filters from currentSql
+            currentSql.myComboWheres.Clear();
 
-            ////Main filter - add this where to the currentSql)
-            //if (cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
-            //{
-            //    where mfWhere = (where)cmbMainFilter.SelectedValue;
+            //Main filter - add this where to the currentSql)
+            if (cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
+            {
+                where mfWhere = (where)cmbMainFilter.SelectedValue;
 
-            //    if (Convert.ToInt32(mfWhere.whereValue) > 0)
-            //    {
-            //        if (currentSql.MainFilterTableIsInComboSql(mfWhere, PkField, out string tableAlias))
-            //        {
-            //            mfWhere.fl.tableAlias = tableAlias;
-            //            currentSql.myComboWheres.Add(mfWhere);
-            //        }
-            //    }
-            //}
-            //// cmbComboFilterFields  (6 fields)
-            //for (int i = 0; i < cmbComboFilterValue.Length; i++)
-            //{
-            //    if (cmbComboFilterValue[i].Enabled)  // True iff visible
-            //    {
-            //        if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
-            //        {
-            //            if (cmbComboFilterValue[i].Text != String.Empty) // ComboFV is a non-PK non-FK
-            //            {
-            //                field comboFF = (field)cmbComboFilterValue[i].Tag;
-            //                field PKcomboFF = dataHelper.getTablePrimaryKeyField(comboFF.table);
-            //                PKcomboFF.tableAlias = comboFF.tableAlias;
-            //                if (currentSql.TableIsInMyInnerJoins(PkField, comboFF.tableAlias))  // Should always be true
-            //                {
-            //                    where wh = new where(comboFF, cmbComboFilterValue[i].Text);
-            //                    if (dataHelper.TryParseToDbType(wh.whereValue, comboFF.dbType))
-            //                    {
-            //                        currentSql.myComboWheres.Add(wh);
-            //                    }
-            //                    else
-            //                    {
-            //                        string erroMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
-            //                        msgTextError(erroMsg);
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
+                if (Convert.ToInt32(mfWhere.whereValue) > 0)
+                {
+                    if (currentSql.MainFilterTableIsInComboSql(mfWhere, PkField, out string tableAlias))
+                    {
+                        mfWhere.fl.tableAlias = tableAlias;
+                        currentSql.myComboWheres.Add(mfWhere);
+                    }
+                }
+            }
+            // cmbComboFilterFields  (6 fields)
+            for (int i = 0; i < cmbComboFilterValue.Length; i++)
+            {
+                if (cmbComboFilterValue[i].Enabled)  // True iff visible
+                {
+                    if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
+                    {
+                        if (cmbComboFilterValue[i].Text != String.Empty) // ComboFV is a non-PK non-FK
+                        {
+                            field comboFF = (field)cmbComboFilterValue[i].Tag;
+                            field PKcomboFF = dataHelper.getTablePrimaryKeyField(comboFF.table);
+                            PKcomboFF.tableAlias = comboFF.tableAlias;
+                            if (currentSql.TableIsInMyInnerJoins(PkField, comboFF.tableAlias))  // Should always be true
+                            {
+                                where wh = new where(comboFF, cmbComboFilterValue[i].Text);
+                                if (dataHelper.TryParseToDbType(wh.whereValue, comboFF.dbType))
+                                {
+                                    currentSql.myComboWheres.Add(wh);
+                                }
+                                else
+                                {
+                                    string erroMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
+                                    msgTextError(erroMsg);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void FillComboDT(field fl, comboValueType cmbValueType)
