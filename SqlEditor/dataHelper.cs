@@ -37,8 +37,9 @@ namespace SqlEditor
             lastFilterValuesDT.Columns.Add(dataColumn);
             dataColumn = new DataColumn("Mode");
             lastFilterValuesDT.Columns.Add(dataColumn);
-            dataColumn = new DataColumn("cMF");
-            lastFilterValuesDT.Columns.Add(dataColumn);
+            // Commment out 2025.02
+            // dataColumn = new DataColumn("cMF");
+            // lastFilterValuesDT.Columns.Add(dataColumn);
             for (int i = 0; i <= 8; i++)
             {
                 DataColumn col1 = new DataColumn("cGFF" + i.ToString());

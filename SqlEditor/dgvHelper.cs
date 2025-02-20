@@ -5,7 +5,7 @@ namespace SqlEditor
 {
     public static class dgvHelper
     {
-        // Translations, translationCulture, readonly fields and Constraint checks from plugins
+        // Plugins load translations, translationCulture, readonly fields and constraint checks
         public static Dictionary<string, string> translations = new Dictionary<string, string>();
         public static String translationCultureName = String.Empty;
         public static bool translate;  // Set in datagridviewform based on translationCultureName and UIculture
@@ -28,7 +28,7 @@ namespace SqlEditor
             string lastTable = myTable;
             for (int i = 0; i < myFields.Count; i++)
             {
-                // Display keys and foreignkeys
+                // Display keys and foreign keys
                 field fieldi = myFields[i];
                 bool myDisplayKey = dataHelper.isDisplayKey(fieldi) && fieldi.table == myTable;
                 bool myForeignKey = dataHelper.isForeignKeyField(fieldi) && fieldi.table == myTable;
@@ -46,7 +46,7 @@ namespace SqlEditor
                     if (dkNumber == formOptions.DkColorArray.Count()) { dkNumber = 0; }
                     dgv.Columns[i].HeaderCell.Style.BackColor = formOptions.DkColorArray[dkNumber];
                     dgv.Columns[i].HeaderCell.Style.SelectionBackColor = formOptions.DkColorArray[dkNumber];
-                    // Next two used below to handle a displaykey of foreign key
+                    // Next two used below to handle a display key of foreign key
                     currentArrayIsDkColors = true;  // Tells me which array to use
                     if (myForeignKey)
                     {
