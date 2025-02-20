@@ -48,7 +48,7 @@ namespace SqlEditor
         private String uiCulture = string.Empty;
         private Dictionary<string, List<string>> aliasTableDictionary = new Dictionary<string, List<string>>();
         private ILogger myLogger;
-        private List<ComboBox> dirtyFFCombos = new List<ComboBox>();
+        private List<ComboBox> dirtyGFCombos = new List<ComboBox>();
 
         #endregion
 
@@ -2626,13 +2626,16 @@ namespace SqlEditor
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
             ComboBox cmb = (ComboBox)sender;
+            int i2 = 0;
             for (int i = 0; i < cmbGridFilterValue.Length; i++)
             {
                 if (cmb == cmbGridFilterValue[i])
                 {
                     cmb.BackColor = cmbGridFilterFields[i].BackColor;
+                    i2 = i;
                 }
             }
+            RebindOneGridFilterValueCombo(i2, true);
         }
 
 
@@ -2825,8 +2828,14 @@ namespace SqlEditor
         // Manual set "is dirty"=true-->Update GridFV on leave cell. Programatic: sets "is dirty", but does nothing because no leave 
         private void cmbComboFilterValue_TextChanged(object sender, EventArgs e)
         {
-            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            dirtyFFCombos.Add((ComboBox)sender);
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            // Mark all Grid Filter combos as dirty.
+            dirtyGFCombos.Clear();
+            foreach (ComboBox comboBox in cmbGridFilterFields)
+            {
+                dirtyGFCombos.Add(comboBox);
+            }
+            
             // When leaving cell, the drop down content of empty grid filter values will be updated
             tableOptions.currentComboFilterValue_isDirty = true;
 
