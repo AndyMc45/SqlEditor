@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using SqlEditor.Properties;
 
@@ -48,7 +47,7 @@ namespace SqlEditor
         private String uiCulture = string.Empty;
         private Dictionary<string, List<string>> aliasTableDictionary = new Dictionary<string, List<string>>();
         private ILogger myLogger;
-        private List<ComboBox> dirtyGFCombos = new List<ComboBox>();
+        private List<string> dirtyGFCombos = new List<string>();
 
         #endregion
 
@@ -512,7 +511,7 @@ namespace SqlEditor
                     field fi = dataHelper.getFieldFromFieldsDT(dr);
                     foreignKeyList.Add(fi);  // All keys are in myTable -
                 }
-                // BInd the cmbComboTableList Combo control
+                // Bind the cmbComboTableList Combo control
                 cmbComboTableList.BindingContext = new BindingContext();  // Required to change 1-by-1.
                 cmbComboTableList.DisplayMember = "DisplayMember";
                 cmbComboTableList.ValueMember = "ValueMember";  //Entire field
@@ -587,7 +586,7 @@ namespace SqlEditor
             if (formOptions.runTimer) { watch.Stop(); }
 
             //9. WriteGrid - next step
-            writeGrid_NewFilter(false); 
+            writeGrid_NewFilter(false);
         }
 
         public void writeGrid_NewFilter(bool newLastFilter)
@@ -629,7 +628,8 @@ namespace SqlEditor
 
         public void writeGrid_NewPage()
         {
-            Stopwatch watch = new Stopwatch(); if (formOptions.runTimer) { watch.Start(); } msgTimer("New Page. ");
+            Stopwatch watch = new Stopwatch(); if (formOptions.runTimer) { watch.Start(); }
+            msgTimer("New Page. ");
 
             // 1. Get the Sql command for grid
             //    CENTRAL and Only USE OF sqlCurrent.returnSql IN PROGRAM
@@ -1037,7 +1037,7 @@ namespace SqlEditor
             }
             currentSql.strManualWhereClause = txtManualFilter.Text;
         }
-    
+
         internal void SetToStoredColumnWidths()
         {
             // dataGridView1.RowHeadersWidth = 27; //default
@@ -1056,7 +1056,7 @@ namespace SqlEditor
             }
 
         }
-        
+
         #endregion
 
         //----------------------------------------------------------------------------------------------------------------------
@@ -2000,7 +2000,7 @@ namespace SqlEditor
             if (tableOptions != null)  // Make sure there is a table selected
             {
                 ClearFilters(false, true, true);
-                writeGrid_NewFilter(false); 
+                writeGrid_NewFilter(false);
             }
         }
 
@@ -2071,7 +2071,7 @@ namespace SqlEditor
                                         break;
                                     }
                                 }
-                            }            
+                            }
                             // Select value may be text or a primary key of the table in the dropdownlist
                             if (fld != null && cGFVi != string.Empty)
                             {
@@ -2111,7 +2111,7 @@ namespace SqlEditor
         {
             if (tableOptions != null)  // Make sure there is a table selected
             {
-                //Get last filter
+                //Get last filter - just created and so this should not be null
                 DataRow lastFilterDR = dataHelper.getDataRowFromDataTable("Table", currentSql.myTable, dataHelper.lastFilterValuesDT);
 
                 if (lastFilterDR != null)
@@ -2635,7 +2635,11 @@ namespace SqlEditor
                     i2 = i;
                 }
             }
-            RebindOneGridFilterValueCombo(i2, true);
+            if (dirtyGFCombos.Contains(cmb.Name))
+            {
+                RebindOneGridFilterValueCombo(i2, true);
+                dirtyGFCombos.Remove(cmb.Name);
+            }
         }
 
 
@@ -2820,7 +2824,7 @@ namespace SqlEditor
                 }
                 if (oneOrMoreComboFVRebound)  // Will still be false on firstTimeLoadingTable - see above
                 {
-                    RebindAllGridFilterValueCombos();
+                    //RebindAllGridFilterValueCombos();
                 }
             }
         }
@@ -2828,14 +2832,14 @@ namespace SqlEditor
         // Manual set "is dirty"=true-->Update GridFV on leave cell. Programatic: sets "is dirty", but does nothing because no leave 
         private void cmbComboFilterValue_TextChanged(object sender, EventArgs e)
         {
-            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValues = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
             // Mark all Grid Filter combos as dirty.
             dirtyGFCombos.Clear();
-            foreach (ComboBox comboBox in cmbGridFilterFields)
+            foreach (ComboBox comboBox in cmbGridFilterValues)
             {
-                dirtyGFCombos.Add(comboBox);
+                dirtyGFCombos.Add(comboBox.Name);
             }
-            
+
             // When leaving cell, the drop down content of empty grid filter values will be updated
             tableOptions.currentComboFilterValue_isDirty = true;
 
@@ -2851,12 +2855,13 @@ namespace SqlEditor
 
         private void cmbComboFilterValue_Leave(object sender, EventArgs e)
         {
+            // Planning on eliminating all this
             if (tableOptions != null)
             {
                 if (tableOptions.currentComboFilterValue_isDirty)
                 {
                     tableOptions.doNotWriteGrid = true;
-                    RebindAllGridFilterValueCombos();
+                    // RebindAllGridFilterValueCombos();
                     tableOptions.doNotWriteGrid = false;
                     tableOptions.currentComboFilterValue_isDirty = false;
                 }
@@ -2867,21 +2872,22 @@ namespace SqlEditor
         private void BindAllComboFilterValueCombos()
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-            for (int i = 0; i< cmbComboFilterValue.Length; i++)
+            for (int i = 0; i < cmbComboFilterValue.Length; i++)
             {
                 if (cmbComboFilterValue[i].Enabled)
                 {
                     RebindOneComboFilterValueCombo(i);
                 }
-            }        
+            }
         }
+
         // Load the combo with all distinct values; Called by cmbComboTableList_SelectedIndexChanged
         // Will rebind all GridFV; If selectedIndex change is called programmatically use "doNotRebindGridFV = true".
         private void RebindOneComboFilterValueCombo(int i)
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
             ComboBox cmb = cmbComboFilterValue[i];
-                field fi = (field)cmb.Tag;  // Non-FK myTable
+            field fi = (field)cmb.Tag;  // Non-FK myTable
             List<string> strList = new List<string>();
             FillComboDT(fi, comboValueType.textField_refTable);
             strList = dataHelper.comboDT.AsEnumerable().Select(x => x["DisplayMember"].ToString()).ToList();
@@ -3132,7 +3138,7 @@ namespace SqlEditor
                         MessageBox.Show(Properties.MyResources.youAlreadyHaveThisObjectInDatabase, Properties.MyResources.displayKeyValueArrayMustBeUnique, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         currentSql.strManualWhereClause = string.Empty;
                         rbView.Checked = true;
-                        writeGrid_NewFilter(true); 
+                        writeGrid_NewFilter(true);
                         return;
                     }
                 }
