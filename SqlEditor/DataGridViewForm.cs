@@ -790,7 +790,8 @@ namespace SqlEditor
             }
             tableOptions.writingTable = false;
 
-            if (formOptions.runTimer) { watch.Stop(); }; msgTimer(" NewPage6: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
+            if (formOptions.runTimer) { watch.Stop(); }
+            ; msgTimer(" NewPage6: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
         }
 
         private bool UpdateLastFilter()
@@ -3115,7 +3116,7 @@ namespace SqlEditor
                     }
                 }
 
-                // Defective table has no display keys, but can add an item
+                // 2. Check for errors - Defective table has no display keys, but can add an item
                 if (dkWhere.Count > 0)
                 {
                     // string newWhereClause = SqlFactory.SqlStatic.sqlWhereString(dkWhere, string.Empty, true);  // Only display keys enabled so filtered
@@ -3156,9 +3157,9 @@ namespace SqlEditor
                     constraintPassed = f(currentSql.myTable, tupleList);
                     if (!constraintPassed) { break; }
                 }
+                //  4. If all constraints passed, Everything O.K. Add the row
                 if (constraintPassed)
                 {
-                    //  3. O.K. add the row
                     try
                     {
                         MsSql.SetInsertCommand(currentSql.myTable, whereList, dataHelper.currentDT);  // knows to use currentDA
@@ -4121,10 +4122,11 @@ namespace SqlEditor
 
         private void mnuBatchInsert_Click(object sender, EventArgs e)
         {
+            // This is half finished.  The way to do it is to ask which fields the user wants to change
+            // and then get the new values for the field.  Then change insert command to (for example)
+            //  Insert tableName(c1, c2, c3, c4) Select c1, @newc2, c3, c4 from tableName where currentSql.mywheres
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-
-            msgTextAdd("  " + UpdateLastFilter().ToString());
 
             if (currentSql != null)
             {
@@ -4132,6 +4134,8 @@ namespace SqlEditor
                 if (reply == DialogResult.Yes)
                 {
                     // Get list of filtered DisplayKeys from GridFilterFields and their values
+
+
                     for (int i = 0; i < cmbGridFilterFields.Length; i++)
                     {
                         if (cmbGridFilterFields[i].Enabled)
@@ -4139,7 +4143,6 @@ namespace SqlEditor
                             //cmbGridFilterFields - something is selected and all values are fields
                             field selectedField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
                             string whValue = string.Empty;
-                            bool displayKeyAndHasValue = false;
                             if (dataHelper.isDisplayKey(selectedField))
                             {
                                 // Step 1.  Determine if filter x has a value, and if not, clear old value from lastFilter row
@@ -4149,7 +4152,6 @@ namespace SqlEditor
                                     if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
                                     {
                                         whValue = cmbGridFilterValue[i].SelectedValue.ToString();
-                                        displayKeyAndHasValue = true;
                                     }
                                 }
                             }
