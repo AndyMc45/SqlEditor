@@ -10,12 +10,14 @@ namespace SqlEditor
         public static String translationCultureName = String.Empty;
         public static bool translate;  // Set in datagridviewform based on translationCultureName and UIculture
         public static List<(string, string)> readOnlyField = new List<(string, string)>();
-        // update - <table, fieldName, DataRow, bool>
+        // update - <table, fieldName, DataRow, bool> (3 parameters and returns a bool)
         public static List<Func<string, string, DataRow, bool>> updateConstraints = new List<Func<string, string, DataRow, bool>>();
-        // insert - <table, List of fields + fieldvalues, bool> 
+        // insert - <table, List of fields + fieldvalues, bool> (2 parameters and returns a bool)
         public static List<Func<string, List<Tuple<String, String>>, bool>> insertConstraints = new List<Func<string, List<Tuple<String, String>>, bool>>();
-        // delete - <table, record ID, bool>
+        // delete - <table, record ID, bool> (2 parameters and returns a bool)
         public static List<Func<string, int, bool>> deleteConstraints = new List<Func<string, int, bool>>();
+        // newTableActions -- <table> (1 parameter) - 1 per plugin 
+        public static List<Action<string>> newTableActions = new List<Action<string>>();
 
         // Results of this coloring use in color combo boxes above
         public static void SetHeaderColorsOnWritePage(DataGridView dgv, string myTable, List<field> myFields)
@@ -100,7 +102,7 @@ namespace SqlEditor
                 System.Drawing.Font font = dgv.Font;
                 using (Graphics g = dgv.CreateGraphics())
                 {   // 1/3 of headerStringWidth
-                    int headerStringWidth = (int)(Math.Round(g.MeasureString(headerText, font).Width / 3,0));
+                    int headerStringWidth = (int)(Math.Round(g.MeasureString(headerText, font).Width / 3, 0));
                     headerWidth = Math.Max(62, headerStringWidth);  // 62 the shortest
                 }
                 int currentWidth = dgv.Columns[i].Width;
@@ -152,7 +154,7 @@ namespace SqlEditor
                                 if (r > 40) { break; }
                                 if (row.Cells[i].Value != null)
                                 {
-                                    int thisItemWidth = (int)Math.Round(g.MeasureString(row.Cells[i].Value.ToString(), font).Width * .75,0);
+                                    int thisItemWidth = (int)Math.Round(g.MeasureString(row.Cells[i].Value.ToString(), font).Width * .75, 0);
                                     longestWidth = Math.Max(thisItemWidth, longestWidth);
                                 }
                             }

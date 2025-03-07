@@ -1,6 +1,6 @@
 ﻿using SqlEditor.PluginsInterface;
-using System.Reflection;
 using System.Data;
+using System.Reflection;
 using Unity;
 
 
@@ -28,12 +28,13 @@ namespace SqlEditor
         }
 
         static internal MenuStrip Load_Plugins(
-                    ref Dictionary<string, string> colHeaderTranslations, 
-                    ref string translationCultureName, 
-                    ref List<(string, string)> readOnlyFields, 
-                    ref List<Func<string, string, DataRow, bool>> updateConstraints, 
+                    ref Dictionary<string, string> colHeaderTranslations,
+                    ref string translationCultureName,
+                    ref List<(string, string)> readOnlyFields,
+                    ref List<Func<string, string, DataRow, bool>> updateConstraints,
                     ref List<Func<string, List<Tuple<String, String>>, bool>> insertConstraints,
-                    ref List<Func<string, int, bool>> deleteConstraints) 
+                    ref List<Func<string, int, bool>> deleteConstraints,
+                    ref List<Action<string>> newTableActions)
         {
             // First delete plugin marked for deletion
             string deletePluginPath = AppData.GetKeyValue("deletePluginPath");
@@ -53,7 +54,9 @@ namespace SqlEditor
             if (!Directory.Exists(pluginFilePath))
             {
                 try { Directory.CreateDirectory(pluginFilePath); }
-                catch { };
+                catch { }
+                ;
+                ;
             }
             else
             {
@@ -69,6 +72,7 @@ namespace SqlEditor
                 {
                     try
                     {
+                        // Causes an error if the assembly is already loaded
                         Assembly assembly = Assembly.LoadFrom(file);
 
                         IEnumerable<Type> types = GetLoadableTypes(assembly); // Double catch f
@@ -87,7 +91,7 @@ namespace SqlEditor
                     }
                     catch (ReflectionTypeLoadException ex)
                     {
-
+                        MessageBox.Show(ex.Message);
                     }
                 }
                 // At this point the unity container has all the plugin data loaded onto it. 
@@ -123,7 +127,7 @@ namespace SqlEditor
 
                             // Add Constraints
                             foreach (Func<string, string, DataRow, bool> constraint in loadedPlugin.UpdateConstraints())
-                            { 
+                            {
                                 updateConstraints.Add(constraint);
                             }
                             foreach (Func<string, List<Tuple<String, String>>, bool> constraint in loadedPlugin.InsertConstraints())
@@ -133,6 +137,10 @@ namespace SqlEditor
                             foreach (Func<string, int, bool> constraint in loadedPlugin.DeleteConstraints())
                             {
                                 deleteConstraints.Add(constraint);
+                            }
+                            if (loadedPlugin.NewTableAction() != null)
+                            {
+                                newTableActions.Add(loadedPlugin.NewTableAction());
                             }
                         }
                     }

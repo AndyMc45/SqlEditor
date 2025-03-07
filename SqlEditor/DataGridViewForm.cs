@@ -89,7 +89,8 @@ namespace SqlEditor
                     // This loads plugins into Plugins.loadedPlugins AND return pluginMenus, translations, etc.
                     pluginMenus = Plugins.Load_Plugins(ref dgvHelper.translations, ref dgvHelper.translationCultureName,
                         ref dgvHelper.readOnlyField, ref dgvHelper.updateConstraints,
-                        ref dgvHelper.insertConstraints, ref dgvHelper.deleteConstraints);
+                        ref dgvHelper.insertConstraints, ref dgvHelper.deleteConstraints,
+                        ref dgvHelper.newTableActions);
                 }
                 catch (Exception ex)
                 {
@@ -462,6 +463,13 @@ namespace SqlEditor
                 dataHelper.lastFilterValuesDT.Rows.Add(lastFilterDR);
             }
             tableOptions.writingTable = false;  // Only make it true when it is needed
+
+            // 1.5 - Run any plugin newtable actions
+            foreach (Action<string> a in dgvHelper.newTableActions)
+            {
+                a(table);
+            }
+
 
             //2. Create currentSql - same currentSql used until new table is loaded - same myFields and myInnerJoins
             //   Creating currentSql does not load any data into it
@@ -3008,8 +3016,8 @@ namespace SqlEditor
                 int secondPK = Convert.ToInt32(dataGridView1.SelectedRows[1].Cells[0].Value);
                 if (MergeTwoRows(currentSql.myTable, firstPK, secondPK))
                 {
-                    // User has asked to see dublicate keys and choosen to merge.
-                    // ShowDublicateDisplayKeys will write an strStaticWhereClause to show dublicate keys
+                    // User has asked to see duplicate keys and choosen to merge.
+                    // ShowDuplicateDisplayKeys will write an strStaticWhereClause to show duplicate keys
                     if (tableOptions.mergingDuplicateKeys)
                     {
                         showDuplicateDispayKeys();
@@ -3041,7 +3049,16 @@ namespace SqlEditor
                 int PKvalue = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[colIndex].Value);
                 field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
                 where wh = new where(PKField, PKvalue.ToString());
+                Boolean constraintPassed = true;
+                // delete - <table, record ID, bool>
+                foreach (Func<string, int, bool> f in dgvHelper.deleteConstraints)
+                {
+                    constraintPassed = f(currentSql.myTable, PKvalue);
+                    if (!constraintPassed) { break; }
+                }
+
                 string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
+
                 if (errorMsg != string.Empty)
                 {
                     msgTextError(errorMsg);
@@ -4134,7 +4151,8 @@ namespace SqlEditor
                 if (reply == DialogResult.Yes)
                 {
                     // Get list of filtered DisplayKeys from GridFilterFields and their values
-
+                    List<string> filteredDisplayKeys = new List<string>();
+                    List<string> filteredDisplayKeysValues = new List<string>();
 
                     for (int i = 0; i < cmbGridFilterFields.Length; i++)
                     {
@@ -4145,21 +4163,24 @@ namespace SqlEditor
                             string whValue = string.Empty;
                             if (dataHelper.isDisplayKey(selectedField))
                             {
-                                // Step 1.  Determine if filter x has a value, and if not, clear old value from lastFilter row
-                                // DisplayKeys are ComboBoxStyle.DropDownList have integer values;
                                 if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList) // Always true but check just in case
                                 {
                                     if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
                                     {
-                                        whValue = cmbGridFilterValue[i].SelectedValue.ToString();
+                                        filteredDisplayKeys.Add(selectedField.fieldName);
+                                        filteredDisplayKeysValues.Add(cmbGridFilterValue[i].SelectedValue.ToString());
                                     }
                                 }
                             }
                         }
                     }
+                    // Return if no disiplay key is selected
+                    if (filteredDisplayKeys.Count == 0)
+                    {
+                        MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        return;
+                    }
 
-
-                    // Get list of display keys for current table that are selected
                     frmListItems frmDisplayKeys = new frmListItems();
                     frmDisplayKeys.myList = new List<string>();
                     frmDisplayKeys.mySelectedList = new List<string>();

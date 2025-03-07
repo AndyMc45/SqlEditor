@@ -27,10 +27,13 @@ namespace SqlEditor.TranscriptPlugin
         private List<Func<String, String, DataRow, bool>> updateConstraints;
 
         public List<Func<string, List<Tuple<String, String>>, bool>> InsertConstraints() { return insertConstraints; }
-        private List<Func<string, List<Tuple<String,String>>, bool>> insertConstraints;
+        private List<Func<string, List<Tuple<String, String>>, bool>> insertConstraints;
 
         public List<Func<string, int, bool>> DeleteConstraints() { return deleteConstraints; }
         private List<Func<string, int, bool>> deleteConstraints;
+        public Action<string> NewTableAction() { return newTableAction; }
+        private Action<string> newTableAction;
+
 
         #endregion
 
@@ -53,7 +56,7 @@ namespace SqlEditor.TranscriptPlugin
             List<(String, String)> readOnlyFields = new List<(string, string)>
             {
                 (TableName.studentDegrees, "creditsEarned"), (TableName.studentDegrees, "lastTerm") ,
-                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "studentStatusID") 
+                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "studentStatusID")
             };
 
             String translationCultureName = "zh-Hant";  // Hard coded to the language of the translation
@@ -68,8 +71,8 @@ namespace SqlEditor.TranscriptPlugin
                                                 columnHeaderTranslations,
                                                 readOnlyFields);
 
-            updateConstraints = new List<Func<String, String, DataRow, bool>> 
-            { 
+            updateConstraints = new List<Func<String, String, DataRow, bool>>
+            {
                 transcriptOnGradeConstraintPassed
             };
 
@@ -79,6 +82,8 @@ namespace SqlEditor.TranscriptPlugin
             };
 
             deleteConstraints = new List<Func<string, int, bool>>();
+
+            newTableAction = newTableDoNothing;
         }
 
         // Define CallBack - If things are good, then open the form with 'job'
@@ -300,33 +305,33 @@ namespace SqlEditor.TranscriptPlugin
                 {
                     DataRow gsDR = dt.Rows[0];
                     Boolean forCredit = Boolean.Parse(dataHelper.getColumnValueinDR(gsDR, "forCredit"));
-                        dt = new DataTable();
-                        sqlStr = String.Format("SELECT [grade], [creditsInQPA], [earnedCredits] FROM [Grades] Where [gradesID] = {0}", gradeID.ToString());
-                        MsSql.FillDataTable(dt, sqlStr);
-                        if (dt.Rows.Count > 0) // Always 1
+                    dt = new DataTable();
+                    sqlStr = String.Format("SELECT [grade], [creditsInQPA], [earnedCredits] FROM [Grades] Where [gradesID] = {0}", gradeID.ToString());
+                    MsSql.FillDataTable(dt, sqlStr);
+                    if (dt.Rows.Count > 0) // Always 1
+                    {
+                        DataRow gradesDR = dt.Rows[0];
+                        Boolean creditsInQPA = Boolean.Parse(dataHelper.getColumnValueinDR(gradesDR, "creditsInQPA"));
+                        Boolean earnedCredits = Boolean.Parse(dataHelper.getColumnValueinDR(gradesDR, "earnedCredits"));
+                        if (!forCredit && (creditsInQPA || earnedCredits))
                         {
-                            DataRow gradesDR = dt.Rows[0];
-                            Boolean creditsInQPA = Boolean.Parse(dataHelper.getColumnValueinDR(gradesDR, "creditsInQPA"));
-                            Boolean earnedCredits = Boolean.Parse(dataHelper.getColumnValueinDR(gradesDR, "earnedCredits"));
-                            if (!forCredit && (creditsInQPA || earnedCredits))
-                            {
-                               string  grade = dataHelper.getColumnValueinDR(gradesDR, "grade");
-                               string errorMessage = String.Format("Student can't get grade {0} in a course that is not for credit", grade);
-                                MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return false;
-                            }
+                            string grade = dataHelper.getColumnValueinDR(gradesDR, "grade");
+                            string errorMessage = String.Format("Student can't get grade {0} in a course that is not for credit", grade);
+                            MessageBox.Show(errorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
                         }
+                    }
                 }
                 return true;
             });
 
-        private static Func<string, List<Tuple<String,String>>, bool> transcriptCourseLevelCheckPassed =
+        private static Func<string, List<Tuple<String, String>>, bool> transcriptCourseLevelCheckPassed =
             new Func<string, List<Tuple<String, String>>, bool>((table, fieldAndValueTuples) =>
             {
                 if (table != "Transcript") { return true; }
                 int studentDegreeID = 0;
                 int courseTermSectionID = 0;
-                foreach (Tuple<String,String> fieldAndValue  in fieldAndValueTuples)
+                foreach (Tuple<String, String> fieldAndValue in fieldAndValueTuples)
                 {
                     if (fieldAndValue.Item1 == "studentDegreeID")
                     {
@@ -383,7 +388,7 @@ namespace SqlEditor.TranscriptPlugin
                 // 2nd check
                 int gradeID = 0;
                 int gradeStatusID = 0;
-                foreach (Tuple<String,String> fieldAndValue in fieldAndValueTuples)
+                foreach (Tuple<String, String> fieldAndValue in fieldAndValueTuples)
                 {
                     if (fieldAndValue.Item1 == "gradeID")
                     {
@@ -435,6 +440,12 @@ namespace SqlEditor.TranscriptPlugin
                 return true;
             });
 
+        private static Action<string> newTableDoNothing =
+            new Action<string>((table) =>
+        {
+            // Do nothing
+            MessageBox.Show("New Table Action", "Testing New Table Action", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        });
 
     }
 }

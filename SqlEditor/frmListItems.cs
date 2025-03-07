@@ -16,8 +16,7 @@ namespace SqlEditor
 
         // For deleting connection, we will build a list of connection strings - see below
         List<connectionString> csList = new List<connectionString>();
-
-        // For a list, we will feed in the list into myList
+        // For a string list, we will feed in the list into myList
         public List<string> myList = new List<string>();
         // For display keys we will also feed in list of initially selected items
         // We will also return this list if user says "o.k."
@@ -38,7 +37,8 @@ namespace SqlEditor
                 System.Drawing.Font font = listBox1.Font;
                 int vertScrollBarWidth = 15;
                 List<string> itemsList = new List<string>(); // Only used to find widest text
-                foreach (string str in listBox1.Items) { itemsList.Add(str); };
+                foreach (string str in listBox1.Items) { itemsList.Add(str); }
+                ;
                 itemsList.Add(this.Text); // Makes box as wide as the text, but doesn't include close button
                 lblText.Text = this.Text; // Use because the caption may be too small
                 foreach (string s in itemsList)
