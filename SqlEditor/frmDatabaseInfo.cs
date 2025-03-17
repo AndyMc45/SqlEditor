@@ -53,6 +53,11 @@ namespace SqlEditor
         {
             if (dataHelper.lastFilterValuesDT != null) { dgvMain.DataSource = dataHelper.lastFilterValuesDT; }
         }
+        private void cmdTesting_Click(object sender, EventArgs e)
+        {
+            if (dataHelper.testingDT != null) { dgvMain.DataSource = dataHelper.testingDT; }
+
+        }
 
 
         private void frmDatabaseInfo_FormClosed(object sender, FormClosedEventArgs e)
@@ -64,5 +69,6 @@ namespace SqlEditor
         {
             this.Close();
         }
+
     }
 }

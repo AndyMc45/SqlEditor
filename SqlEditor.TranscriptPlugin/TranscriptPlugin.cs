@@ -21,7 +21,7 @@ namespace SqlEditor.TranscriptPlugin
         private ControlTemplate cntTemplate;
 
         public Form MainForm { set => mainForm = value; }
-        private Form mainForm;   // This will be set to the main form by a delegate
+        private static Form mainForm;   // This will be set to the main form by a delegate
 
         public List<Func<String, String, DataRow, bool>> UpdateConstraints() { return updateConstraints; }
         private List<Func<String, String, DataRow, bool>> updateConstraints;
@@ -37,7 +37,7 @@ namespace SqlEditor.TranscriptPlugin
 
         #endregion
 
-        // Constructor - Called in main program when plugin loaded
+        // Constructor - Called in main program when plugin loaded.  So ignore the "0 references".
         public TransPlugin(String name)
         {
             this.name = "Transcripts";
@@ -56,7 +56,7 @@ namespace SqlEditor.TranscriptPlugin
             List<(String, String)> readOnlyFields = new List<(string, string)>
             {
                 (TableName.studentDegrees, "creditsEarned"), (TableName.studentDegrees, "lastTerm") ,
-                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "studentStatusID")
+                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "academicStatusID")
             };
 
             String translationCultureName = "zh-Hant";  // Hard coded to the language of the translation
@@ -83,7 +83,7 @@ namespace SqlEditor.TranscriptPlugin
 
             deleteConstraints = new List<Func<string, int, bool>>();
 
-            newTableAction = newTableDoNothing;
+            newTableAction = newTableTranscriptPlugin;
         }
 
         // Define CallBack - If things are good, then open the form with 'job'
@@ -109,11 +109,9 @@ namespace SqlEditor.TranscriptPlugin
                 }
                 else
                 {
-                    // Update this studentDegreeID information - No message because rowsAffected is always 1.
+                    // Update this studentDegreeID information - Error message already shown.
                     int rowsAffected = 0;
-                    string strResult1 = TranscriptMsSql.UpdateEveryChangedStudentDegreeStatus(studentDegreeID, ref rowsAffected);
-                    rowsAffected = 0;
-                    strResult1 = TranscriptMsSql.updateEveryChangedStudentCreditsLastTermQPA(studentDegreeID, ref rowsAffected);
+                    string strResult1 = TranscriptMsSql.UpdateStudentDegreeStatus(studentDegreeID, ref rowsAffected);
 
                     //Open form
                     frmTranscriptOptions fOptions = new frmTranscriptOptions();
@@ -158,25 +156,9 @@ namespace SqlEditor.TranscriptPlugin
                 // 2. Upgrade StudentDegrees Table
                 if (result == DialogResult.Yes)
                 {
-                    // 2a. Upgrade StudentStatusID column
+                    // 2a. Upgrade academicStatusID column
                     int rowsAffected = 0;
-                    string strResult = TranscriptMsSql.UpdateEveryChangedStudentDegreeStatus(ref rowsAffected);
-                    if (strResult == String.Empty)
-                    {
-                        string strResult1 = String.Format(PluginResources.StDeTableUpdatedAndCount, Environment.NewLine, rowsAffected);
-                        // 2b. Upgrade QPA-credit-LastTerm-Date columns
-                        TranscriptMsSql.updateEveryChangedStudentFirstTermID(ref rowsAffected); // No message if error
-                        strResult = TranscriptMsSql.updateEveryChangedStudentCreditsLastTermQPA(ref rowsAffected); // Give error msg from here
-                        if (!String.IsNullOrEmpty(strResult))
-                        {
-                            MessageBox.Show(strResult1, PluginResources.partialSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            strResult1 += String.Format(PluginResources.CreditsQPALtUpdatedAndCount, Environment.NewLine, rowsAffected);
-                            MessageBox.Show(strResult1, PluginResources.updateSuccess, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                    }
+                    string strResult = TranscriptMsSql.UpdateStudentDegreeStatus(ref rowsAffected);
                 }
             }
             else if (e.Value == "checkForTranscriptErrors")
@@ -440,11 +422,19 @@ namespace SqlEditor.TranscriptPlugin
                 return true;
             });
 
-        private static Action<string> newTableDoNothing =
+        private static Action<string> newTableTranscriptPlugin =
             new Action<string>((table) =>
         {
+            if (table == "StudentDegreesStatus")
+            {
+                int rowsAffected = 0;
+                TranscriptMsSql.UpdateStudentDegreeStatus(ref rowsAffected);
+                // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
+                DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
+                dgvForm.msgText("StudentDegreesStatus table updated by plugin");
+            }
             // Do nothing
-            MessageBox.Show("New Table Action", "Testing New Table Action", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
         });
 
     }

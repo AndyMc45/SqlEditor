@@ -220,7 +220,7 @@
     <value>Transcript</value>
   </data>
   <data name="thiswillUpdateTheStudentDegreesTable" xml:space="preserve">
-    <value>This will update the StudentDegrees Table studentStatus based on the StudentStatusHistory table;</value>
+    <value>This will update the StudentDegrees Table academicStatus based on the AcademicStatusHistory table;</value>
   </data>
   <data name="toolStripBtnNarrow.Text" xml:space="preserve">
     <value>Narrow</value>

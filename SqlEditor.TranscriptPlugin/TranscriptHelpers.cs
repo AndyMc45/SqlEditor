@@ -343,7 +343,7 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("handbook", "手冊");
             columnHeaderTranslations.Add("handbooks", "手冊");
             columnHeaderTranslations.Add("lastupdatedqpa", "QPA更新日期");
-            columnHeaderTranslations.Add("lastupdatedstudentstatus", "狀態更新日期");
+            columnHeaderTranslations.Add("lastupated", "狀態更新日期");
             columnHeaderTranslations.Add("lastterm", "最近上課學季");
             columnHeaderTranslations.Add("lastupdated", "更新日期");
             columnHeaderTranslations.Add("limit", "限制");
@@ -372,8 +372,8 @@ namespace SqlEditor.TranscriptPlugin
             columnHeaderTranslations.Add("student", "學生");
             columnHeaderTranslations.Add("students", "學生");
             columnHeaderTranslations.Add("studentname", "學生名字");
-            columnHeaderTranslations.Add("studentstatus", "學生狀態");
-            columnHeaderTranslations.Add("studentstatushistory", "學生狀態紀錄");
+            columnHeaderTranslations.Add("academicstatus", "學生狀態");
+            columnHeaderTranslations.Add("academicstatushistory", "學生狀態紀錄");
             columnHeaderTranslations.Add("studentunique", "學生Unique");
             columnHeaderTranslations.Add("table", "表格");
             columnHeaderTranslations.Add("term", "學季");
@@ -420,9 +420,9 @@ namespace SqlEditor.TranscriptPlugin
         internal static string requirementArea { get => "RequirementArea"; }
         internal static string section { get => "Section"; }
         internal static string studentGradReq { get => "StudentGradReq"; }
-        internal static string studentStatus { get => "StudentStatus"; }
+        internal static string academicStatus { get => "AcademicStatus"; }
 
-        internal static string studentStatusHistory { get => "StudentStatusHistory"; }
+        internal static string academicStatusHistory { get => "AcademicStatusHistory"; }
 
         internal static string students { get => "Students"; }
         internal static string terms { get => "Terms"; }

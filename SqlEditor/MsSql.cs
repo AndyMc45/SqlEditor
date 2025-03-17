@@ -64,8 +64,8 @@ namespace SqlEditor
             }
             else
             {
-                if (readOnlyDA == null) { readOnlyDA = new SqlDataAdapter(); }
-                return readOnlyDA;   // Returns null
+                readOnlyDA = new SqlDataAdapter();  // Always return a new one - can't use within a use.  
+                return readOnlyDA;
             }
         }
 
@@ -261,28 +261,6 @@ namespace SqlEditor
             }
         }
 
-        public static string FillDataTable(DataTable dt, string sqlString)
-        {
-            SqlDataAdapter da = GetDataAdaptor(dt);
-            da = new SqlDataAdapter();  //I guess
-            return FillDataTable(da, dt, sqlString);
-        }
-        public static string FillDataTable(SqlDataAdapter da, DataTable dt, string sqlString)
-        {
-            SqlCommand sqlCmd = new SqlCommand(sqlString, cn);
-            da.SelectCommand = sqlCmd;
-            try
-            {
-                da.Fill(dt);
-                return string.Empty;
-            }
-            catch (Exception ex)
-            {
-                return ex.Message + "  SqlString: " + sqlString;
-
-            }
-        }
-
         public static void CloseConnection()
         {
             if (cn != null)
@@ -352,6 +330,59 @@ namespace SqlEditor
             }
         }
 
+        public static void testing()
+        {
+            string query = "GetStudentRequirementTable";
+            CommandType commandType = CommandType.StoredProcedure;
+            List<(string, string)> parameters = new List<(string, string)>();
+            SqlParameter sqlPar1 = new SqlParameter("@StudentDegreeID", "2634");
+            parameters.Add(("@StudentDegreeID", "2634"));
+            int rowsAffected = 0;
+            string error = FillDataTable(dataHelper.testingDT, query, parameters, commandType);
+            if (string.IsNullOrEmpty(error)) { error = "No error"; }
+            MessageBox.Show(error + " Rows affected: " + rowsAffected.ToString());
+        }
+
+        public static string FillDataTable(DataTable dt, string sqlString)
+        {
+            SqlDataAdapter da = GetDataAdaptor(dt);  // Returns readOnlyDA if not current or combo
+            return FillDataTable(da, dt, sqlString);
+        }
+
+        public static string FillDataTable(SqlDataAdapter da, DataTable dt, string sqlString)
+        {
+            CommandType commandType = CommandType.Text;
+            List<(string, string)> parameters = new List<(string, string)>();
+            return FillDataTable(da, dt, sqlString, parameters, commandType);
+        }
+
+        public static string FillDataTable(DataTable dt, string sqlString, List<(string, string)> parameters, CommandType cmdType)
+        {
+            SqlDataAdapter da = GetDataAdaptor(dt);  // Returns readOnlyDA if dt is not currentDT or comboDT
+            return FillDataTable(da, dt, sqlString, parameters, cmdType);
+        }
+
+        public static string FillDataTable(SqlDataAdapter da, DataTable dt, string sqlString, List<(string, string)> parameters, CommandType cmdType)
+        {
+
+            SqlCommand sqlCmd = new SqlCommand(sqlString, cn);
+            sqlCmd.CommandType = cmdType;
+            foreach ((string, string) parameter in parameters)
+            {
+                sqlCmd.Parameters.AddWithValue(parameter.Item1, parameter.Item2);
+            }
+            da.SelectCommand = sqlCmd;
+            try
+            {
+                da.Fill(dt);
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message + "  SqlString: " + sqlString;
+            }
+        }
+
         public static string ExecuteNonQuery(string query)
         {
             int rowsAffected = 0;
@@ -360,11 +391,26 @@ namespace SqlEditor
 
         public static string ExecuteNonQuery(string query, ref int rowsAffected)
         {
+            List<(string, string)> parameters = new List<(string, string)>();
+            return ExecuteNonQuery(query, parameters, CommandType.Text, ref rowsAffected);
+        }
+
+        public static string ExecuteNonQuery(string query, List<(string, string)> parameters, CommandType cmdType, ref int rowsAffected)
+        {
             string result = String.Empty;
             try
             {
+                // Create command object
                 using (var command = new SqlCommand(query, cn))
                 {
+                    // Set command type
+                    command.CommandType = cmdType;
+                    // Add parameters
+                    foreach ((string, string) parameter in parameters)
+                    {
+                        command.Parameters.AddWithValue(parameter.Item1, parameter.Item2);
+                    }
+                    // Execute command
                     rowsAffected = command.ExecuteNonQuery();
                 }
             }

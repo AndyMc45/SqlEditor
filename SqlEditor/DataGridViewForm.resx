@@ -178,12 +178,6 @@
   <data name="toolSripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>301, 6</value>
   </data>
-  <data name="GridContextMenu_RestoreFilters.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_RestoreFilters.Text" xml:space="preserve">
-    <value>Restore last filter</value>
-  </data>
   <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
     <value>304, 32</value>
   </data>
@@ -191,7 +185,7 @@
     <value>Clear all filters</value>
   </data>
   <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
-    <value>305, 226</value>
+    <value>305, 208</value>
   </data>
   <data name="&gt;&gt;GridContextMenu.Name" xml:space="preserve">
     <value>GridContextMenu</value>
@@ -1745,13 +1739,13 @@
     <value>Tables</value>
   </data>
   <data name="mnuBatchInsert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
+    <value>254, 34</value>
   </data>
   <data name="mnuBatchInsert.Text" xml:space="preserve">
     <value>Batch Insert</value>
   </data>
   <data name="mnuBatchEdit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
+    <value>254, 34</value>
   </data>
   <data name="mnuBatchEdit.Text" xml:space="preserve">
     <value>Batch Edit</value>

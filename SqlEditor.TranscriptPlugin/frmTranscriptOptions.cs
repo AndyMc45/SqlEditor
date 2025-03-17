@@ -131,6 +131,12 @@ namespace SqlEditor.TranscriptPlugin
             btnPrintCourseGrades.Enabled = false;
             btnPrintEnglishTranscript.Enabled = false;
 
+            // Call stored procedure to update the student's StudentDegreeStatus
+            if (studentDegreeID > 0)
+            {
+
+            }
+
             errorLoadingData = loadPrintToWordDataTables();
 
             if (myJob == frmTranscriptOptions.Job.printTranscript && !errorLoadingData)

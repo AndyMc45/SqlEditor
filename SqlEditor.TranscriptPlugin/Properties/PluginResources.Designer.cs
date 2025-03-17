@@ -367,7 +367,7 @@ namespace SqlEditor.TranscriptPlugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This will update the StudentDegrees Table studentStatus based on the StudentStatusHistory table;.
+        ///   Looks up a localized string similar to This will update the StudentDegrees Table academicStatus based on the AcademicStatusHistory table;.
         /// </summary>
         public static string thiswillUpdateTheStudentDegreesTable {
             get {

@@ -48,21 +48,17 @@
     {
         internal TableOptions()
         {
-            writingTable = false;
+            writingTable = true;
+            firstTimeWritingTable = true;
             doNotRebindGridFV = false;
             doNotWriteGrid = false;
-            // fixingDatabase = false;   // Manually set this - 
-            // strStaticWhereClause = string.Empty;
             FkFieldInEditingControl = null;
             tableHasForeignKeys = false;
-            firstTimeWritingTable = true;
             currentComboFilterValue_isDirty = false;
             allowDisplayKeyEdit = false;
             mergingDuplicateKeys = false;
             rapidlyMergingDKsTable = String.Empty;
         }
-        // internal bool fixingDatabase { get; set; }
-        // internal string strStaticWhereClause { get; set; }
         internal bool writingTable { get; set; }
         internal field? FkFieldInEditingControl { get; set; }
         internal bool tableHasForeignKeys { get; set; }

@@ -169,11 +169,11 @@ namespace SqlEditor.TranscriptPlugin
                                     TableName.terms, fdTermID, fdTermsColNames, ref sbErrors);
                             string endDate = String.Format("{0} / {1}", fdTermsColValues["endMonth"], fdTermsColValues["endYear"]);
                             // Add student status to end date
-                            int studentStatusID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "studentStatusID"));
-                            List<string> studentStatusColNames = new List<string> { "statusName", "eStatusName" };
-                            Dictionary<string, string> studentStatusColValues = TranscriptHelper.GetPkRowColumnValues(
-                                    TableName.studentStatus, studentStatusID, studentStatusColNames, ref sbErrors);
-                            string endDateWithStatus = String.Format("{0} ({1})", endDate, studentStatusColValues["statusName"]);
+                            int academicStatusID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "academicStatusID"));
+                            List<string> academicStatusColNames = new List<string> { "statusName", "eStatusName" };
+                            Dictionary<string, string> academicStatusColValues = TranscriptHelper.GetPkRowColumnValues(
+                                    TableName.academicStatus, academicStatusID, academicStatusColNames, ref sbErrors);
+                            string endDateWithStatus = String.Format("{0} ({1})", endDate, academicStatusColValues["statusName"]);
 
                             // B. Translate to English
                             if (printJob == PrintJob.printEnglishTranscript)
@@ -192,10 +192,10 @@ namespace SqlEditor.TranscriptPlugin
                                         TableName.degrees, studentDegreeID, degreeColNames, ref sbErrors);
                                 string eDegreeName = degreeColValues["eDegreeName"];
                                 if (!String.IsNullOrEmpty(eDegreeName)) { studentDegree = eDegreeName; }
-                                string eStudentStatus = studentStatusColValues["eStatusName"];
-                                if (!String.IsNullOrEmpty(eStudentStatus))
+                                string eAcademicStatus = academicStatusColValues["eStatusName"];
+                                if (!String.IsNullOrEmpty(eAcademicStatus))
                                 {
-                                    endDateWithStatus = String.Format("{0} ({1})", endDate, eStudentStatus);
+                                    endDateWithStatus = String.Format("{0} ({1})", endDate, eAcademicStatus);
                                 }
                             }
 
@@ -218,7 +218,7 @@ namespace SqlEditor.TranscriptPlugin
                             {
                                 // Skip audited courses
                                 string statusKey = dataHelper.getColumnValueinDR(transDR, "statusKey");
-                                if (statusKey != "audit"  || includeAuditedCourses)
+                                if (statusKey != "audit" || includeAuditedCourses)
                                 {
                                     // Get information about current term
                                     int termID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "termID"));

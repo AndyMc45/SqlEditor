@@ -114,117 +114,18 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
-        public static string UpdateEveryChangedStudentDegreeStatus(ref int rowsAffected)
+        public static string UpdateStudentDegreeStatus(ref int rowsAffected)
         {
-            return UpdateEveryChangedStudentDegreeStatus(-1, ref rowsAffected);
+            return UpdateStudentDegreeStatus(-1, ref rowsAffected);
         }
-        public static string UpdateEveryChangedStudentDegreeStatus(int studentDegreeID, ref int rowsAffected)
-        {
-            string result = string.Empty;
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(";with cte AS (Select *, ROW_NUMBER() OVER(PARTITION BY[studentDegreeID] ORDER BY[dateEstablished] DESC) as rn ");
-            sb.AppendLine("From[StudentStatusHistory])UPDATE[dbo].[StudentDegrees] SET [studentStatusID] = cte.studentStatusID ");
-            sb.AppendLine("FROM cte Inner Join StudentDegrees on StudentDegrees.studentDegreeID = cte.studentDegreeID");
-            sb.AppendLine("AND rn = 1 AND ");
-            if(studentDegreeID < 0) 
-            {
-                // Update all the changed statuses
-                sb.AppendLine("cte.dateCreated >= StudentDegrees.lastUpdated");
-            }
-            else
-            {
-                // Update the given student status
-                sb.AppendLine("cte.studentDegreeID = " + studentDegreeID.ToString());
-            }
-            string query = sb.ToString();
-            result = MsSql.ExecuteNonQuery(query, ref rowsAffected);
-            return result;
-        }
-
-        public static string updateEveryChangedStudentCreditsLastTermQPA(ref int rowsAffected)
-        {
-            return updateEveryChangedStudentCreditsLastTermQPA(-1, ref rowsAffected);
-        }
-        public static string updateEveryChangedStudentCreditsLastTermQPA(int studentDegreeID, ref int rowsAffected)
-        {
-                string result = string.Empty;
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("; With cte AS( ");
-            sb.AppendLine("SELECT [Transcript].[studentDegreeID], ");
-            sb.AppendLine("Max(Transcript.createDate) as maxCreateDate,");
-            sb.AppendLine("Max(Terms.term) as maxTerm, ");
-            sb.AppendLine("Sum(CASE ");
-            sb.AppendLine("when Grades.earnedCredits = 'True' then Section.credits");
-            sb.AppendLine("else 0 end) as totalCredits, ");
-            sb.AppendLine("Sum(CASE ");
-            sb.AppendLine("When Grades.earnedCredits = 'True' AND Grades.creditsInQPA = 'True' then Section.credits");
-            sb.AppendLine("Else 0 END) as totalCreditsinQPA,");
-            sb.AppendLine("Sum(CASE");
-            sb.AppendLine("When Grades.earnedCredits = 'True' AND Grades.creditsInQPA = 'True' then QP * Section.credits");
-            sb.AppendLine("Else 0 End) as totalQPs");
-            sb.AppendLine("FROM [Transcript] ");
-            sb.AppendLine("inner join CourseTermSection on  CourseTermSection.courseTermSectionID = Transcript.courseTermSectionID");
-            sb.AppendLine("inner join Section on CourseTermSection.sectionID = Section.sectionID");
-            sb.AppendLine("inner join CourseTerms on CourseTerms.courseTermID = CourseTermSection.courseTermID");
-            sb.AppendLine("inner join Courses on Courses.courseID = CourseTerms.courseID");
-            sb.AppendLine("inner join DegreeLevel as courseDegreeLevel on Section.degreeLevelID = courseDegreeLevel.degreeLevelID ");
-            sb.AppendLine("inner join Terms on Terms.termID = CourseTerms.termID");
-            sb.AppendLine("inner join Grades on Grades.gradesID = Transcript.gradeID");
-            sb.AppendLine("inner join StudentDegrees on[Transcript].[studentDegreeID] = StudentDegrees.studentDegreeID");
-            sb.AppendLine("inner join Degrees on Degrees.degreeID = StudentDegrees.degreeID");
-            sb.AppendLine("inner join DegreeLevel as degreeDegreeLevel on degreeDegreeLevel.degreeLevelID = Degrees.degreeLevelID");
-            sb.AppendLine("where courseDegreeLevel.degreeLevel >= degreeDegreeLevel.degreeLevel");
-            sb.AppendLine("Group By[Transcript].[studentDegreeID] ");
-            sb.AppendLine(")");
-            sb.AppendLine("UPDATE StudentDegrees");
-            sb.AppendLine("SET[creditsEarned] = CTE.totalCredits, ");
-            sb.AppendLine("[QPA] = CASE ");
-            sb.AppendLine("WHEN totalCreditsinQPA = 0 then 0");
-            sb.AppendLine("ELSE ROUND(totalQPs / totalCreditsinQPA, 2) END,");
-            sb.AppendLine("[lastUpdated] = GETDATE(), ");
-            sb.AppendLine("[lastTermID] = Terms.termID");
-            sb.AppendLine("FROM StudentDegrees Inner Join CTE");
-            sb.AppendLine("on StudentDegrees.studentDegreeID = CTE.studentDegreeID");
-            sb.AppendLine("Inner Join Terms on Terms.term = CTE.maxTerm");
-            if (studentDegreeID < 0)
-            {
-                sb.AppendLine("Where StudentDegrees.lastUpdated <= cte.maxCreateDate"); // Remove this 'where' line to update all
-            }
-            else
-            {
-                sb.AppendLine("Where cte.studentDegreeID = " + studentDegreeID.ToString()); // Remove this 'where' line to update all
-            }
-            string query = sb.ToString();
-            result = MsSql.ExecuteNonQuery(query, ref rowsAffected);
-            return result;
-        }
-
-        public static string updateEveryChangedStudentFirstTermID(ref int rowsAffected)
+        public static string UpdateStudentDegreeStatus(int studentDegreeID, ref int rowsAffected)
         {
             string result = string.Empty;
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("; With cte AS(");
-            sb.AppendLine("SELECT [Transcript].[studentDegreeID],");
-            sb.AppendLine("Max(Transcript.createDate) as maxCreateDate,");
-            sb.AppendLine("Min(Terms.term) as minTerm");
-            sb.AppendLine("FROM [Transcript] ");
-            sb.AppendLine("inner join CourseTermSection on  CourseTermSection.courseTermSectionID = Transcript.courseTermSectionID");
-            sb.AppendLine("inner join CourseTerms on CourseTerms.courseTermID = CourseTermSection.courseTermID");
-            sb.AppendLine("inner join Terms on Terms.termID = CourseTerms.termID");
-            sb.AppendLine("inner join StudentDegrees on[Transcript].[studentDegreeID] = StudentDegrees.studentDegreeID");
-            sb.AppendLine("Group By [Transcript].[studentDegreeID]");
-            sb.AppendLine(")");
-            sb.AppendLine("UPDATE StudentDegrees");
-            sb.AppendLine("SET [firstTermID] = Terms.termID");
-            sb.AppendLine("FROM StudentDegrees Inner Join CTE");
-            sb.AppendLine("on StudentDegrees.studentDegreeID = CTE.studentDegreeID");
-            sb.AppendLine("Inner Join Terms on Terms.term = CTE.minTerm");
-            sb.AppendLine("Where StudentDegrees.lastUpdated <= cte.maxCreateDate");
-            string query = sb.ToString();
-            result = MsSql.ExecuteNonQuery(query, ref rowsAffected);
+            List<(string, string)> parameters = new List<(string, string)>();
+            parameters.Add(("@studentDegreeID", studentDegreeID.ToString()));
+            result = MsSql.ExecuteNonQuery("UpdateStudentDegreesStatus", parameters, CommandType.StoredProcedure, ref rowsAffected);
             return result;
         }
-
 
     }
 }
