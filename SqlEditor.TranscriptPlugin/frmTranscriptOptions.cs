@@ -90,6 +90,7 @@ namespace SqlEditor.TranscriptPlugin
         #region variables
         public Job myJob { get; set; }   // Must be loaded to do anything
         public int studentDegreeID { get; set; }
+        public int studentDegreeStatusID { get; set; } // -1 if something goes wrong
         public int courseTermID { get; set; }
         public string uiCulture { get; set; }
 
@@ -170,21 +171,28 @@ namespace SqlEditor.TranscriptPlugin
                 TranscriptHelper.fillStudentDegreeDataRow(studentDegreeID, ref sbErrors);
                 if (sbErrors.Length > 0)
                 {
-                    MessageBox.Show(sbErrors.ToString(), "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(sbErrors.ToString(), "Warning1", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return true;  // i.e. errorLoadingData is true  
                 }
+                TranscriptHelper.fillStudentDegreeStatusDataRow(studentDegreeStatusID, ref sbErrors);
+                if (sbErrors.Length > 0)
+                {
+                    MessageBox.Show(sbErrors.ToString(), "Warning2", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return true;  // i.e. errorLoadingData is true  
+                }
+
                 // 2.2 Fill transcript
                 TranscriptHelper.fillStudentTranscriptTable(studentDegreeID, ref sbErrors);
                 if (sbErrors.Length > 0)
                 {
-                    MessageBox.Show(sbErrors.ToString(), "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(sbErrors.ToString(), "Warning3", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return true;
                 }
                 //2.3 Fill Grad Requirements DT
                 TranscriptHelper.fillGradRequirementsDT(studentDegreeID, ref sbErrors);
                 if (sbErrors.Length > 0)
                 {
-                    MessageBox.Show(sbErrors.ToString(), "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(sbErrors.ToString(), "Warning4", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return true;
                 }
             }

@@ -417,6 +417,25 @@ namespace SqlEditor
             catch (Exception ex)
             {
                 result = ex.Message;
+                MessageBox.Show(ex.Message, Properties.MyResources.databaseErrorMessage, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            return result;
+        }
+
+        public static string ExecuteScalar(string query)
+        {
+            string result = String.Empty;
+            try
+            {
+                // Create command object
+                using (var command = new SqlCommand(query, cn))
+                {
+                    result = command.ExecuteScalar().ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                result = string.Empty;
                 MessageBox.Show(ex.Message, Properties.MyResources.errorBackingUpDatabase, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             return result;

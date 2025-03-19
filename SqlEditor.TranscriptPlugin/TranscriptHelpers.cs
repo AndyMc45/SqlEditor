@@ -44,6 +44,10 @@ namespace SqlEditor.TranscriptPlugin
         {
             PrintToWord.studentDegreeInfoDT = TranscriptHelper.GetOneRowDataTable(TableName.studentDegrees, studentDegreeID, ref sbErrors);
         }
+        internal static void fillStudentDegreeStatusDataRow(int studentDegreeStatusID, ref StringBuilder sbErrors)
+        {
+            PrintToWord.studentDegreeStatusInfoDT = TranscriptHelper.GetOneRowDataTable(TableName.studentDegreesStatus, studentDegreeStatusID, ref sbErrors);
+        }
 
         internal static void fillCourseTermDataRow(int courseTermID, ref StringBuilder sbErrors)
         {
@@ -197,70 +201,8 @@ namespace SqlEditor.TranscriptPlugin
 
                 //Add this row to the table
                 PrintToWord.studentReqDT.Rows.Add(dr);
-
-                //if (requirementsDR["ReqArea"].ToString() == "QPA")
-                //{
-                //    decimal QPA = 0;
-                //    if (qpaCredits > 0)
-                //    {
-                //        QPA = Math.Round(qpaPoints / qpaCredits, 2);
-                //    }
-                //    dataHelper.setColumnValueInDR(dr, "Earned", QPA);
-                //    dataHelper.setColumnValueInDR(dr, "InProgress", 0);
-                //    if (QPA < rReqCredits)
-                //    {
-                //        dataHelper.setColumnValueInDR(dr, "Needed", rReqCredits - QPA);
-                //    }
-                //}
-                //else
-                //{
-                //    // Fill in columns 
-                //    dataHelper.setColumnValueInDR(dr, "Earned", earned);
-                //    dataHelper.setColumnValueInDR(dr, "InProgress", inProgress);
-                //    if (rReqCredits > earned)
-                //    {
-                //        dataHelper.setColumnValueInDR(dr, "Needed", rReqCredits - earned);
-                //    }
-                //    else
-                //    {
-                //        dataHelper.setColumnValueInDR(dr, "Needed", 0);
-                //    }
-                //    dataHelper.setColumnValueInDR(dr, "Icredits", iCredits);
-                //}
-                //// Add this row to studentReqDT
-                ////PrintToWord.studentReqDT.Rows.Add(dr);
             }
 
-
-            //    if (fakeRow) { break; }
-
-
-
-            //// Update student QPA and total Credits - not yet committed to database
-            //DataRow studentDegreeInfoRow = PrintToWord.studentDegreeInfoDT.Rows[0];
-            //decimal totalQPA = 0;
-            //if (totalQpaCredits > 0)
-            //{
-            //    totalQPA = Math.Round(totalQpaPoints / totalQpaCredits, 2);
-            //}
-            //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "creditsEarned", totalCreditsEarned);
-            //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "QPA", totalQPA);
-            //dataHelper.setColumnValueInDR(studentDegreeInfoRow, "lastUpdated", DateTime.Now.ToShortDateString());
-
-            //// Save these three changes down to the database - start over from scratch.
-            //field pkField = dataHelper.getTablePrimaryKeyField(TableName.studentDegrees);
-            //string pk = dataHelper.getColumnValueinDR(studentDegreeInfoRow, pkField.fieldName);
-            //sqlString = String.Format("Select * from {0} where {1} = '{2}'", TableName.studentDegrees, pkField.fieldName, pk);
-            //MsSqlWithDaDt dadt = new MsSqlWithDaDt(sqlString);
-            //List<field> fieldsToUpdate = new List<field>();
-            //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "creditsEarned"));
-            //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "QPA"));
-            //fieldsToUpdate.Add(dataHelper.getFieldFromFieldsDT(TableName.studentDegrees, "lastUpdated"));
-            //MsSql.SetUpdateCommand(fieldsToUpdate, dadt.da);
-            //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "creditsEarned", totalCreditsEarned);
-            //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "QPA", totalQPA);
-            //dataHelper.setColumnValueInDR(dadt.dt.Rows[0], "lastUpdated", DateTime.Now.ToShortDateString());
-            //try { dadt.da.Update(dadt.dt); } catch { }
 
         }
 
@@ -417,6 +359,7 @@ namespace SqlEditor.TranscriptPlugin
         internal static string gradeStatus { get => "GradeStatus"; }
         internal static string handbooks { get => "Handbooks"; }
         internal static string studentDegrees { get => "StudentDegrees"; }
+        internal static string studentDegreesStatus { get => "StudentDegreesStatus"; }
         internal static string requirementArea { get => "RequirementArea"; }
         internal static string section { get => "Section"; }
         internal static string studentGradReq { get => "StudentGradReq"; }

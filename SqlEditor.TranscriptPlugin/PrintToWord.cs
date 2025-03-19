@@ -10,8 +10,10 @@ namespace SqlEditor.TranscriptPlugin
     public static class PrintToWord
     {
 
-        // There are 3 dataTables for transcript and one extra for course role 
+        // There are 4 dataTables for transcript and one extra for course role 
         public static System.Data.DataTable studentDegreeInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
+        public static System.Data.DataTable studentDegreeStatusInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
+
         public static System.Data.DataTable transcriptDT { get; set; }  // No editing. Transcripts filtered on this studentDegree
 
         // StudentReqDT is created from scratch -columns added to mainform dataHelper.fieldDT to allows sqlStudentReq factory
@@ -152,24 +154,28 @@ namespace SqlEditor.TranscriptPlugin
                             MainDocumentPart myMainDocumentPart = wordDoc.MainDocumentPart ?? wordDoc.AddMainDocumentPart();
                             Body wordDocBody = myMainDocumentPart.Document.Body;
 
+                            //StudentDegree table
                             studentName = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "studentName");
                             string studentDegree = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "degreeName");
-                            string strCreditsEarned = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "creditsEarned");
-                            string strQPA = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "QPA");
 
-                            int sdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "firstTermID"));
+                            //StudentDegreeStatus table
+                            string strCreditsEarned = dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "creditsEarned");
+                            string strQPA = dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "QPA");
+                            int sdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "firstTermID"));
+
                             List<string> sdTermsColNames = new List<string> { "startYear", "startMonth" };
                             Dictionary<string, string> sdTermsColValues = TranscriptHelper.GetPkRowColumnValues(
                                     TableName.terms, sdTermID, sdTermsColNames, ref sbErrors);
                             string startDate = String.Format("{0} / {1}", sdTermsColValues["startMonth"], sdTermsColValues["startYear"]);
 
-                            int fdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "lastTermID"));
+                            int fdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "lastTermID"));
                             List<string> fdTermsColNames = new List<string> { "endYear", "endMonth" };
                             Dictionary<string, string> fdTermsColValues = TranscriptHelper.GetPkRowColumnValues(
                                     TableName.terms, fdTermID, fdTermsColNames, ref sbErrors);
                             string endDate = String.Format("{0} / {1}", fdTermsColValues["endMonth"], fdTermsColValues["endYear"]);
+
                             // Add student status to end date
-                            int academicStatusID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "academicStatusID"));
+                            int academicStatusID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "academicStatusID"));
                             List<string> academicStatusColNames = new List<string> { "statusName", "eStatusName" };
                             Dictionary<string, string> academicStatusColValues = TranscriptHelper.GetPkRowColumnValues(
                                     TableName.academicStatus, academicStatusID, academicStatusColNames, ref sbErrors);

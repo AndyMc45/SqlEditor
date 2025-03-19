@@ -1738,23 +1738,17 @@
   <data name="mnuOpenTables.Text" xml:space="preserve">
     <value>Tables</value>
   </data>
-  <data name="mnuBatchInsert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>254, 34</value>
-  </data>
-  <data name="mnuBatchInsert.Text" xml:space="preserve">
-    <value>Batch Insert</value>
-  </data>
-  <data name="mnuBatchEdit.Size" type="System.Drawing.Size, System.Drawing">
-    <value>254, 34</value>
-  </data>
-  <data name="mnuBatchEdit.Text" xml:space="preserve">
-    <value>Batch Edit</value>
-  </data>
   <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
     <value>254, 34</value>
   </data>
   <data name="mnuPrintCurrentTable.Text" xml:space="preserve">
     <value>Save Grid to Excel</value>
+  </data>
+  <data name="mnuBatchInsert.Size" type="System.Drawing.Size, System.Drawing">
+    <value>254, 34</value>
+  </data>
+  <data name="mnuBatchInsert.Text" xml:space="preserve">
+    <value>Batch Insert</value>
   </data>
   <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
     <value>69, 29</value>
@@ -2099,12 +2093,6 @@
     <value>mnuBatchInsert</value>
   </data>
   <data name="&gt;&gt;mnuBatchInsert.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;mnuBatchEdit.Name" xml:space="preserve">
-    <value>mnuBatchEdit</value>
-  </data>
-  <data name="&gt;&gt;mnuBatchEdit.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;mnuPrintCurrentTable.Name" xml:space="preserve">

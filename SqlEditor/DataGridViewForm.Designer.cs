@@ -103,7 +103,6 @@
             mnuOpenTables = new ToolStripMenuItem();
             mnuTools = new ToolStripMenuItem();
             mnuBatchInsert = new ToolStripMenuItem();
-            mnuBatchEdit = new ToolStripMenuItem();
             mnuPrintCurrentTable = new ToolStripMenuItem();
             mnuIT_Tools = new ToolStripMenuItem();
             mnuDatabaseInfo = new ToolStripMenuItem();
@@ -832,7 +831,7 @@
             // 
             // mnuTools
             // 
-            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuBatchInsert, mnuBatchEdit, mnuPrintCurrentTable });
+            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuPrintCurrentTable, mnuBatchInsert });
             mnuTools.Name = "mnuTools";
             resources.ApplyResources(mnuTools, "mnuTools");
             // 
@@ -841,11 +840,6 @@
             mnuBatchInsert.Name = "mnuBatchInsert";
             resources.ApplyResources(mnuBatchInsert, "mnuBatchInsert");
             mnuBatchInsert.Click += mnuBatchInsert_Click;
-            // 
-            // mnuBatchEdit
-            // 
-            mnuBatchEdit.Name = "mnuBatchEdit";
-            resources.ApplyResources(mnuBatchEdit, "mnuBatchEdit");
             // 
             // mnuPrintCurrentTable
             // 
@@ -1124,7 +1118,6 @@
         private Button btnExtra;
         private ToolStripMenuItem GridContextMenu_UnusedAsFK;
         private ToolStripMenuItem mnuBatchInsert;
-        private ToolStripMenuItem mnuBatchEdit;
         //private Button button2;
     }
 }

@@ -33,6 +33,7 @@
             DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             tabControl1 = new TabControl();
             tabActions = new TabPage();
+            chkIncludeAudits = new CheckBox();
             btnPrintCourseGrades = new Button();
             btnPrintEnglishTranscript = new Button();
             btnPrintCourseRole = new Button();
@@ -68,7 +69,6 @@
             folderBrowserDialog1 = new FolderBrowserDialog();
             openFileDialog1 = new OpenFileDialog();
             saveFileDialog1 = new SaveFileDialog();
-            chkIncludeAudits = new CheckBox();
             tabControl1.SuspendLayout();
             tabActions.SuspendLayout();
             tabStudent.SuspendLayout();
@@ -113,6 +113,16 @@
             tabActions.TabIndex = 4;
             tabActions.Text = "Actions";
             tabActions.UseVisualStyleBackColor = true;
+            // 
+            // chkIncludeAudits
+            // 
+            chkIncludeAudits.AutoSize = true;
+            chkIncludeAudits.Location = new Point(26, 93);
+            chkIncludeAudits.Name = "chkIncludeAudits";
+            chkIncludeAudits.Size = new Size(231, 29);
+            chkIncludeAudits.TabIndex = 18;
+            chkIncludeAudits.Text = "Include Audited Courses";
+            chkIncludeAudits.UseVisualStyleBackColor = true;
             // 
             // btnPrintCourseGrades
             // 
@@ -223,7 +233,7 @@
             dgvTranscript.Name = "dgvTranscript";
             dgvTranscript.RowHeadersWidth = 51;
             dgvTranscript.RowTemplate.Height = 29;
-            dgvTranscript.Size = new Size(1968, 882);
+            dgvTranscript.Size = new Size(1968, 877);
             dgvTranscript.TabIndex = 0;
             // 
             // tabRequirements
@@ -256,7 +266,7 @@
             dgvRequirements.Name = "dgvRequirements";
             dgvRequirements.RowHeadersWidth = 51;
             dgvRequirements.RowTemplate.Height = 29;
-            dgvRequirements.Size = new Size(1960, 874);
+            dgvRequirements.Size = new Size(1960, 869);
             dgvRequirements.TabIndex = 0;
             // 
             // tabOptions
@@ -296,7 +306,7 @@
             lblPathDatabaseFolder.Location = new Point(322, 596);
             lblPathDatabaseFolder.Margin = new Padding(4, 0, 4, 0);
             lblPathDatabaseFolder.Name = "lblPathDatabaseFolder";
-            lblPathDatabaseFolder.Size = new Size(153, 19);
+            lblPathDatabaseFolder.Size = new Size(185, 22);
             lblPathDatabaseFolder.TabIndex = 34;
             lblPathDatabaseFolder.Text = "Database backup Folder";
             // 
@@ -320,7 +330,7 @@
             lblPathCourseGradeTemplate.Location = new Point(322, 286);
             lblPathCourseGradeTemplate.Margin = new Padding(4, 0, 4, 0);
             lblPathCourseGradeTemplate.Name = "lblPathCourseGradeTemplate";
-            lblPathCourseGradeTemplate.Size = new Size(187, 19);
+            lblPathCourseGradeTemplate.Size = new Size(228, 22);
             lblPathCourseGradeTemplate.TabIndex = 32;
             lblPathCourseGradeTemplate.Text = "Course Grades Template Path";
             // 
@@ -332,7 +342,7 @@
             lblPathEnglishTranscriptTemplate.Location = new Point(322, 221);
             lblPathEnglishTranscriptTemplate.Margin = new Padding(4, 0, 4, 0);
             lblPathEnglishTranscriptTemplate.Name = "lblPathEnglishTranscriptTemplate";
-            lblPathEnglishTranscriptTemplate.Size = new Size(204, 19);
+            lblPathEnglishTranscriptTemplate.Size = new Size(251, 22);
             lblPathEnglishTranscriptTemplate.TabIndex = 30;
             lblPathEnglishTranscriptTemplate.Text = "English Transcript Template Path";
             // 
@@ -367,7 +377,7 @@
             lblPathDocumentFolder.Location = new Point(322, 406);
             lblPathDocumentFolder.Margin = new Padding(4, 0, 4, 0);
             lblPathDocumentFolder.Name = "lblPathDocumentFolder";
-            lblPathDocumentFolder.Size = new Size(143, 19);
+            lblPathDocumentFolder.Size = new Size(175, 22);
             lblPathDocumentFolder.TabIndex = 27;
             lblPathDocumentFolder.Text = "Document Folder Path";
             // 
@@ -414,7 +424,7 @@
             lblLanguage.Location = new Point(38, 474);
             lblLanguage.Margin = new Padding(4);
             lblLanguage.Name = "lblLanguage";
-            lblLanguage.Size = new Size(144, 20);
+            lblLanguage.Size = new Size(177, 25);
             lblLanguage.TabIndex = 23;
             lblLanguage.Text = "Interface Language";
             // 
@@ -426,7 +436,7 @@
             lblPathCourseRoleTemplate.Location = new Point(322, 166);
             lblPathCourseRoleTemplate.Margin = new Padding(4, 0, 4, 0);
             lblPathCourseRoleTemplate.Name = "lblPathCourseRoleTemplate";
-            lblPathCourseRoleTemplate.Size = new Size(172, 19);
+            lblPathCourseRoleTemplate.Size = new Size(210, 22);
             lblPathCourseRoleTemplate.TabIndex = 22;
             lblPathCourseRoleTemplate.Text = "Course Role Template Path";
             // 
@@ -438,7 +448,7 @@
             lblPathTemplateFolder.Location = new Point(322, 344);
             lblPathTemplateFolder.Margin = new Padding(4, 0, 4, 0);
             lblPathTemplateFolder.Name = "lblPathTemplateFolder";
-            lblPathTemplateFolder.Size = new Size(136, 19);
+            lblPathTemplateFolder.Size = new Size(167, 22);
             lblPathTemplateFolder.TabIndex = 21;
             lblPathTemplateFolder.Text = "Template Folder Path";
             // 
@@ -450,7 +460,7 @@
             lblPathTransTemplate.Location = new Point(322, 104);
             lblPathTransTemplate.Margin = new Padding(4, 0, 4, 0);
             lblPathTransTemplate.Name = "lblPathTransTemplate";
-            lblPathTransTemplate.Size = new Size(158, 19);
+            lblPathTransTemplate.Size = new Size(194, 22);
             lblPathTransTemplate.TabIndex = 20;
             lblPathTransTemplate.Text = "Transcript Template Path";
             // 
@@ -499,7 +509,7 @@
             lblOptions.Location = new Point(38, 50);
             lblOptions.Margin = new Padding(4);
             lblOptions.Name = "lblOptions";
-            lblOptions.Size = new Size(166, 20);
+            lblOptions.Size = new Size(201, 25);
             lblOptions.TabIndex = 6;
             lblOptions.Text = "Folders and Templates";
             // 
@@ -518,9 +528,9 @@
             toolStripBottom.Dock = DockStyle.Bottom;
             toolStripBottom.ImageScalingSize = new Size(20, 20);
             toolStripBottom.Items.AddRange(new ToolStripItem[] { toolStripBtnNarrow });
-            toolStripBottom.Location = new Point(1924, 909);
+            toolStripBottom.Location = new Point(1924, 907);
             toolStripBottom.Name = "toolStripBottom";
-            toolStripBottom.Size = new Size(0, 32);
+            toolStripBottom.Size = new Size(0, 34);
             toolStripBottom.TabIndex = 15;
             toolStripBottom.Text = "toolStrip1";
             // 
@@ -542,16 +552,6 @@
             // openFileDialog1
             // 
             openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // chkIncludeAudits
-            // 
-            chkIncludeAudits.AutoSize = true;
-            chkIncludeAudits.Location = new Point(26, 93);
-            chkIncludeAudits.Name = "chkIncludeAudits";
-            chkIncludeAudits.Size = new Size(227, 29);
-            chkIncludeAudits.TabIndex = 18;
-            chkIncludeAudits.Text = "Include Audited Courses";
-            chkIncludeAudits.UseVisualStyleBackColor = true;
             // 
             // frmTranscriptOptions
             // 

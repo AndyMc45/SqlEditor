@@ -111,12 +111,13 @@ namespace SqlEditor.TranscriptPlugin
                 {
                     // Update this studentDegreeID information - Error message already shown.
                     int rowsAffected = 0;
-                    string strResult1 = TranscriptMsSql.UpdateStudentDegreeStatus(studentDegreeID, ref rowsAffected);
+                    int sdsPK = TranscriptMsSql.UpdateStudentDegreeStatus(studentDegreeID, ref rowsAffected);
 
                     //Open form
                     frmTranscriptOptions fOptions = new frmTranscriptOptions();
                     fOptions.myJob = frmTranscriptOptions.Job.printTranscript;
                     fOptions.studentDegreeID = studentDegreeID;
+                    fOptions.studentDegreeStatusID = sdsPK;
                     fOptions.headerTranslations = cntTemplate.ColumnHeaderTranslations;
                     fOptions.translationCultureName = cntTemplate.TranslationCultureName;
 
@@ -158,7 +159,7 @@ namespace SqlEditor.TranscriptPlugin
                 {
                     // 2a. Upgrade academicStatusID column
                     int rowsAffected = 0;
-                    string strResult = TranscriptMsSql.UpdateStudentDegreeStatus(ref rowsAffected);
+                    TranscriptMsSql.UpdateStudentDegreeStatus(ref rowsAffected);
                 }
             }
             else if (e.Value == "checkForTranscriptErrors")

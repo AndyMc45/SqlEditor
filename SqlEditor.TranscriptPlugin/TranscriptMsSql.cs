@@ -114,18 +114,26 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
-        public static string UpdateStudentDegreeStatus(ref int rowsAffected)
+        public static int UpdateStudentDegreeStatus(ref int rowsAffected)
         {
             return UpdateStudentDegreeStatus(-1, ref rowsAffected);
         }
-        public static string UpdateStudentDegreeStatus(int studentDegreeID, ref int rowsAffected)
+        public static int UpdateStudentDegreeStatus(int studentDegreeID, ref int rowsAffected)
         {
-            string result = string.Empty;
+            int returnInt = -1;
             List<(string, string)> parameters = new List<(string, string)>();
             parameters.Add(("@studentDegreeID", studentDegreeID.ToString()));
-            result = MsSql.ExecuteNonQuery("UpdateStudentDegreesStatus", parameters, CommandType.StoredProcedure, ref rowsAffected);
-            return result;
+            MsSql.ExecuteNonQuery("UpdateStudentDegreesStatus", parameters, CommandType.StoredProcedure, ref rowsAffected);
+            // Return sdsPK if given one student
+            if (studentDegreeID > -1)
+            {
+                string sql = String.Format("SELECT TOP (1) [studentDegreeStatusID] FROM [dbo].[StudentDegreesStatus] as sds " +
+                    "Where sds.[studentDegreeID] = '{0}'", studentDegreeID.ToString());
+                string sdsPK = MsSql.ExecuteScalar(sql);
+                if (sdsPK != string.Empty) { returnInt = Int32.Parse(sdsPK); }
+            }
+            return returnInt;
         }
-
     }
 }
+
