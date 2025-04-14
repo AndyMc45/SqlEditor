@@ -4176,68 +4176,21 @@ namespace SqlEditor
 
         private void mnuBatchInsert_Click(object sender, EventArgs e)
         {
-            writeGrid_NewFilter(true);  // Should do a 'needsReload' check.
-
-            // Changes to make
-            // 1.  Do the insert - use a loop and the fields in the grid to find values for each row
-            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
-            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-
             if (currentSql != null)
             {
+                writeGrid_NewFilter(true);  // Should do a 'needsReload' check.
+
                 DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (reply == DialogResult.Yes)
                 {
-                    // Get list of filtered DisplayKeys from GridFilterFields and their values
-                    bool dkFiltered = false;
-                    List<field> filteredDisplayKeys = new List<field>();
-                    for (int i = 0; i < cmbGridFilterFields.Length; i++)
-                    {
-                        if (cmbGridFilterFields[i].Enabled)
-                        {
-                            //cmbGridFilterFields - something is selected and all values are fields
-                            field selectedField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
-                            // Batch insert only handles fields in mytable  
-                            if (selectedField.table == currentSql.myTable)
-                            {
-                                if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
-                                {
-                                    filteredDisplayKeys.Add(selectedField);
-                                    if (dataHelper.isDisplayKey(selectedField))
-                                    {
-                                        dkFiltered = true;   // At least on DK must be filtered on
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Return if no display key is filtered in the grid
-                    if (!dkFiltered)
-                    {
-                        MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        return;
-                    }
-                    // Ask which keys the user wants to change
-                    frmListItems frmDisplayKeys = new frmListItems();
-                    frmDisplayKeys.myList = filteredDisplayKeys.Select(fl => fl.fieldName).ToList();
-                    frmDisplayKeys.mySelectedList = new List<string>();
-                    frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
-                    frmDisplayKeys.Text = "Select the fields to change in Inserted Rows.";
-                    frmDisplayKeys.ShowDialog();
-                    // Convert the selected strings back to fields
                     List<field> selectedFields = new List<field>();
-                    foreach (string sf in frmDisplayKeys.mySelectedList)
-                    {
-                        selectedFields.Add(filteredDisplayKeys.FindLast(a => a.fieldName == sf)); // there will be exactly 1
-                    }
-                    int intSelectedRowsCount = frmDisplayKeys.returnIndex; // Returns -1 if exit or nothing selected
-                    frmDisplayKeys = null;
+                    selectedFields = SelectListOfFieldsToChange(true);
 
-                    // Get new value for the DK's the user wants to change.
-                    if (intSelectedRowsCount > -1)
+                    // 2. Get new value for the DK's the user wants to change.
+                    if (selectedFields.Count() > 0)
                     {
                         // Check that at least one DK is selected
-                        dkFiltered = false;
+                        bool dkFiltered = false;
                         foreach (field fld in selectedFields)
                         {
                             // All fields are in myTable - see above conditional
@@ -4253,76 +4206,85 @@ namespace SqlEditor
                             return;
                         }
 
-                        // Get new values for the selected fields from dropdown options in that cmbGridFilterFields
-                        List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
-                        List<string> newValueDisplayMembers = new List<string>();
-                        List<string> newValueValueMembers = new List<string>();
-                        List<(field, string)> sqlInsertValues = new List<(field, string)>();
-                        foreach (field sf in selectedFields)
-                        {
-                            for (int i = 0; i < cmbGridFilterFields.Length; i++)
-                            {
-                                newValueDisplayMembers.Clear();
-                                newValueValueMembers.Clear();
-                                if (cmbGridFilterFields[i].Enabled)
-                                {
-                                    // See if this is the correct cmbGridFilterField - there will be one
-                                    field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
-                                    if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
-                                    {
-                                        string selectedDisplayMember = cmbGridFilterValue[i].Text;
-                                        // Fill up newValue lists
-                                        var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
-                                        foreach (DataRowView drv in itemsList)
-                                        {
-                                            int index = drv.Row.Table.Columns.IndexOf("ValueMember");
-                                            string valueMember = string.Empty;
-                                            if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
-                                            {
-                                                int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
-                                                string displayMember = drv.Row.ItemArray[index2].ToString();
-                                                if (displayMember != selectedDisplayMember)
-                                                {
-                                                    if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
-                                                    {
-                                                        int intValueMember = (int)drv.Row.ItemArray[index];
-                                                        valueMember = intValueMember.ToString();
-                                                    }
-                                                    else
-                                                    {
-                                                        valueMember = drv.Row.ItemArray[index].ToString();
-                                                    }
-                                                    newValueValueMembers.Add(valueMember);
-                                                    newValueDisplayMembers.Add(displayMember);
-                                                }
-                                            }
-                                        }
-                                        // Get user choice
-                                        frmListItems frmNewValues = new frmListItems();
-                                        frmNewValues.myList = newValueDisplayMembers;
-                                        frmNewValues.myJob = frmListItems.job.SelectString;
-                                        frmNewValues.Text = "Select new value for " + sf.fieldName;
-                                        frmNewValues.ShowDialog();
-                                        string selectedItem = frmNewValues.returnString;
-                                        intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
-                                        frmNewValues = null;
-                                        // Return if nothing is choosen
-                                        if (intSelectedRowsCount < 0) { return; }
-                                        // The point of all this
-                                        for (int k = 0; k < newValueValueMembers.Count; k++)
-                                        {
-                                            // This will be true for some k. 
-                                            if (newValueDisplayMembers[k] == selectedItem)
-                                            {
-                                                sqlInsertValues.Add((sf, newValueValueMembers[k]));
-                                                break;  // From 3rd for loop
-                                            }
-                                        }
-                                    }
-                                }
-                            } // Looking for the correct gridFilterField for this sf
-                            // above two breaks will break to here, and then continue 1st for loop
-                        }  // End for loop - sqlInsertValues has the new values for the selected fields
+                        //// Get new values for the selected fields from dropdown options in that cmbGridFilterFields
+
+                        //ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+                        //ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+
+                        //List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
+                        //List<string> newValueDisplayMembers = new List<string>();
+                        //List<string> newValueValueMembers = new List<string>();
+                        //List<(field, string)> sqlInsertValues = new List<(field, string)>();
+                        //foreach (field sf in selectedFields)
+                        //{
+                        //    for (int i = 0; i < cmbGridFilterFields.Length; i++)
+                        //    {
+                        //        newValueDisplayMembers.Clear();
+                        //        newValueValueMembers.Clear();
+                        //        if (cmbGridFilterFields[i].Enabled)
+                        //        {
+                        //            // See if this is the correct cmbGridFilterField - there will be one
+                        //            field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
+                        //            if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
+                        //            {
+                        //                string selectedDisplayMember = cmbGridFilterValue[i].Text;
+                        //                // Fill up newValue lists
+                        //                var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
+                        //                foreach (DataRowView drv in itemsList)
+                        //                {
+                        //                    int index = drv.Row.Table.Columns.IndexOf("ValueMember");
+                        //                    string valueMember = string.Empty;
+                        //                    if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
+                        //                    {
+                        //                        int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
+                        //                        string displayMember = drv.Row.ItemArray[index2].ToString();
+                        //                        if (displayMember != selectedDisplayMember)
+                        //                        {
+                        //                            if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
+                        //                            {
+                        //                                int intValueMember = (int)drv.Row.ItemArray[index];
+                        //                                valueMember = intValueMember.ToString();
+                        //                            }
+                        //                            else
+                        //                            {
+                        //                                valueMember = drv.Row.ItemArray[index].ToString();
+                        //                            }
+                        //                            newValueValueMembers.Add(valueMember);
+                        //                            newValueDisplayMembers.Add(displayMember);
+                        //                        }
+                        //                    }
+                        //                }
+                        //                // Get user choice
+                        //                frmListItems frmNewValues = new frmListItems();
+                        //                frmNewValues.myList = newValueDisplayMembers;
+                        //                frmNewValues.myJob = frmListItems.job.SelectString;
+                        //                frmNewValues.Text = "Select new value for " + sf.fieldName;
+                        //                frmNewValues.ShowDialog();
+                        //                string selectedItem = frmNewValues.returnString;
+                        //                int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
+                        //                frmNewValues = null;
+                        //                // Return if nothing is choosen
+                        //                if (intSelectedRowsCount < 0) { return; }
+                        //                // The point of all this
+                        //                for (int k = 0; k < newValueValueMembers.Count; k++)
+                        //                {
+                        //                    // This will be true for some k. 
+                        //                    if (newValueDisplayMembers[k] == selectedItem)
+                        //                    {
+                        //                        sqlInsertValues.Add((sf, newValueValueMembers[k]));
+                        //                        break;  // From 3rd for loop
+                        //                    }
+                        //                }
+                        //            }
+                        //        }
+                        //    } // Looking for the correct gridFilterField for this sf
+                        //    // above two breaks will break to here, and then continue 1st for loop
+                        //}  // End for loop - sqlInsertValues has the new values for the selected fields
+
+                        List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
+
+                        // Above returns empty list if user does not select values for all fields.
+                        if (sqlInsertValues.Count() == 0) { return; }
 
                         // READY TO INSERT - loop through the
                         string lastErrorMsg = string.Empty;
@@ -4388,6 +4350,211 @@ namespace SqlEditor
                 }
             }
         }
+
+        private void mnuBatchUpdate_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                writeGrid_NewFilter(true);  // Should do a 'needsReload' check.
+
+                ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+                ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+
+                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch update {0} records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (reply == DialogResult.Yes)
+                {
+                    // 1. Get list of non-filtered DisplayKeys from GridFilterFields and their values
+                    bool dkFiltered = false;
+                    List<field> filteredDisplayKeys = new List<field>();
+                    for (int i = 0; i < cmbGridFilterFields.Length; i++)
+                    {
+                        if (cmbGridFilterFields[i].Enabled)
+                        {
+                            //cmbGridFilterFields - something is selected and all values are fields
+                            field selectedField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
+                            // Batch insert only handles fields in mytable  
+                            if (selectedField.table == currentSql.myTable)
+                            {
+                                if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                                {
+                                    filteredDisplayKeys.Add(selectedField);
+                                    if (dataHelper.isDisplayKey(selectedField))
+                                    {
+                                        dkFiltered = true;   // At least on DK must be filtered on
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Return if no display key is filtered in the grid
+                    if (!dkFiltered)
+                    {
+                        MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        return;
+                    }
+
+                }
+            }
+        }
+
+        private List<field> SelectListOfFieldsToChange(bool isDisplayKey)
+        {
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+            // Selected list of filtered fields to return
+            List<field> selectedFields = new List<field>();
+
+            // 1. Get list of filtered fields from GridFilterFields and their values
+            bool oneFieldFiltered = false;
+            // List of all filtered fields
+            List<field> filteredFields = new List<field>();
+            for (int i = 0; i < cmbGridFilterFields.Length; i++)
+            {
+                if (cmbGridFilterFields[i].Enabled)
+                {
+                    //cmbGridFilterFields - something is selected and all values are fields
+                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue; 
+                    // Batch insert and Batch update only handles fields in myTable  
+                    if (selectedField.table == currentSql.myTable)
+                    {
+                        if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                        {
+                            filteredFields.Add(selectedField);
+                            if (dataHelper.isDisplayKey(selectedField) == isDisplayKey)
+                            {
+                                oneFieldFiltered = true;   // At least on DK must be filtered on
+                            }
+                        }
+                    }
+                }
+            }
+            // Return if no display key is filtered in the grid
+            if (!oneFieldFiltered)
+            {
+                if(isDisplayKey)
+                { 
+                    MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+                else
+                {
+                    MessageBox.Show("You must select at least one non-display Key to batch update.", "Batch Update", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+
+                }
+                return selectedFields;  // Will be empty
+            }
+
+            // Ask which keys the user wants to change
+            frmListItems frmDisplayKeys = new frmListItems();
+            frmDisplayKeys.myList = filteredFields.Select(fl => fl.fieldName).ToList();
+            frmDisplayKeys.mySelectedList = new List<string>();
+            frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
+            if (isDisplayKey)
+            { 
+                frmDisplayKeys.Text = "Select the fields to change in Inserted Rows.";
+            }
+            else
+            {
+                frmDisplayKeys.Text = "Select the fields to update.";
+            }
+            frmDisplayKeys.ShowDialog();
+            int intSelectedRowsCount = frmDisplayKeys.returnIndex; // Returns -1 if exit or nothing selected
+            // Returns list of fields (or empty list if canceled or nothing selected)
+            if (intSelectedRowsCount > 0)
+            {
+                // Convert the selected strings back to fields
+                foreach (string sf in frmDisplayKeys.mySelectedList)
+                {
+                    selectedFields.Add(filteredFields.FindLast(a => a.fieldName == sf)); // there will be exactly 1
+                }
+            }
+            frmDisplayKeys = null;
+            return selectedFields;
+        }
+
+        private List<(field, string)> SelectValuesForSelectedFields(List<field> selectedFields)
+        {
+            List<(field, string)> sqlInsertValues = new List<(field, string)>();
+            // Get new values for the selected fields from dropdown options in that cmbGridFilterFields
+
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+
+            List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
+            List<string> newValueDisplayMembers = new List<string>();
+            List<string> newValueValueMembers = new List<string>();
+
+            foreach (field sf in selectedFields)
+            {
+                for (int i = 0; i < cmbGridFilterFields.Length; i++)
+                {
+                    newValueDisplayMembers.Clear();
+                    newValueValueMembers.Clear();
+                    if (cmbGridFilterFields[i].Enabled)
+                    {
+                        // See if this is the correct cmbGridFilterField - there will be one
+                        field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
+                        if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
+                        {
+                            string selectedDisplayMember = cmbGridFilterValue[i].Text;
+                            // Fill up newValue lists
+                            var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
+                            foreach (DataRowView drv in itemsList)
+                            {
+                                int index = drv.Row.Table.Columns.IndexOf("ValueMember");
+                                string valueMember = string.Empty;
+                                if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
+                                {
+                                    int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
+                                    string displayMember = drv.Row.ItemArray[index2].ToString();
+                                    if (displayMember != selectedDisplayMember)
+                                    {
+                                        if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
+                                        {
+                                            int intValueMember = (int)drv.Row.ItemArray[index];
+                                            valueMember = intValueMember.ToString();
+                                        }
+                                        else
+                                        {
+                                            valueMember = drv.Row.ItemArray[index].ToString();
+                                        }
+                                        newValueValueMembers.Add(valueMember);
+                                        newValueDisplayMembers.Add(displayMember);
+                                    }
+                                }
+                            }
+                            // Get user choice
+                            frmListItems frmNewValues = new frmListItems();
+                            frmNewValues.myList = newValueDisplayMembers;
+                            frmNewValues.myJob = frmListItems.job.SelectString;
+                            frmNewValues.Text = "Select new value for " + sf.fieldName;
+                            frmNewValues.ShowDialog();
+                            string selectedItem = frmNewValues.returnString;
+                            int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
+                            frmNewValues = null;
+                            // Return if nothing is choosen
+                            if (intSelectedRowsCount < 0) 
+                            {
+                                sqlInsertValues.Clear();
+                                return sqlInsertValues; 
+                            }
+                            // The point of all this
+                            for (int k = 0; k < newValueValueMembers.Count; k++)
+                            {
+                                // This will be true for some k. 
+                                if (newValueDisplayMembers[k] == selectedItem)
+                                {
+                                    sqlInsertValues.Add((sf, newValueValueMembers[k]));
+                                    break;  // From 3rd for loop
+                                }
+                            }
+                        }
+                    }
+                } // Looking for the correct gridFilterField for this sf
+                  // above two breaks will break to here, and then continue 1st for loop
+            }  // End for loop - sqlInsertValues has the new values for the selected fields
+            return sqlInsertValues;
+        }
+
     }
 }
 
