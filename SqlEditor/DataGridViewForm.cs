@@ -4208,107 +4208,35 @@ namespace SqlEditor
 
                         //// Get new values for the selected fields from dropdown options in that cmbGridFilterFields
 
-                        //ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
-                        //ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-
-                        //List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
-                        //List<string> newValueDisplayMembers = new List<string>();
-                        //List<string> newValueValueMembers = new List<string>();
-                        //List<(field, string)> sqlInsertValues = new List<(field, string)>();
-                        //foreach (field sf in selectedFields)
-                        //{
-                        //    for (int i = 0; i < cmbGridFilterFields.Length; i++)
-                        //    {
-                        //        newValueDisplayMembers.Clear();
-                        //        newValueValueMembers.Clear();
-                        //        if (cmbGridFilterFields[i].Enabled)
-                        //        {
-                        //            // See if this is the correct cmbGridFilterField - there will be one
-                        //            field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
-                        //            if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
-                        //            {
-                        //                string selectedDisplayMember = cmbGridFilterValue[i].Text;
-                        //                // Fill up newValue lists
-                        //                var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
-                        //                foreach (DataRowView drv in itemsList)
-                        //                {
-                        //                    int index = drv.Row.Table.Columns.IndexOf("ValueMember");
-                        //                    string valueMember = string.Empty;
-                        //                    if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
-                        //                    {
-                        //                        int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
-                        //                        string displayMember = drv.Row.ItemArray[index2].ToString();
-                        //                        if (displayMember != selectedDisplayMember)
-                        //                        {
-                        //                            if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
-                        //                            {
-                        //                                int intValueMember = (int)drv.Row.ItemArray[index];
-                        //                                valueMember = intValueMember.ToString();
-                        //                            }
-                        //                            else
-                        //                            {
-                        //                                valueMember = drv.Row.ItemArray[index].ToString();
-                        //                            }
-                        //                            newValueValueMembers.Add(valueMember);
-                        //                            newValueDisplayMembers.Add(displayMember);
-                        //                        }
-                        //                    }
-                        //                }
-                        //                // Get user choice
-                        //                frmListItems frmNewValues = new frmListItems();
-                        //                frmNewValues.myList = newValueDisplayMembers;
-                        //                frmNewValues.myJob = frmListItems.job.SelectString;
-                        //                frmNewValues.Text = "Select new value for " + sf.fieldName;
-                        //                frmNewValues.ShowDialog();
-                        //                string selectedItem = frmNewValues.returnString;
-                        //                int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
-                        //                frmNewValues = null;
-                        //                // Return if nothing is choosen
-                        //                if (intSelectedRowsCount < 0) { return; }
-                        //                // The point of all this
-                        //                for (int k = 0; k < newValueValueMembers.Count; k++)
-                        //                {
-                        //                    // This will be true for some k. 
-                        //                    if (newValueDisplayMembers[k] == selectedItem)
-                        //                    {
-                        //                        sqlInsertValues.Add((sf, newValueValueMembers[k]));
-                        //                        break;  // From 3rd for loop
-                        //                    }
-                        //                }
-                        //            }
-                        //        }
-                        //    } // Looking for the correct gridFilterField for this sf
-                        //    // above two breaks will break to here, and then continue 1st for loop
-                        //}  // End for loop - sqlInsertValues has the new values for the selected fields
-
                         List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
 
                         // Above returns empty list if user does not select values for all fields.
                         if (sqlInsertValues.Count() == 0) { return; }
 
-                        // READY TO INSERT - loop through the
+                        // READY TO INSERT - loop through the currentDT.Rows
                         string lastErrorMsg = string.Empty;
                         int successCount = 0;
                         int failureCount = 0;
                         foreach (DataRow dr in dataHelper.currentDT.Rows)
                         {
+                            // Need to get values for every column in table
                             List<(field, string)> sqlAllInsertValues = new List<(field, string)>();
+                            // Begin by adding the user selected values
                             foreach ((field, string) sqlInsertValue in sqlInsertValues)
                             {
                                 sqlAllInsertValues.Add(sqlInsertValue);
                             }
 
-                            // Could use for each DataColumn dc in dr.Table.Columns. 
-                            for (int i = 0; i < currentSql.myFields.Count; i++)  // Clearer to me
+                            // Loop through all myFields, selecting ones that need inserted
+                            // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
+                            for (int i = 0; i < currentSql.myFields.Count; i++)  
                             {
-                                // Can use dc.Ordinal to get index of the column
-                                // Can use .ItemArray to get value
                                 field fl = currentSql.myFields[i];
-                                if (fl.table == currentSql.myTable)
+                                if (fl.table == currentSql.myTable)  // In table
                                 {
-                                    if (!dataHelper.isTablePrimaryKeyField(fl))
+                                    if (!dataHelper.isTablePrimaryKeyField(fl))  // Not primary key
                                     {
-                                        if (!sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName))
+                                        if (!sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName)) // Not yet added
                                         {
                                             string fieldValue = dr.ItemArray[i].ToString();
                                             sqlAllInsertValues.Add((fl, fieldValue));

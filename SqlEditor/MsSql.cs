@@ -69,7 +69,6 @@ namespace SqlEditor
             }
         }
 
-        // Set update command - only one set field and the where is for PK=@PK - i.e. only one row        
         public static void SetUpdateCommand(List<field> fieldsToSet, DataTable dataTable)
         {
             if (fieldsToSet.Count > 0)  // Should always be true
@@ -79,13 +78,17 @@ namespace SqlEditor
                 SetUpdateCommand(fieldsToSet, da);
             }
         }
+        // Update command pushes changes in one row of a dataTable to the database.
+        // If updates for the entire dataTable,
+        // But the "where" clause of update will be for one PK - and so only 1 row updated.
+        // All fields in fieldsToSet are in the same database table.  
         public static void SetUpdateCommand(List<field> fieldsToSet, SqlDataAdapter da)
         {
             SqlCommand sqlCmd = new SqlCommand();
-            // Get primary key field and add it as parameter
+            // Add primary key field to parameters - used in where clause of update sql. 
             field pkFld = dataHelper.getTablePrimaryKeyField(fieldsToSet[0].table);
             string PK = pkFld.fieldName;
-            sqlCmd.Parameters.Add("@" + PK, SqlDbType.Int, 4, PK);
+            sqlCmd.Parameters.Add("@" + PK, SqlDbType.Int, 4, PK);  //
             // Get update query String
             List<string> setList = new List<string>();
             foreach (field fieldToSet in fieldsToSet)
