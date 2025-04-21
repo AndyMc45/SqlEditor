@@ -4178,15 +4178,15 @@ namespace SqlEditor
         {
             if (currentSql != null)
             {
-                writeGrid_NewFilter(true);  // Should do a 'needsReload' check.
+                writeGrid_NewFilter(true);  // O.K. but could do a 'needsReload' check before reloading.
 
                 DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (reply == DialogResult.Yes)
                 {
+                    // 1. Select list of fields to change - must be one non-display key
                     List<field> selectedFields = new List<field>();
                     selectedFields = SelectListOfFieldsToChange(true);
 
-                    // 2. Get new value for the DK's the user wants to change.
                     if (selectedFields.Count() > 0)
                     {
                         // Check that at least one DK is selected
@@ -4206,7 +4206,7 @@ namespace SqlEditor
                             return;
                         }
 
-                        //// Get new values for the selected fields from dropdown options in that cmbGridFilterFields
+                        // 2. Get new value for the fields the user wants to change by list form for each field.
 
                         List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
 
@@ -4229,7 +4229,7 @@ namespace SqlEditor
 
                             // Loop through all myFields, selecting ones that need inserted
                             // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
-                            for (int i = 0; i < currentSql.myFields.Count; i++)  
+                            for (int i = 0; i < currentSql.myFields.Count; i++)
                             {
                                 field fl = currentSql.myFields[i];
                                 if (fl.table == currentSql.myTable)  // In table
@@ -4291,41 +4291,83 @@ namespace SqlEditor
                 DialogResult reply = MessageBox.Show(String.Format("Do you want to batch update {0} records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (reply == DialogResult.Yes)
                 {
-                    // 1. Get list of non-filtered DisplayKeys from GridFilterFields and their values
-                    bool dkFiltered = false;
-                    List<field> filteredDisplayKeys = new List<field>();
-                    for (int i = 0; i < cmbGridFilterFields.Length; i++)
+                    // 1. Select list of fields to change - must be one non-display key (not sure why)
+                    List<field> selectedFields = new List<field>();
+                    selectedFields = SelectListOfFieldsToChange(false);
+
+                    if (selectedFields.Count() > 0)
                     {
-                        if (cmbGridFilterFields[i].Enabled)
+
+                        // 2. Get new value for the fields the user wants to change by list form for each field.
+                        List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
+
+                        // Above returns empty list if user does not select values for all fields.
+                        if (sqlInsertValues.Count() == 0) { return; }
+
+                        // Set update command - same for every row
+                        List<field> fieldsToUpdate = new List<field>();
+                        foreach ((field, string) fs in sqlInsertValues)
                         {
-                            //cmbGridFilterFields - something is selected and all values are fields
-                            field selectedField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
-                            // Batch insert only handles fields in mytable  
-                            if (selectedField.table == currentSql.myTable)
+                            fieldsToUpdate.Add(fs.Item1);
+                        }
+                        MsSql.SetUpdateCommand(fieldsToUpdate, dataHelper.currentDT);
+
+
+                        // READY TO Update - loop through the currentDT.Rows
+                        string lastErrorMsg = string.Empty;
+                        int successCount = 0;
+                        int failureCount = 0;
+                        foreach (DataRow dr in dataHelper.currentDT.Rows)
+                        {
+                            //3. Make the changes in each row and then push down to the database
+
+                            // Loop through all myFields, selecting ones that need inserted
+                            // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
+                            for (int i = 0; i < currentSql.myFields.Count; i++)
                             {
-                                if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                                field fl = currentSql.myFields[i];
+                                if (fl.table == currentSql.myTable)  // In table
                                 {
-                                    filteredDisplayKeys.Add(selectedField);
-                                    if (dataHelper.isDisplayKey(selectedField))
+                                    if (!dataHelper.isTablePrimaryKeyField(fl))  // Not primary key
                                     {
-                                        dkFiltered = true;   // At least on DK must be filtered on
+
+                                        if (sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName)) // field in sqlInsertValue
+                                        {
+                                            string newFieldValue = sqlInsertValues.Find(x => x.Item1.fieldName == fl.fieldName).Item2;
+                                            dr[i] = newFieldValue;
+                                        }
                                     }
                                 }
                             }
+                            // Do update for this dr
+                            try
+                            {
+                                MsSql.currentDA.UpdateCommand.ExecuteNonQuery();
+                                successCount++;
+                            }
+                            catch (Exception ex)
+                            {
+                                lastErrorMsg = ex.Message;
+                                failureCount++;
+                            }
+                            currentSql.strManualWhereClause = string.Empty;
+                            StringBuilder sb = new StringBuilder();
+                            sb.AppendLine("Rows successfully inserted: " + successCount.ToString());
+                            sb.AppendLine("Rows failed to inserted: " + failureCount.ToString());
+                            if (lastErrorMsg != string.Empty)
+                            {
+                                sb.AppendLine("Last error message: ");
+                                sb.AppendLine(lastErrorMsg);
+                            }
+                            DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
+                            if (result == DialogResult.Cancel) { return; }
                         }
                     }
-                    // Return if no display key is filtered in the grid
-                    if (!dkFiltered)
-                    {
-                        MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        return;
-                    }
-
                 }
             }
         }
 
-        private List<field> SelectListOfFieldsToChange(bool isDisplayKey)
+        private List<field> SelectListOfFieldsToChange(bool needsFilteredDisplayKey)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
@@ -4333,7 +4375,7 @@ namespace SqlEditor
             List<field> selectedFields = new List<field>();
 
             // 1. Get list of filtered fields from GridFilterFields and their values
-            bool oneFieldFiltered = false;
+            bool oneDisplayFieldFiltered = false;
             // List of all filtered fields
             List<field> filteredFields = new List<field>();
             for (int i = 0; i < cmbGridFilterFields.Length; i++)
@@ -4341,33 +4383,25 @@ namespace SqlEditor
                 if (cmbGridFilterFields[i].Enabled)
                 {
                     //cmbGridFilterFields - something is selected and all values are fields
-                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue; 
+                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue;
                     // Batch insert and Batch update only handles fields in myTable  
                     if (selectedField.table == currentSql.myTable)
                     {
                         if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
                         {
                             filteredFields.Add(selectedField);
-                            if (dataHelper.isDisplayKey(selectedField) == isDisplayKey)
+                            if (dataHelper.isDisplayKey(selectedField))
                             {
-                                oneFieldFiltered = true;   // At least on DK must be filtered on
+                                oneDisplayFieldFiltered = true;   // At least on DK must be filtered on
                             }
                         }
                     }
                 }
             }
-            // Return if no display key is filtered in the grid
-            if (!oneFieldFiltered)
+            // Return if no key is filtered in the grid
+            if (needsFilteredDisplayKey && !oneDisplayFieldFiltered)
             {
-                if(isDisplayKey)
-                { 
-                    MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                }
-                else
-                {
-                    MessageBox.Show("You must select at least one non-display Key to batch update.", "Batch Update", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-
-                }
+                MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return selectedFields;  // Will be empty
             }
 
@@ -4376,8 +4410,8 @@ namespace SqlEditor
             frmDisplayKeys.myList = filteredFields.Select(fl => fl.fieldName).ToList();
             frmDisplayKeys.mySelectedList = new List<string>();
             frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
-            if (isDisplayKey)
-            { 
+            if (needsFilteredDisplayKey)
+            {
                 frmDisplayKeys.Text = "Select the fields to change in Inserted Rows.";
             }
             else
@@ -4460,10 +4494,10 @@ namespace SqlEditor
                             int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
                             frmNewValues = null;
                             // Return if nothing is choosen
-                            if (intSelectedRowsCount < 0) 
+                            if (intSelectedRowsCount < 0)
                             {
                                 sqlInsertValues.Clear();
-                                return sqlInsertValues; 
+                                return sqlInsertValues;
                             }
                             // The point of all this
                             for (int k = 0; k < newValueValueMembers.Count; k++)
