@@ -11,6 +11,7 @@ namespace SqlEditor
         {
             errorMsg = MsSql.FillDataTable(da, dt, sqlString);
         }
+
         public SqlDataAdapter da = new SqlDataAdapter();
         public DataTable dt = new DataTable();
         public string errorMsg = string.Empty;
@@ -307,23 +308,29 @@ namespace SqlEditor
 
         public static string DeleteRowsFromDT(DataTable dt, where wh)   // Doing 1 where only, usually the PK & value
         {
+            SqlDataAdapter da = GetDataAdaptor(dt);  // Returns readOnlyDA if not current or combo
+            return DeleteRowsFromDT(da, dt, wh);
+        }
+
+        public static string DeleteRowsFromDT(SqlDataAdapter da, DataTable dt, where wh)   // Doing 1 where only, usually the PK & value
+        {
             try
             {
+                // Delete datarow from dt
                 DataRow[] drs = dt.Select(string.Format("{0} = {1}", wh.fl.fieldName, wh.whereValue));
                 foreach (DataRow dr in drs)
                 {
-                    // Delete datarow from dataTable
                     dr.Delete();
                 }
+                // Get drArray as dt without deleted row
                 DataRow[] drArray = new DataRow[drs.Count()];
                 for (int i = 0; i < drArray.Length; i++)
                 {
                     drArray[i] = drs[i];
                 }
-                // Delete Command (set above) uses PK field of each dr to delete - should be first column of dt
-                // Again, the dt might have inner joins but these are ignored.  Delete acts on the PK of main table.
-                // A pledge - the dataTable must have an adaptor and its deleteCommand must be set
-                MsSql.GetDataAdaptor(dt).Update(drArray);
+                // The dt might have inner joins but these are ignored. Update works on PK of underlying table.
+                // A pledge - da must have deleteCommand set.
+                da.Update(drArray);
                 return string.Empty;
             }
             catch (Exception ex)
@@ -332,6 +339,8 @@ namespace SqlEditor
                 Console.Beep();
             }
         }
+
+
 
         public static void testing()
         {

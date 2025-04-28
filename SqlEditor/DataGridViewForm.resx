@@ -142,6 +142,48 @@
   <metadata name="GridContextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>317, 1</value>
   </metadata>
+  <data name="GridContextMenu_SetAsMainFilter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_SetAsMainFilter.Text" xml:space="preserve">
+    <value>Set Item as main filter (^m)</value>
+  </data>
+  <data name="GridContextMenu_SetFKasMainFIlter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_SetFKasMainFIlter.Text" xml:space="preserve">
+    <value>Set an FK as main filter (^f)</value>
+  </data>
+  <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>301, 6</value>
+  </data>
+  <data name="GridContextMenu_OrderCombolByPK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_OrderCombolByPK.Text" xml:space="preserve">
+    <value>Order dropdown lists by PK</value>
+  </data>
+  <data name="GridContextMenu_TimesUsedAsFK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_TimesUsedAsFK.Text" xml:space="preserve">
+    <value>Times used as FK</value>
+  </data>
+  <data name="GridContextMenu_UnusedAsFK.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_UnusedAsFK.Text" xml:space="preserve">
+    <value>Rows not used as FK</value>
+  </data>
+  <data name="toolSripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>301, 6</value>
+  </data>
+  <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
+    <value>304, 30</value>
+  </data>
+  <data name="GridContextMenu_ClearFilters.Text" xml:space="preserve">
+    <value>Clear all filters</value>
+  </data>
   <data name="GridContextMenu.Size" type="System.Drawing.Size, System.Drawing">
     <value>305, 196</value>
   </data>
@@ -647,13 +689,13 @@
     <value>False</value>
   </data>
   <data name="btnDeleteAddMerge.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1141, 4</value>
+    <value>1130, 4</value>
   </data>
   <data name="btnDeleteAddMerge.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
   <data name="btnDeleteAddMerge.Size" type="System.Drawing.Size, System.Drawing">
-    <value>84, 44</value>
+    <value>106, 44</value>
   </data>
   <data name="btnDeleteAddMerge.TabIndex" type="System.Int32, mscorlib">
     <value>127</value>
@@ -1100,7 +1142,7 @@
     <value>2, 4, 2, 4</value>
   </data>
   <data name="cmbComboFilterValue_4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>182, 33</value>
+    <value>177, 33</value>
   </data>
   <data name="cmbComboFilterValue_4.TabIndex" type="System.Int32, mscorlib">
     <value>181</value>
@@ -1124,13 +1166,13 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1185, 299</value>
+    <value>1180, 299</value>
   </data>
   <data name="lblCmbFilterField_5.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
   </data>
   <data name="lblCmbFilterField_5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>182, 30</value>
+    <value>187, 30</value>
   </data>
   <data name="lblCmbFilterField_5.TabIndex" type="System.Int32, mscorlib">
     <value>176</value>
@@ -1280,7 +1322,7 @@
     <value>2, 4, 2, 4</value>
   </data>
   <data name="cmbComboFilterValue_1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>182, 33</value>
+    <value>177, 33</value>
   </data>
   <data name="cmbComboFilterValue_1.TabIndex" type="System.Int32, mscorlib">
     <value>178</value>
@@ -1304,13 +1346,13 @@
     <value>Segoe UI, 9pt</value>
   </data>
   <data name="lblCmbFilterField_2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1185, 256</value>
+    <value>1180, 256</value>
   </data>
   <data name="lblCmbFilterField_2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
   </data>
   <data name="lblCmbFilterField_2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>182, 30</value>
+    <value>187, 30</value>
   </data>
   <data name="lblCmbFilterField_2.TabIndex" type="System.Int32, mscorlib">
     <value>172</value>
@@ -1526,7 +1568,7 @@
     <value>0</value>
   </data>
   <data name="tableLayoutPanel.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="lblManualFilter" Row="4" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="lblMainFilter" Row="0" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbMainFilter" Row="0" RowSpan="1" Column="4" ColumnSpan="7" /&gt;&lt;Control Name="lblGridFilter" Row="1" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_0" Row="1" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterFields_1" Row="1" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_3" Row="2" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_4" Row="2" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_4" Row="2" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_5" Row="2" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_1" Row="1" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_5" Row="2" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_2" Row="1" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_2" Row="1" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_0" Row="1" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_3" Row="2" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="rbMerge" Row="0" RowSpan="1" Column="21" ColumnSpan="2" /&gt;&lt;Control Name="btnDeleteAddMerge" Row="0" RowSpan="1" Column="19" ColumnSpan="2" /&gt;&lt;Control Name="rbAdd" Row="0" RowSpan="1" Column="17" ColumnSpan="2" /&gt;&lt;Control Name="rbDelete" Row="0" RowSpan="1" Column="15" ColumnSpan="2" /&gt;&lt;Control Name="rbEdit" Row="0" RowSpan="1" Column="13" ColumnSpan="2" /&gt;&lt;Control Name="rbView" Row="0" RowSpan="1" Column="11" ColumnSpan="2" /&gt;&lt;Control Name="lblComboFilter" Row="6" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_7" Row="3" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_6" Row="3" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_6" Row="3" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_7" Row="3" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_8" Row="3" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_8" Row="3" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_3" Row="7" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_3" Row="7" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_4" Row="7" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_4" Row="7" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_5" Row="7" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_5" Row="7" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_0" Row="6" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_0" Row="6" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_1" Row="6" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_1" Row="6" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_2" Row="6" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_2" Row="6" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboTableList" Row="6" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="btnBlackLine" Row="5" RowSpan="1" Column="8" ColumnSpan="16" /&gt;&lt;Control Name="btnReload" Row="0" RowSpan="1" Column="23" ColumnSpan="1" /&gt;&lt;Control Name="txtManualFilter" Row="4" RowSpan="1" Column="4" ColumnSpan="20" /&gt;&lt;Control Name="btnExtra" Row="0" RowSpan="1" Column="25" ColumnSpan="3" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,5,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,Absolute,12,AutoSize,0,Absolute,22" /&gt;&lt;/TableLayoutSettings&gt;</value>
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="lblManualFilter" Row="4" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="lblMainFilter" Row="0" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbMainFilter" Row="0" RowSpan="1" Column="4" ColumnSpan="7" /&gt;&lt;Control Name="lblGridFilter" Row="1" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_0" Row="1" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterFields_1" Row="1" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_3" Row="2" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_4" Row="2" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_4" Row="2" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_5" Row="2" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_1" Row="1" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_5" Row="2" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterValue_2" Row="1" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_2" Row="1" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_0" Row="1" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_3" Row="2" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="rbMerge" Row="0" RowSpan="1" Column="21" ColumnSpan="2" /&gt;&lt;Control Name="btnDeleteAddMerge" Row="0" RowSpan="1" Column="19" ColumnSpan="2" /&gt;&lt;Control Name="rbAdd" Row="0" RowSpan="1" Column="17" ColumnSpan="2" /&gt;&lt;Control Name="rbDelete" Row="0" RowSpan="1" Column="15" ColumnSpan="2" /&gt;&lt;Control Name="rbEdit" Row="0" RowSpan="1" Column="13" ColumnSpan="2" /&gt;&lt;Control Name="rbView" Row="0" RowSpan="1" Column="11" ColumnSpan="2" /&gt;&lt;Control Name="lblComboFilter" Row="6" RowSpan="1" Column="1" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_7" Row="3" RowSpan="1" Column="11" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_6" Row="3" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_6" Row="3" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_7" Row="3" RowSpan="1" Column="15" ColumnSpan="3" /&gt;&lt;Control Name="cmbGridFilterFields_8" Row="3" RowSpan="1" Column="18" ColumnSpan="4" /&gt;&lt;Control Name="cmbGridFilterValue_8" Row="3" RowSpan="1" Column="22" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_3" Row="7" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_3" Row="7" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_4" Row="7" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_4" Row="7" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_5" Row="7" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_5" Row="7" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_0" Row="6" RowSpan="1" Column="8" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_0" Row="6" RowSpan="1" Column="11" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_1" Row="6" RowSpan="1" Column="14" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_1" Row="6" RowSpan="1" Column="17" ColumnSpan="3" /&gt;&lt;Control Name="lblCmbFilterField_2" Row="6" RowSpan="1" Column="20" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboFilterValue_2" Row="6" RowSpan="1" Column="23" ColumnSpan="3" /&gt;&lt;Control Name="cmbComboTableList" Row="6" RowSpan="1" Column="4" ColumnSpan="4" /&gt;&lt;Control Name="btnBlackLine" Row="5" RowSpan="1" Column="8" ColumnSpan="16" /&gt;&lt;Control Name="btnReload" Row="0" RowSpan="1" Column="23" ColumnSpan="1" /&gt;&lt;Control Name="txtManualFilter" Row="4" RowSpan="1" Column="4" ColumnSpan="20" /&gt;&lt;Control Name="btnExtra" Row="0" RowSpan="1" Column="25" ColumnSpan="3" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Absolute,5,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,57,Absolute,67,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,Absolute,62,AutoSize,0" /&gt;&lt;Rows Styles="AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,AutoSize,0,Absolute,12,AutoSize,0,Absolute,22" /&gt;&lt;/TableLayoutSettings&gt;</value>
   </data>
   <data name="txtMessages.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Top</value>
@@ -1645,51 +1687,45 @@
   <data name="&gt;&gt;splitContainer1.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="GridContextMenu_SetAsMainFilter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_SetAsMainFilter.Text" xml:space="preserve">
-    <value>Set Item as main filter (^m)</value>
-  </data>
-  <data name="GridContextMenu_SetFKasMainFIlter.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_SetFKasMainFIlter.Text" xml:space="preserve">
-    <value>Set an FK as main filter (^f)</value>
-  </data>
-  <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>301, 6</value>
-  </data>
-  <data name="GridContextMenu_OrderCombolByPK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_OrderCombolByPK.Text" xml:space="preserve">
-    <value>Order dropdown lists by PK</value>
-  </data>
-  <data name="GridContextMenu_TimesUsedAsFK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_TimesUsedAsFK.Text" xml:space="preserve">
-    <value>Times used as FK</value>
-  </data>
-  <data name="GridContextMenu_UnusedAsFK.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_UnusedAsFK.Text" xml:space="preserve">
-    <value>Rows not used as FK</value>
-  </data>
-  <data name="toolSripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>301, 6</value>
-  </data>
-  <data name="GridContextMenu_ClearFilters.Size" type="System.Drawing.Size, System.Drawing">
-    <value>304, 30</value>
-  </data>
-  <data name="GridContextMenu_ClearFilters.Text" xml:space="preserve">
-    <value>Clear all filters</value>
-  </data>
   <metadata name="MainMenu1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 1</value>
   </metadata>
+  <data name="mnuConnectionList.Size" type="System.Drawing.Size, System.Drawing">
+    <value>287, 30</value>
+  </data>
+  <data name="mnuConnectionList.Text" xml:space="preserve">
+    <value>Recent Connections</value>
+  </data>
+  <data name="mnuBlankLine3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>287, 30</value>
+  </data>
+  <data name="mnuBlankLine3.Text" xml:space="preserve">
+    <value>---------------------------</value>
+  </data>
+  <data name="mnuAddConnection.Size" type="System.Drawing.Size, System.Drawing">
+    <value>287, 30</value>
+  </data>
+  <data name="mnuAddConnection.Text" xml:space="preserve">
+    <value>Add Connection</value>
+  </data>
+  <data name="mnuDeleteConnection.Size" type="System.Drawing.Size, System.Drawing">
+    <value>287, 30</value>
+  </data>
+  <data name="mnuDeleteConnection.Text" xml:space="preserve">
+    <value>Delete Connection</value>
+  </data>
+  <data name="mnuConnections.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 30</value>
+  </data>
+  <data name="mnuConnections.Text" xml:space="preserve">
+    <value>Connections</value>
+  </data>
+  <data name="mnuClose.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 30</value>
+  </data>
+  <data name="mnuClose.Text" xml:space="preserve">
+    <value>&amp;Close</value>
+  </data>
   <data name="mnuFile.Size" type="System.Drawing.Size, System.Drawing">
     <value>60, 29</value>
   </data>
@@ -1726,78 +1762,6 @@
   <data name="mnuTools.Text" xml:space="preserve">
     <value>Tools</value>
   </data>
-  <data name="mnuIT_Tools.Size" type="System.Drawing.Size, System.Drawing">
-    <value>86, 29</value>
-  </data>
-  <data name="mnuIT_Tools.Text" xml:space="preserve">
-    <value>IT Tools</value>
-  </data>
-  <data name="mnuHelp.Size" type="System.Drawing.Size, System.Drawing">
-    <value>63, 29</value>
-  </data>
-  <data name="mnuHelp.Text" xml:space="preserve">
-    <value>Help</value>
-  </data>
-  <data name="MainMenu1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="MainMenu1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>8, 4, 0, 4</value>
-  </data>
-  <data name="MainMenu1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1922, 37</value>
-  </data>
-  <data name="MainMenu1.TabIndex" type="System.Int32, mscorlib">
-    <value>38</value>
-  </data>
-  <data name="&gt;&gt;MainMenu1.Name" xml:space="preserve">
-    <value>MainMenu1</value>
-  </data>
-  <data name="&gt;&gt;MainMenu1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MainMenu1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;MainMenu1.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="mnuConnections.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 30</value>
-  </data>
-  <data name="mnuConnections.Text" xml:space="preserve">
-    <value>Connections</value>
-  </data>
-  <data name="mnuConnectionList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
-  </data>
-  <data name="mnuConnectionList.Text" xml:space="preserve">
-    <value>Recent Connections</value>
-  </data>
-  <data name="mnuBlankLine3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
-  </data>
-  <data name="mnuBlankLine3.Text" xml:space="preserve">
-    <value>---------------------------</value>
-  </data>
-  <data name="mnuAddConnection.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
-  </data>
-  <data name="mnuAddConnection.Text" xml:space="preserve">
-    <value>Add Connection</value>
-  </data>
-  <data name="mnuDeleteConnection.Size" type="System.Drawing.Size, System.Drawing">
-    <value>287, 30</value>
-  </data>
-  <data name="mnuDeleteConnection.Text" xml:space="preserve">
-    <value>Delete Connection</value>
-  </data>
-  <data name="mnuClose.Size" type="System.Drawing.Size, System.Drawing">
-    <value>196, 30</value>
-  </data>
-  <data name="mnuClose.Text" xml:space="preserve">
-    <value>&amp;Close</value>
-  </data>
   <data name="mnuDatabaseInfo.Size" type="System.Drawing.Size, System.Drawing">
     <value>356, 30</value>
   </data>
@@ -1831,11 +1795,11 @@
   <data name="mnuDuplicateDisplayKeys.Text" xml:space="preserve">
     <value>Check for Duplicate Display Keys</value>
   </data>
-  <data name="mnuRapidlyMergeDKs.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="mnuMergeDuplicateDKs.Size" type="System.Drawing.Size, System.Drawing">
     <value>356, 30</value>
   </data>
-  <data name="mnuRapidlyMergeDKs.Text" xml:space="preserve">
-    <value>Rapidly Merge DKs</value>
+  <data name="mnuMergeDuplicateDKs.Text" xml:space="preserve">
+    <value>Merge Duplicate DKs</value>
   </data>
   <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
     <value>353, 6</value>
@@ -1858,11 +1822,47 @@
   <data name="mnuShowITTools.Text" xml:space="preserve">
     <value>Show IT Tools</value>
   </data>
+  <data name="mnuIT_Tools.Size" type="System.Drawing.Size, System.Drawing">
+    <value>86, 29</value>
+  </data>
+  <data name="mnuIT_Tools.Text" xml:space="preserve">
+    <value>IT Tools</value>
+  </data>
   <data name="mnuHelpFile.Size" type="System.Drawing.Size, System.Drawing">
     <value>163, 30</value>
   </data>
   <data name="mnuHelpFile.Text" xml:space="preserve">
     <value>Help file</value>
+  </data>
+  <data name="mnuHelp.Size" type="System.Drawing.Size, System.Drawing">
+    <value>63, 29</value>
+  </data>
+  <data name="mnuHelp.Text" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="MainMenu1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="MainMenu1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>8, 4, 0, 4</value>
+  </data>
+  <data name="MainMenu1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1922, 37</value>
+  </data>
+  <data name="MainMenu1.TabIndex" type="System.Int32, mscorlib">
+    <value>38</value>
+  </data>
+  <data name="&gt;&gt;MainMenu1.Name" xml:space="preserve">
+    <value>MainMenu1</value>
+  </data>
+  <data name="&gt;&gt;MainMenu1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MainMenu1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;MainMenu1.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <metadata name="toolStripBottom.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>154, 1</value>
@@ -1872,30 +1872,6 @@
   </data>
   <data name="toolStripBottom.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Bottom</value>
-  </data>
-  <data name="toolStripBottom.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 960</value>
-  </data>
-  <data name="toolStripBottom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1922, 34</value>
-  </data>
-  <data name="toolStripBottom.TabIndex" type="System.Int32, mscorlib">
-    <value>75</value>
-  </data>
-  <data name="toolStripBottom.Text" xml:space="preserve">
-    <value>toolStrip1</value>
-  </data>
-  <data name="&gt;&gt;toolStripBottom.Name" xml:space="preserve">
-    <value>toolStripBottom</value>
-  </data>
-  <data name="&gt;&gt;toolStripBottom.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStrip, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripBottom.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;toolStripBottom.ZOrder" xml:space="preserve">
-    <value>1</value>
   </data>
   <data name="txtRecordsPerPage.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 34</value>
@@ -1968,6 +1944,30 @@
   </data>
   <data name="toolStripButtonColumnWidth.Text" xml:space="preserve">
     <value>寬表列</value>
+  </data>
+  <data name="toolStripBottom.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 960</value>
+  </data>
+  <data name="toolStripBottom.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1922, 34</value>
+  </data>
+  <data name="toolStripBottom.TabIndex" type="System.Int32, mscorlib">
+    <value>75</value>
+  </data>
+  <data name="toolStripBottom.Text" xml:space="preserve">
+    <value>toolStrip1</value>
+  </data>
+  <data name="&gt;&gt;toolStripBottom.Name" xml:space="preserve">
+    <value>toolStripBottom</value>
+  </data>
+  <data name="&gt;&gt;toolStripBottom.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStrip, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripBottom.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;toolStripBottom.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <metadata name="saveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>512, 5</value>
@@ -2107,6 +2107,12 @@
   <data name="&gt;&gt;mnuBatchInsert.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;mnuBatchUpdate.Name" xml:space="preserve">
+    <value>mnuBatchUpdate</value>
+  </data>
+  <data name="&gt;&gt;mnuBatchUpdate.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;mnuIT_Tools.Name" xml:space="preserve">
     <value>mnuIT_Tools</value>
   </data>
@@ -2149,10 +2155,10 @@
   <data name="&gt;&gt;mnuDuplicateDisplayKeys.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;mnuRapidlyMergeDKs.Name" xml:space="preserve">
-    <value>mnuRapidlyMergeDKs</value>
+  <data name="&gt;&gt;mnuMergeDuplicateDKs.Name" xml:space="preserve">
+    <value>mnuMergeDuplicateDKs</value>
   </data>
-  <data name="&gt;&gt;mnuRapidlyMergeDKs.Type" xml:space="preserve">
+  <data name="&gt;&gt;mnuMergeDuplicateDKs.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripSeparator3.Name" xml:space="preserve">
@@ -2232,12 +2238,6 @@
   </data>
   <data name="&gt;&gt;folderBrowserDialog1.Type" xml:space="preserve">
     <value>System.Windows.Forms.FolderBrowserDialog, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;mnuBatchUpdate.Name" xml:space="preserve">
-    <value>mnuBatchUpdate</value>
-  </data>
-  <data name="&gt;&gt;mnuBatchUpdate.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>DataGridViewForm</value>

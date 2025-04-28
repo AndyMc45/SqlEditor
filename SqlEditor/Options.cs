@@ -56,8 +56,6 @@
             tableHasForeignKeys = false;
             currentComboFilterValue_isDirty = false;
             allowDisplayKeyEdit = false;
-            mergingDuplicateKeys = false;
-            rapidlyMergingDKsTable = String.Empty;
         }
         internal bool writingTable { get; set; }
         internal field? FkFieldInEditingControl { get; set; }
@@ -67,9 +65,6 @@
         internal bool doNotWriteGrid { get; set; }
         internal bool firstTimeWritingTable { get; set; }
         internal bool allowDisplayKeyEdit { get; set; }
-        internal bool mergingDuplicateKeys { get; set; }
-        internal string rapidlyMergingDKsTable { get; set; }
-
     }
 
 }

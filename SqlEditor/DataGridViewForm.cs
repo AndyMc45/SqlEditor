@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿// using DocumentFormat.OpenXml.Drawing;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using SqlEditor.Properties;
 
@@ -1589,12 +1590,20 @@ namespace SqlEditor
             if (currentSql == null) { return; }
             showDuplicateDispayKeys();
         }
+
         private void showDuplicateDispayKeys()
         {
+            if (currentSql == null) { return; }
+
             String filter = String.Format("TableName = '{0}' and is_DK = 'true'", currentSql.myTable);
             DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
 
-            if (drsDKFieldsDT.Count() == 0) { msgText("No display keys!"); return; }
+            if (drsDKFieldsDT.Count() == 0)
+            {
+                msgText("No display keys!", true, false);
+                mnuMergeDuplicateDKs.Checked = false;
+                return;
+            }
 
             List<String> dkFields = new List<String>();
             foreach (DataRow row in drsDKFieldsDT)
@@ -1608,22 +1617,16 @@ namespace SqlEditor
             if (DaDt.errorMsg != string.Empty)
             {
                 MessageBox.Show(DaDt.errorMsg, "ERROR in mnuToolDuplicateDisplayKeys_Click");
+                return;
             }
-            if (DaDt.dt.Rows.Count == 0)
+            else if (DaDt.dt.Rows.Count == 0)
             {
-                msgTextError(Properties.MyResources.EverythingOkNoDuplicates);
+                msgText(Properties.MyResources.EverythingOkNoDuplicates, true, false);
+                mnuMergeDuplicateDKs.Checked = false; // Reset 
                 return;
             }
             msgText("Count: " + DaDt.dt.Rows.Count.ToString());
-            if (!tableOptions.mergingDuplicateKeys)
-            {
-                DialogResult reply = DialogResult.Yes;  // Used to skip question
-                if (tableOptions.rapidlyMergingDKsTable == String.Empty)
-                {
-                    reply = MessageBox.Show(Properties.MyResources.doYouWantToMergeDuplicateKeyRows, "Merge Keys", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                }
-                if (reply == DialogResult.Yes) { tableOptions.mergingDuplicateKeys = true; }
-            }
+
             List<String> andConditions = new List<String>();
             foreach (DataRow row in DaDt.dt.Rows)
             {
@@ -1635,7 +1638,7 @@ namespace SqlEditor
                     atomicStatements.Add(atomicStatement);
                 }
                 andConditions.Add("(" + String.Join(" AND ", atomicStatements) + ")");
-                if (tableOptions.mergingDuplicateKeys)
+                if (mnuMergeDuplicateDKs.Checked)
                 {
                     break;  // Break after first row - i.e. fix one by one
                 }
@@ -3040,31 +3043,19 @@ namespace SqlEditor
                         dataGridView1.SelectAll();
                     }
                 }
+                // Check if 2 rows selected
                 if (dataGridView1.SelectedRows.Count != 2)
                 {
                     msgTextError(Properties.MyResources.selectExactlyTwoRows);
                     return;
                 }
-                // Get two PK values
+
+                // Get two PK values - always use firstPK
                 int firstPK = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[0].Value);
                 int secondPK = Convert.ToInt32(dataGridView1.SelectedRows[1].Cells[0].Value);
-                if (MergeTwoRows(currentSql.myTable, firstPK, secondPK))
-                {
-                    // User has asked to see duplicate keys and choosen to merge.
-                    // ShowDuplicateDisplayKeys will write an strStaticWhereClause to show duplicate keys
-                    if (tableOptions.mergingDuplicateKeys)
-                    {
-                        showDuplicateDispayKeys();
-                    }
-                    else
-                    {   // Return to viewing after the merge
-                        currentSql.strManualWhereClause = string.Empty;
-                        rbView.Checked = true;
-                        writeGrid_NewFilter(true);
-                    }
-                }
+                MsSqlWithDaDt dadt = new MsSqlWithDaDt(currentSql.returnSql(command.selectAll, true));
+                MergeTwoRows(currentSql.myTable, firstPK, secondPK, dadt);
             }
-
             else if (programMode == ProgramMode.delete)
             {
                 if (dataGridView1.SelectedRows.Count != 1)
@@ -3232,181 +3223,130 @@ namespace SqlEditor
             }
         }
 
-        private bool MergeTwoRows(string table, int pk1, int pk2)
+        private string MergeDecisionMessage()
+        {
+            //StringBuilder msgSB = new StringBuilder();
+            //// Count how many rows the firstPK and secondPK as FK's in other tables
+            //int firstPKCount = 0;
+            //int secondPKCount = 0;
+            //foreach (DataRow dr in fkRowsInFieldsDT)
+            //{
+            //    string FKColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
+            //    string TableWithFK = dataHelper.getColumnValueinDR(dr, "TableName");
+
+            //    string strSql = String.Format("SELECT COUNT(1) FROM {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk1);
+            //    firstPKCount = firstPKCount + MsSql.GetRecordCount(strSql);
+            //    strSql = String.Format("SELECT COUNT(1) FROM {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk2);
+            //    secondPKCount = secondPKCount + MsSql.GetRecordCount(strSql);
+            //    txtMessages.Text = String.Format(" Counts: {0} and {1}", firstPKCount, secondPKCount);
+            //}
+            //msgSB.AppendLine(String.Format("To merge these two rows, we will first replace {0} occurrences of ID {1} with ID {2} in these tables.", firstPKCount, pk1, pk2));
+            //msgSB.AppendLine(String.Format("Then we will delete the row {0} from this table.  Do you want to continue?", pk1));
+            return "Message + Do you want to merge?";
+        }
+
+        private int GetDuplicateRow(string table, int pkDR, DataRow dr)
+        {
+            //1. Get list of display keys in this table
+            String filter = String.Format("TableName = '{0}' and is_DK = 'true'", table);
+            DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
+            List<where> whList = new List<where>();
+            foreach(DataRow row in drsDKFieldsDT)
+            {
+                field fld = dataHelper.getFieldFromFieldsDT(row);
+                fld.tableAlias = fld.table;  // Alias will have "00" added to it.
+                string columnValue = dr[fld.fieldName].ToString();
+                where wh = new where(fld, columnValue);
+                whList.Add(wh);
+            }           
+            string sqlWhere = SqlFactory.SqlStatic.sqlWhereString(whList, string.Empty, true);
+            MsSqlWithDaDt dadt = new MsSqlWithDaDt(String.Format("Select * from {0} {1}", table, sqlWhere)); ;
+            if(dadt.errorMsg != string.Empty)
+            {
+                msgText(dadt.errorMsg,true,true);
+                return 0;
+            }
+
+            // 2. Find a different primary key value in the same table
+            foreach (DataRow drMatch in dadt.dt.Rows)
+            {
+                int pkMatch = Int32.Parse(drMatch["pkFld.fieldName"].ToString());
+                if (pkMatch != pkDR) { return pkMatch; }
+            }
+            return 0;
+        }
+
+        private bool MergeTwoRows(string table, int pk1, int pk2, MsSqlWithDaDt dadtParent)
         {
             StringBuilder msgSB = new StringBuilder();
-            // Set delete command, delete from currentDT and then call "update" to update the database
-            MsSql.SetDeleteCommand(table, dataHelper.currentDT);
-
-            txtMessages.Text = String.Format(" {0} is the first and {1} is the second", pk1, pk2);
-            //  From dataHelper.fieldsDT, get all the tables that have an FK for this table 
-            DataRow[] fieldsDTdrs = dataHelper.fieldsDT.Select(String.Format("RefTable = '{0}'", table));
-            // Count how many rows the firstPK and secondPK as FK's in other tables
-            int firstPKCount = 0;
-            int secondPKCount = 0;
-            foreach (DataRow dr in fieldsDTdrs)
+            DialogResult reply = DialogResult.Yes;  // Used to skip question
+            reply = MessageBox.Show("Are you sure you want to merge rows?", "Merge Row", MessageBoxButtons.YesNo);
+            if (reply == DialogResult.Yes)
             {
-                string FKColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
-                string TableWithFK = dataHelper.getColumnValueinDR(dr, "TableName");
+                // 1. Get all the tables that have an FK for this parent table 
+                DataRow[] fkRowsInFieldsDT = dataHelper.fieldsDT.Select(
+                String.Format("RefTable = '{0}'", table));
 
-                string strSql = String.Format("SELECT COUNT(1) FROM {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk1);
-                firstPKCount = firstPKCount + MsSql.GetRecordCount(strSql);
-                strSql = String.Format("SELECT COUNT(1) FROM {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk2);
-                secondPKCount = secondPKCount + MsSql.GetRecordCount(strSql);
-                txtMessages.Text = String.Format(" Counts: {0} and {1}", firstPKCount, secondPKCount);
-            }
-            if (firstPKCount == 0 || secondPKCount == 0)
-            {
-                int PkToDelete = 0;
-                if (firstPKCount == 0) { PkToDelete = pk1; }
-                else { PkToDelete = pk2; }
-                msgSB.AppendLine(String.Format("Deleting row with ID {0} will have no other effect on the Database.  ", PkToDelete));
-                msgSB.AppendLine(String.Format("Do you want us to delete the row with ID {0}?", PkToDelete));
-                DialogResult reply = DialogResult.Yes;  // Used to skip question
-                if (tableOptions.rapidlyMergingDKsTable == String.Empty)
+                foreach (DataRow dr in fkRowsInFieldsDT)
                 {
-                    reply = MessageBox.Show(msgSB.ToString(), "Delete one row", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                }
-                if (reply == DialogResult.Yes)
-                {
-                    field PKField = dataHelper.getTablePrimaryKeyField(table);
-                    where wh = new where(PKField, PkToDelete.ToString());
-                    string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
-                    if (errorMsg != string.Empty)   // Deleting the row unlikely to cause error, but just in case . . . 
+                    // 2. Merge these childTable with pk2 as FK into pk1 as FK)
+                    string TableWithFK = dataHelper.getColumnValueinDR(dr, "TableName");
+                    string FKColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
+                    field fkField = dataHelper.getFieldFromFieldsDT(TableWithFK, FKColumnName);
+                    // 3. Select rows where FK value in pk2
+                    string sqlString = String.Format("Select * from {0} where {1} = '{2}'"
+                                        , TableWithFK, FKColumnName, pk2);
+                    MsSqlWithDaDt dadtChild = new MsSqlWithDaDt(sqlString);
+                    string errorMsg2 = dadtChild.errorMsg;
+                    if (errorMsg2 != string.Empty)
                     {
-                        MessageBox.Show(msgSB.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                        return false;
+                        msgText("Strange error using: " + sqlString, true, true);
                     }
-                }
-            }
-            else
-            {
-                msgSB.AppendLine(String.Format("Other tables use {0} as a foreign key.", table));
-                msgSB.AppendLine(String.Format("To merge these two rows, we will first replace {0} occurances of ID {1} with ID {2} in these tables.", firstPKCount, pk1, pk2));
-                msgSB.AppendLine(String.Format("Then we will delete the row {0} from this table.  Do you want to continue?", pk1));
-                DialogResult reply = DialogResult.Yes;  // Used to skip question
-                if (tableOptions.rapidlyMergingDKsTable == String.Empty)
-                {
-                    reply = MessageBox.Show(msgSB.ToString(), "Merge two rows?", MessageBoxButtons.YesNo);
-                }
-                if (reply == DialogResult.Yes)
-                {
-                    foreach (DataRow dr in fieldsDTdrs)
+                    // 3. Merge this row in this child table
+                    foreach (DataRow childTableDR in dadtChild.dt.Rows)
                     {
-                        string FKColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
-                        string TableWithFK = dataHelper.getColumnValueinDR(dr, "TableName");
-                        field fld = new field(TableWithFK, FKColumnName, DbType.Int32, 4);
-                        // 1. Put the rows to be updated into extraDT  (i.e. select rows where FK value in firstPK)
-                        string sqlString = String.Format("Select * from {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk1);
-                        MsSqlWithDaDt dadt = new MsSqlWithDaDt(sqlString);
-                        string errorMsg2 = dadt.errorMsg;
-                        if (errorMsg2 != string.Empty)
+                        // 4. Substitute pk1 for pk2 - if a duplicate then merge, else update row.
+                        childTableDR[FKColumnName] = pk1;
+                        // 5. Check for duplicate row
+                        int pkDuplicateRow = 0;
+                        field pkChildTable = dataHelper.getTablePrimaryKeyField(TableWithFK);
+                        int pkChildDR = Int32.Parse(childTableDR[pkChildTable.fieldName].ToString());
+                        pkDuplicateRow = GetDuplicateRow(TableWithFK, pkChildDR, childTableDR);
+                        // 6. If no duplicate, then save childTableDR down to the database
+                        if (pkDuplicateRow == 0)
                         {
-                            msgSB.Clear();
-                            msgSB.AppendLine(String.Format("Error filling datatable with tableS {0}.", TableWithFK));
-                            msgTextError(msgSB.ToString());
-                            MessageBox.Show(msgSB.ToString(), "ERROR in btnDeleteAddMerge (Merge)", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-                        txtMessages.Text = txtMessages.Text + "; " + dadt.dt.Rows.Count;
-                        // 2. Update these rows in extraDT - loop through these rows and change the FK column)
-                        foreach (DataRow dr2 in dadt.dt.Rows)
-                        {
-                            // 2.5 Check for display key violation - and war if there is one
-                            // Problem:  When we replace pk1 with pk2 in the FK table, we might violate the DK unique constraint
-                            // Example:  Suppose that the DK has three columns.  Suppose we want to replace the first column pk2 with pk1.
-                            //           But if the FK table has both "pk1, X, Y" and "pk2, X, Y", this will violate the unique constraint.
-                            //           The user will need to first merge these two rows in the higher table -- I don't try this.  I just give a message
-                            if (dataHelper.isDisplayKey(fld))  // Non-display keys can have duplicates
+                            // Save it down to the database
+                            List<field> fieldsToUpdate = new List<field>();
+                            fieldsToUpdate.Add(fkField);
+                            MsSql.SetUpdateCommand(fieldsToUpdate, dadtChild.dt);
+                            try
                             {
-                                SqlFactory sqlForeignKeyTable = new SqlFactory(TableWithFK, 0, 0);
-                                foreach (field fl3 in sqlForeignKeyTable.myFields)
-                                {
-                                    // Check if this is a DisplayKey that is in this table
-                                    if (fl3.table == TableWithFK && dataHelper.isDisplayKey(fl3))
-                                    {
-                                        // Substitute FKColumnName with pk2; otherwise use the same DK as in dr2
-                                        string whValue = string.Empty;
-                                        if (fl3.baseKey.Equals(fld.baseKey))
-                                        {
-                                            whValue = pk2.ToString();
-                                        }
-                                        else
-                                        {
-                                            whValue = dr2[fl3.fieldName].ToString();
-                                        }
-                                        where wh3 = new where(fl3, whValue);
-                                        if (dataHelper.TryParseToDbType(wh3.whereValue, fl3.dbType))
-                                        {
-                                            sqlForeignKeyTable.myWheres.Add(wh3);
-                                        }
-                                        else  // Rare ?
-                                        {
-                                            string erroMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
-                                            msgTextError(erroMsg);
-                                        }
-                                    }
-
-                                }
-                                string strSql = sqlForeignKeyTable.returnSql(command.selectAll);
-                                MsSqlWithDaDt dadt2 = new MsSqlWithDaDt(strSql);
-                                if (dadt2.dt.Rows.Count > 0)
-                                {
-                                    field fkTablePKfield = dataHelper.getTablePrimaryKeyField(TableWithFK);
-                                    List<string> fkTablePKs = new List<string>();
-                                    fkTablePKs.Add(dr2[fkTablePKfield.fieldName].ToString());
-                                    foreach (DataRow dr3 in dadt2.dt.Rows)
-                                    {
-                                        fkTablePKs.Add(dr3[fkTablePKfield.fieldName].ToString());
-                                    }
-                                    msgSB.Clear();
-                                    msgSB.AppendLine(String.Format(Properties.MyResources.youNeedtoMergeRowIn0, TableWithFK, dadt2.dt.Rows.Count.ToString()));
-                                    msgSB.AppendLine(String.Format(Properties.MyResources.rowsThatShouldBeMerged0, String.Join(", ", fkTablePKs)));
-                                    msgSB.AppendLine(String.Format(Properties.MyResources.doYouWantToSeeTheseRows, String.Join(", ", fkTablePKs)));
-                                    DialogResult reply2 = DialogResult.Yes;  // Used to skip question
-                                    if (tableOptions.rapidlyMergingDKsTable == String.Empty)
-                                    {
-                                        reply2 = MessageBox.Show(msgSB.ToString(), "Important message", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
-                                    }
-                                    if (reply2 == DialogResult.Yes)
-                                    {
-                                        List<string> orConditions = new List<string>();
-                                        foreach (string strPkValue in fkTablePKs)
-                                        {
-                                            orConditions.Add(String.Format("({0} = '{1}' OR {0} IS NULL)", dataHelper.QualifiedAliasFieldName(fkTablePKfield), strPkValue));
-                                        }
-                                        string whereCondition = String.Join(" OR ", orConditions);
-                                        txtManualFilter.Text = whereCondition;
-                                        writeGrid_NewTable(TableWithFK, false);  // 
-                                    }
-                                    return false;
-                                }
+                                // dadtChild.da.Update(dadtChild.dt);
                             }
-                            dr2[FKColumnName] = pk2;
+                            catch (Exception ex)
+                            {
+                                msgText(ex.Message, true, true);
+                                return false;
+                            }
                         }
-                        // 3. Push these changes to the Database.
-                        List<field> fieldsToUpdate = new List<field>();
-                        fieldsToUpdate.Add(fld);
-                        MsSql.SetUpdateCommand(fieldsToUpdate, dadt.da);
-                        try
+                        // 7. If duplicate exists, we must merge it
+                        else
                         {
-                            dadt.da.Update(dadt.dt);
-                        }
-                        catch (Exception ex)
-                        {
-                            msgSB.Clear();
-                            msgSB.AppendLine(String.Format(Properties.MyResources.errorInUpdatingTable0, TableWithFK));
-                            msgSB.AppendLine(Properties.MyResources.databaseErrorMessage + " : " + ex.Message);
-                            MessageBox.Show(msgSB.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                            return false;
+                            //MsSqlWithDaDt 
+                            //MergeTwoRows(TableWithFK,pkDuplicateRow, pkChildDR) 
+
                         }
                     }
-                    // 4.  Delete merged row from currentDT
-                    field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
-                    where wh = new where(PKField, pk1.ToString());
-                    string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
                 }
+                // 4.  Delete merged row from currentDT
+                //field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
+                //where wh = new where(PKField, pk1.ToString());
+                //// Set delete command, delete from currentDT and then call "update" to update the database
+                //MsSql.SetDeleteCommand(table, dataHelper.currentDT);
+                //string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
+                return true;
             }
-            return true;
+            return false;  // Dialog canceled
         }
 
 
@@ -3743,16 +3683,31 @@ namespace SqlEditor
 
         public void msgText(string text)
         {
-            txtMessages.ForeColor = System.Drawing.Color.Navy;
+            msgText(text, false, false);  // Show message in text box only
+        }
+        public void msgText(string text, bool showMsgBox, bool error)
+        {
+            if (error) { txtMessages.ForeColor = System.Drawing.Color.Red; }
+            else { txtMessages.ForeColor = System.Drawing.Color.Navy; }
             string msg = text;
             txtMessages.Text = msg;
+            txtMessages.ForeColor = System.Drawing.Color.Navy;
+            if (showMsgBox)
+            {
+                if (error)
+                {
+                    MessageBox.Show(text, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show(text, "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
         }
 
         private void msgTextError(string text)
         {
-            txtMessages.ForeColor = System.Drawing.Color.Red;
-            msgText(text);
-            txtMessages.ForeColor = System.Drawing.Color.Navy;
+            msgText(text, false, true);
         }
 
         private void msgTextAdd(string text)
@@ -4078,48 +4033,14 @@ namespace SqlEditor
         private void btnExtra_Click(object sender, EventArgs e)
         {
             // MsSql.testing();
-            btnRapidMergeDKs_Extra();
         }
 
-        private void btnRapidMergeDKs_Extra()
-        {
-            try
-            {
-                // Used to simplify merging duplicate Display Keys when trying to add a DK - Not well checked or documented.
-                if (currentSql.myTable == tableOptions.rapidlyMergingDKsTable && dataGridView1.Rows.Count == 2)
-                {
-                    rbMerge.Checked = true;
-                    btnDeleteAddMerge_Click(null, null);
-                    btnRapidMergeDKs_Extra();
-                }
-                else
-                {
-                    writeGrid_NewTable(tableOptions.rapidlyMergingDKsTable, true);
-                    tableOptions.mergingDuplicateKeys = true;
-                    tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
-                    showDuplicateDispayKeys();
-                    rbMerge.Checked = true;
-                    btnDeleteAddMerge_Click(null, null);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
+
         private void mnuRapidlyMergeDKs_Click(object sender, EventArgs e)
         {
-            if (currentSql != null)
+            if (mnuMergeDuplicateDKs.Checked)
             {
-                btnExtra.Visible = mnuRapidlyMergeDKs.Checked;
-                if (mnuRapidlyMergeDKs.Checked)
-                {
-                    tableOptions.rapidlyMergingDKsTable = currentSql.myTable;
-                }
-                else
-                {
-                    tableOptions.rapidlyMergingDKsTable = string.Empty;
-                }
+                showDuplicateDispayKeys();
             }
         }
 

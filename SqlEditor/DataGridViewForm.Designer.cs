@@ -30,9 +30,9 @@
         {
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DataGridViewForm));
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
             splitContainer1 = new SplitContainer();
             tableLayoutPanel = new TableLayoutPanel();
             GridContextMenu = new ContextMenuStrip(components);
@@ -104,6 +104,7 @@
             mnuTools = new ToolStripMenuItem();
             mnuPrintCurrentTable = new ToolStripMenuItem();
             mnuBatchInsert = new ToolStripMenuItem();
+            mnuBatchUpdate = new ToolStripMenuItem();
             mnuIT_Tools = new ToolStripMenuItem();
             mnuDatabaseInfo = new ToolStripMenuItem();
             mnuToolsBackupDatabase = new ToolStripMenuItem();
@@ -111,7 +112,7 @@
             mnuForeignKeyMissing = new ToolStripMenuItem();
             mnuDisplayKeysList = new ToolStripMenuItem();
             mnuDuplicateDisplayKeys = new ToolStripMenuItem();
-            mnuRapidlyMergeDKs = new ToolStripMenuItem();
+            mnuMergeDuplicateDKs = new ToolStripMenuItem();
             toolStripSeparator3 = new ToolStripSeparator();
             mnuLoadPlugin = new ToolStripMenuItem();
             mnuRemovePlugin = new ToolStripMenuItem();
@@ -126,7 +127,6 @@
             toolStripButtonColumnWidth = new ToolStripButton();
             saveFileDialog1 = new SaveFileDialog();
             folderBrowserDialog1 = new FolderBrowserDialog();
-            mnuBatchUpdate = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -726,31 +726,31 @@
             // 
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.AllowUserToDeleteRows = false;
-            dataGridViewCellStyle4.BackColor = Color.WhiteSmoke;
-            dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle1.BackColor = Color.WhiteSmoke;
+            dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
-            dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = SystemColors.Control;
-            dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = DataGridViewTriState.False;
-            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = SystemColors.Control;
+            dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             resources.ApplyResources(dataGridView1, "dataGridView1");
             dataGridView1.ContextMenuStrip = GridContextMenu;
             dataGridView1.EnableHeadersVisualStyles = false;
             dataGridView1.GridColor = Color.WhiteSmoke;
             dataGridView1.MultiSelect = false;
             dataGridView1.Name = "dataGridView1";
-            dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = SystemColors.Control;
-            dataGridViewCellStyle6.Font = new Font("Segoe UI", 9F);
-            dataGridViewCellStyle6.ForeColor = SystemColors.WindowText;
-            dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
-            dataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = SystemColors.Control;
+            dataGridViewCellStyle3.Font = new Font("Segoe UI", 9F);
+            dataGridViewCellStyle3.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+            dataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridView1.RowTemplate.Height = 27;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.CellBeginEdit += dataGridView1_CellBeginEdit;
@@ -848,9 +848,15 @@
             resources.ApplyResources(mnuBatchInsert, "mnuBatchInsert");
             mnuBatchInsert.Click += mnuBatchInsert_Click;
             // 
+            // mnuBatchUpdate
+            // 
+            mnuBatchUpdate.Name = "mnuBatchUpdate";
+            resources.ApplyResources(mnuBatchUpdate, "mnuBatchUpdate");
+            mnuBatchUpdate.Click += mnuBatchUpdate_Click;
+            // 
             // mnuIT_Tools
             // 
-            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuRapidlyMergeDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
+            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDuplicateDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
             mnuIT_Tools.Name = "mnuIT_Tools";
             resources.ApplyResources(mnuIT_Tools, "mnuIT_Tools");
             // 
@@ -889,12 +895,13 @@
             resources.ApplyResources(mnuDuplicateDisplayKeys, "mnuDuplicateDisplayKeys");
             mnuDuplicateDisplayKeys.Click += mnuToolDuplicateDisplayKeys_Click;
             // 
-            // mnuRapidlyMergeDKs
+            // mnuMergeDuplicateDKs
             // 
-            mnuRapidlyMergeDKs.CheckOnClick = true;
-            mnuRapidlyMergeDKs.Name = "mnuRapidlyMergeDKs";
-            resources.ApplyResources(mnuRapidlyMergeDKs, "mnuRapidlyMergeDKs");
-            mnuRapidlyMergeDKs.Click += mnuRapidlyMergeDKs_Click;
+            mnuMergeDuplicateDKs.AccessibleRole = AccessibleRole.None;
+            mnuMergeDuplicateDKs.CheckOnClick = true;
+            mnuMergeDuplicateDKs.Name = "mnuMergeDuplicateDKs";
+            resources.ApplyResources(mnuMergeDuplicateDKs, "mnuMergeDuplicateDKs");
+            mnuMergeDuplicateDKs.Click += mnuRapidlyMergeDKs_Click;
             // 
             // toolStripSeparator3
             // 
@@ -991,12 +998,6 @@
             toolStripButtonColumnWidth.Margin = new Padding(10, 0, 10, 0);
             toolStripButtonColumnWidth.Name = "toolStripButtonColumnWidth";
             toolStripButtonColumnWidth.Click += toolStripColumnWidth_Click;
-            // 
-            // mnuBatchUpdate
-            // 
-            mnuBatchUpdate.Name = "mnuBatchUpdate";
-            resources.ApplyResources(mnuBatchUpdate, "mnuBatchUpdate");
-            mnuBatchUpdate.Click += mnuBatchUpdate_Click;
             // 
             // DataGridViewForm
             // 
@@ -1120,7 +1121,7 @@
         private ToolStripMenuItem mnuDisplayKeysList;
         private Button btnHiddenExtra;
         private ToolStripSeparator toolStripSeparator2;
-        private ToolStripMenuItem mnuRapidlyMergeDKs;
+        private ToolStripMenuItem mnuMergeDuplicateDKs;
         private ToolStripSeparator toolStripSeparator3;
         private Button btnExtra;
         private ToolStripMenuItem GridContextMenu_UnusedAsFK;
