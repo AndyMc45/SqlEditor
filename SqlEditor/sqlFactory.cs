@@ -214,14 +214,13 @@ namespace SqlEditor
         public string returnSql(command cmd, bool strict)
         {
             // The main function of this class - used for tables and combos.
-            // Logic: Set 
             int offset = (myPage - 1) * myPageSize;
             string sqlString = "";
             if (cmd == command.count)
             {
                 sqlString = "SELECT COUNT(1) FROM " + sqlTableString() + " " + SqlStatic.sqlWhereString(myWheres, strManualWhereClause, strict);
             }
-            else if (cmd == command.selectAll)
+            else if (cmd == command.selectAll) // All the filtered pages - include 'myWheres'
             {
                 sqlString = "SELECT " + SqlStatic.sqlFieldString(myFields) + " FROM " + sqlTableString() + " " + SqlStatic.sqlWhereString(myWheres, strManualWhereClause, strict) + SqlStatic.sqlOrderByStr(myOrderBys) + " ";
             }

@@ -3049,12 +3049,22 @@ namespace SqlEditor
                     msgTextError(Properties.MyResources.selectExactlyTwoRows);
                     return;
                 }
+                DialogResult reply = DialogResult.Yes;  // Used to select the default
+                reply = MessageBox.Show("Are you sure you want to merge rows?", "Merge Row", MessageBoxButtons.YesNo);
+                if (reply == DialogResult.Yes)
+                {
 
-                // Get two PK values - always use firstPK
-                int firstPK = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[0].Value);
-                int secondPK = Convert.ToInt32(dataGridView1.SelectedRows[1].Cells[0].Value);
-                MsSqlWithDaDt dadt = new MsSqlWithDaDt(currentSql.returnSql(command.selectAll, true));
-                MergeTwoRows(currentSql.myTable, firstPK, secondPK, dadt);
+                    // Get two PK values - always use firstPK
+                    List<DataGridViewRow> SelectedRowsOrdered =
+                        (from DataGridViewRow row in dataGridView1.SelectedRows
+                         where !row.IsNewRow
+                         orderby row.Index
+                         select row).ToList<DataGridViewRow>();
+                    int firstPK = Convert.ToInt32(SelectedRowsOrdered[0].Cells[0].Value);
+                    int secondPK = Convert.ToInt32(SelectedRowsOrdered[1].Cells[0].Value);
+                    StringBuilder info = MergeTwoRows(currentSql.myTable, firstPK, secondPK, 0);
+                    msgText(info.ToString(), true, false);
+                }
             }
             else if (programMode == ProgramMode.delete)
             {
@@ -3223,28 +3233,6 @@ namespace SqlEditor
             }
         }
 
-        private string MergeDecisionMessage()
-        {
-            //StringBuilder msgSB = new StringBuilder();
-            //// Count how many rows the firstPK and secondPK as FK's in other tables
-            //int firstPKCount = 0;
-            //int secondPKCount = 0;
-            //foreach (DataRow dr in fkRowsInFieldsDT)
-            //{
-            //    string FKColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
-            //    string TableWithFK = dataHelper.getColumnValueinDR(dr, "TableName");
-
-            //    string strSql = String.Format("SELECT COUNT(1) FROM {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk1);
-            //    firstPKCount = firstPKCount + MsSql.GetRecordCount(strSql);
-            //    strSql = String.Format("SELECT COUNT(1) FROM {0} where {1} = '{2}'", TableWithFK, FKColumnName, pk2);
-            //    secondPKCount = secondPKCount + MsSql.GetRecordCount(strSql);
-            //    txtMessages.Text = String.Format(" Counts: {0} and {1}", firstPKCount, secondPKCount);
-            //}
-            //msgSB.AppendLine(String.Format("To merge these two rows, we will first replace {0} occurrences of ID {1} with ID {2} in these tables.", firstPKCount, pk1, pk2));
-            //msgSB.AppendLine(String.Format("Then we will delete the row {0} from this table.  Do you want to continue?", pk1));
-            return "Message + Do you want to merge?";
-        }
-
         private int GetDuplicateRow(string table, int pkDR, DataRow dr)
         {
             //1. Get list of display keys in this table
@@ -3276,77 +3264,82 @@ namespace SqlEditor
             return 0;
         }
 
-        private bool MergeTwoRows(string table, int pk1, int pk2, MsSqlWithDaDt dadtParent)
+        private StringBuilder MergeTwoRows(string parentTable, int pk1, int pk2, int level)
         {
-            StringBuilder msgSB = new StringBuilder();
-            DialogResult reply = DialogResult.Yes;  // Used to skip question
-            reply = MessageBox.Show("Are you sure you want to merge rows?", "Merge Row", MessageBoxButtons.YesNo);
-            if (reply == DialogResult.Yes)
+            StringBuilder returnSB = new StringBuilder();
+            returnSB.AppendLine(String.Format("{0}. {1}: Merging pk {2} into {3}", 
+                level.ToString(), parentTable, pk2, pk1 ));
+            List<Int32> lstMergedPKs = new List<Int32> ();
+            // 1. Get all the tables that have an FK for this parent table 
+            DataRow[] fkRowsInFieldsDT = dataHelper.fieldsDT.Select(
+            String.Format("RefTable = '{0}'", parentTable));
+            // OUTER LOOP - CHILDTABLES
+            foreach (DataRow dr in fkRowsInFieldsDT)
             {
-                // 1. Get all the tables that have an FK for this parent table 
-                DataRow[] fkRowsInFieldsDT = dataHelper.fieldsDT.Select(
-                String.Format("RefTable = '{0}'", table));
-
-                foreach (DataRow dr in fkRowsInFieldsDT)
+                // 2. Merge/Change rows in childTable with pk2 as FK into pk1 as FK)
+                string childTable = dataHelper.getColumnValueinDR(dr, "TableName");
+                string fkColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
+                field fkField = dataHelper.getFieldFromFieldsDT(childTable, fkColumnName);
+                // 3. Select rows where FK value in pk2
+                string sqlString = String.Format("Select * from {0} where {1} = '{2}'"
+                                    , childTable, fkColumnName, pk2);
+                MsSqlWithDaDt dadtChild = new MsSqlWithDaDt(sqlString);
+                string errorMsg2 = dadtChild.errorMsg;
+                if (errorMsg2 != string.Empty)
                 {
-                    // 2. Merge these childTable with pk2 as FK into pk1 as FK)
-                    string TableWithFK = dataHelper.getColumnValueinDR(dr, "TableName");
-                    string FKColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
-                    field fkField = dataHelper.getFieldFromFieldsDT(TableWithFK, FKColumnName);
-                    // 3. Select rows where FK value in pk2
-                    string sqlString = String.Format("Select * from {0} where {1} = '{2}'"
-                                        , TableWithFK, FKColumnName, pk2);
-                    MsSqlWithDaDt dadtChild = new MsSqlWithDaDt(sqlString);
-                    string errorMsg2 = dadtChild.errorMsg;
-                    if (errorMsg2 != string.Empty)
+                    msgText("Strange error using: " + sqlString, true, true);
+                }
+                // INNER LOOP - rows in Child table
+                foreach (DataRow childTableDR in dadtChild.dt.Rows)
+                {
+                    // 4. Substitute pk1 for pk2 - if a duplicate then merge, else update row.
+                    childTableDR[fkColumnName] = pk1;
+                    // 5. Check for duplicate row
+                    int pkDuplicateRow = 0;
+                    field pkChildTable = dataHelper.getTablePrimaryKeyField(childTable);
+                    int pkChildDR = Int32.Parse(childTableDR[pkChildTable.fieldName].ToString());
+                    pkDuplicateRow = GetDuplicateRow(childTable, pkChildDR, childTableDR);
+                    // 6. If no duplicate, then save childTableDR down to the database
+                    if (pkDuplicateRow == 0)
                     {
-                        msgText("Strange error using: " + sqlString, true, true);
+                        // Save it down to the database
+                        List<field> fieldsToUpdate = new List<field>();
+                        fieldsToUpdate.Add(fkField);
+                        MsSql.SetUpdateCommand(fieldsToUpdate, dadtChild.dt);
+                        try
+                        {
+                            // dadtChild.da.Update(dadtChild.dt);
+                        }
+                        catch (Exception ex)
+                        {
+                            msgText(ex.Message, true, true);
+                            returnSB.AppendLine(String.Format("{0}. Updated PKs: {1}", level.ToString()
+                                , String.Join(",", lstMergedPKs)));
+                            returnSB.AppendLine(String.Format("Error saving {0} on PK {1} (after updating FK {1} from {2} to {3}."
+                                , childTable, pkChildDR, fkColumnName, pk2.ToString(), pk1.ToString()));
+                            return returnSB;
+                        }
+                        lstMergedPKs.Add(pkChildDR);
                     }
-                    // 3. Merge this row in this child table
-                    foreach (DataRow childTableDR in dadtChild.dt.Rows)
+                    // 7. If duplicate exists, we must merge it
+                    else
                     {
-                        // 4. Substitute pk1 for pk2 - if a duplicate then merge, else update row.
-                        childTableDR[FKColumnName] = pk1;
-                        // 5. Check for duplicate row
-                        int pkDuplicateRow = 0;
-                        field pkChildTable = dataHelper.getTablePrimaryKeyField(TableWithFK);
-                        int pkChildDR = Int32.Parse(childTableDR[pkChildTable.fieldName].ToString());
-                        pkDuplicateRow = GetDuplicateRow(TableWithFK, pkChildDR, childTableDR);
-                        // 6. If no duplicate, then save childTableDR down to the database
-                        if (pkDuplicateRow == 0)
-                        {
-                            // Save it down to the database
-                            List<field> fieldsToUpdate = new List<field>();
-                            fieldsToUpdate.Add(fkField);
-                            MsSql.SetUpdateCommand(fieldsToUpdate, dadtChild.dt);
-                            try
-                            {
-                                // dadtChild.da.Update(dadtChild.dt);
-                            }
-                            catch (Exception ex)
-                            {
-                                msgText(ex.Message, true, true);
-                                return false;
-                            }
-                        }
-                        // 7. If duplicate exists, we must merge it
-                        else
-                        {
-                            //MsSqlWithDaDt 
-                            //MergeTwoRows(TableWithFK,pkDuplicateRow, pkChildDR) 
-
-                        }
+                        //MsSqlWithDaDt 
+                        StringBuilder innerSB = MergeTwoRows(childTable, pkDuplicateRow, pkChildDR, level + 1); 
+                        returnSB.AppendLine(innerSB.ToString());
                     }
                 }
-                // 4.  Delete merged row from currentDT
-                //field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
-                //where wh = new where(PKField, pk1.ToString());
-                //// Set delete command, delete from currentDT and then call "update" to update the database
-                //MsSql.SetDeleteCommand(table, dataHelper.currentDT);
-                //string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
-                return true;
+                returnSB.AppendLine(String.Format("{0}. {1}: Updated PKs: {2}", (level + 1).ToString()
+                    , childTable, String.Join(",", lstMergedPKs)));
             }
-            return false;  // Dialog canceled
+            // 4.  Delete merged row from currentDT
+            //field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
+            //where wh = new where(PKField, pk1.ToString());
+            //// Set delete command, delete from currentDT and then call "update" to update the database
+            //MsSql.SetDeleteCommand(table, dataHelper.currentDT);
+            //string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
+            returnSB.AppendLine(String.Format("{0}. {1}: Deleted pk {2}", level.ToString(), parentTable, pk2));
+            return returnSB;
         }
 
 
