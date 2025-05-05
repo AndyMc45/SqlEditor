@@ -901,7 +901,7 @@
             mnuMergeDuplicateDKs.CheckOnClick = true;
             mnuMergeDuplicateDKs.Name = "mnuMergeDuplicateDKs";
             resources.ApplyResources(mnuMergeDuplicateDKs, "mnuMergeDuplicateDKs");
-            mnuMergeDuplicateDKs.Click += mnuRapidlyMergeDKs_Click;
+            mnuMergeDuplicateDKs.Click += mnuMergeDuplicateDKs_Click;
             // 
             // toolStripSeparator3
             // 

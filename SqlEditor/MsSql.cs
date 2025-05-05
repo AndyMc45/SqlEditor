@@ -109,18 +109,19 @@ namespace SqlEditor
         // Set delete command - one parameter: the primary key of the row to delete 
         public static void SetDeleteCommand(string tableName, DataTable dataTable)
         {
-            // Do this once in the program
-            string msg = string.Empty;
+            // Do this once in the program for each dataAdapter
+            field PkField = dataHelper.getTablePrimaryKeyField(tableName);
             // Get data adapter
             SqlDataAdapter da = GetDataAdaptor(dataTable);
-            SetDeleteCommand(tableName, da);
+            // Call SetDeleteCommand program independant version
+            SetDeleteCommand(tableName, da, PkField);
         }
-        public static void SetDeleteCommand(string tableName, SqlDataAdapter da)
+        public static void SetDeleteCommand(string tableName, SqlDataAdapter da, field PkField)
         {
-            string PK = dataHelper.getTablePrimaryKeyField(tableName).fieldName;
-            string sqlUpdate = String.Format("DELETE FROM {0} WHERE {1} = {2}", tableName, PK, "@" + PK);
+            string sqlUpdate = String.Format("DELETE FROM {0} WHERE {1} = {2}", tableName, 
+                PkField.fieldName, "@" + PkField.fieldName);
             SqlCommand sqlCmd = new SqlCommand(sqlUpdate, MsSql.cn);
-            sqlCmd.Parameters.Add("@" + PK, SqlDbType.Int, 4, PK);
+            sqlCmd.Parameters.Add("@" + PkField.fieldName, SqlDbType.Int, 4, PkField.fieldName);
             da.DeleteCommand = sqlCmd;
         }
 

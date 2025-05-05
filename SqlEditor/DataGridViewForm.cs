@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
 
@@ -272,7 +273,7 @@ namespace SqlEditor
 
         private void DesignControlsOnFormLoad()
         {
-            // Note: these things that never change           
+            // Include event handlers. Only things that never change           
 
             // Control arrays - can't make array in design mode in .net; so I make them here
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -308,7 +309,7 @@ namespace SqlEditor
                 cmbGridFilterValue[i].FlatStyle = FlatStyle.Flat;
                 cmbGridFilterValue[i].AutoCompleteSource = AutoCompleteSource.ListItems;
                 cmbGridFilterValue[i].AutoCompleteMode = AutoCompleteMode.None;
-
+                cmbGridFilterValue[i].KeyDown += KeyDownEventHandler;  // Add event handler for keydown event
             }
             for (int i = 0; i <= cmbComboFilterValue.Count() - 1; i++)
             {
@@ -318,6 +319,7 @@ namespace SqlEditor
                 cmbGridFilterFields[i].FlatStyle = FlatStyle.Flat;
                 cmbComboFilterValue[i].AutoCompleteSource = AutoCompleteSource.CustomSource;
                 cmbComboFilterValue[i].AutoCompleteMode = AutoCompleteMode.None;
+                cmbComboFilterValue[i].KeyDown += KeyDownEventHandler;
             }
             for (int i = 0; i <= radioButtons.Count() - 1; i++)
             {
@@ -325,6 +327,38 @@ namespace SqlEditor
             }
             dataGridView1.ColumnHeadersDefaultCellStyle.BackColor = formOptions.DefaultColumnColor;
             dataGridView1.ColumnHeadersDefaultCellStyle.SelectionBackColor = formOptions.DefaultColumnColor;
+        }
+
+        private void KeyDownEventHandler(object sender, KeyEventArgs e)
+        {
+            switch (sender)
+            {
+                case ComboBox cmb:
+                    if (e.KeyValue == 13 && currentSql != null)
+                    { 
+                        if (cmb.Name.Contains("cmbGridFilterValue"))
+                        {
+                            writeGrid_NewFilter(true);
+                            e.Handled = true;
+                            e.SuppressKeyPress = true;  // Suppress the "Ding" sound
+                        }
+                        else if (cmb.Name.Contains("cmbComboFilterValue"))
+                        {
+                            writeGrid_NewFilter(true);
+                            e.Handled = true;
+                            e.SuppressKeyPress = true;  // Suppress the "Ding" sound
+
+                        }
+                    }
+                    break;
+                case TextBox textBox:
+                    // Handle textbox-specific logic here
+                    break;
+                default:
+                    // Handle other types or do nothing
+                    break;
+            }
+
         }
 
         #endregion
@@ -1799,6 +1833,7 @@ namespace SqlEditor
                 }
             }
         }
+
         private string SelectFolder(string defaultFolder, bool allowNewFolder)
         {
             folderBrowserDialog1 = new FolderBrowserDialog();
@@ -1813,6 +1848,435 @@ namespace SqlEditor
             AppData.SaveKeyValue("DatabaseBackupFolder", fbdPath);
             return fbdPath;
         }
+
+        private void mnuMergeDuplicateDKs_Click(object sender, EventArgs e)
+        {
+            if (mnuMergeDuplicateDKs.Checked)
+            {
+                showDuplicateDispayKeys();
+            }
+        }
+
+        private void mnuBatchInsert_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                writeGrid_NewFilter(true);  // O.K. but could do a 'needsReload' check before reloading.
+                SelectMultipleRows(true);
+                StringBuilder msg = new StringBuilder();
+                msg.AppendLine("Do you want to batch insert?");
+                msg.AppendLine(String.Empty);
+                msg.AppendLine("To Batch Insert / Copy :");
+                msg.AppendLine("  1. Filter the table on columns you want to replace in new rows.");
+                msg.AppendLine("     (These filters must include at least one display key.");
+                msg.AppendLine("  2. Select the rows you want to copy.");
+                msg.AppendLine("  3. Click on the Batch Insert button that will appear.");
+                DialogResult reply = MessageBox.Show(msg.ToString(), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (reply == DialogResult.Yes)
+                {
+                    btnExtra.Text = "Batch-insert";
+                    btnExtra.Visible = true;
+                    btnExtra.Enabled = true;
+                    btnExtra.Tag = "batchInsert";
+                }
+            }
+        }
+
+        private void BatchInsert()
+        {
+            if (currentSql != null)
+            {
+                int selectedRows = dataGridView1.SelectedRows.Count;
+                if (selectedRows < 1)
+                {
+                    msgText("No rows selected for batch insert.", true, false);
+                }
+                else 
+                {
+                    string msg = String.Format("Do you want to batch insert {0} new records in table {1}?"
+                        , selectedRows.ToString(), currentSql.myTable);
+                    DialogResult reply = MessageBox.Show(msg, "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (reply == DialogResult.Yes)
+                    {
+                        // 1. Select list of fields to change - must be one non-display key
+                        List<field> selectedFields = new List<field>();
+                        selectedFields = SelectListOfFieldsToChange(true);
+
+                        if (selectedFields.Count() > 0)
+                        {
+                            // Check that at least one DK is selected
+                            bool dkFiltered = false;
+                            foreach (field fld in selectedFields)
+                            {
+                                // All fields are in myTable - see above conditional
+                                if (dataHelper.isDisplayKey(fld))
+                                {
+                                    dkFiltered = true;
+                                    break;
+                                }
+                            }
+                            if (!dkFiltered)
+                            {
+                                MessageBox.Show("You must change at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                return;
+                            }
+
+                            // 2. Get new value for the fields the user wants to change by list form for each field.
+
+                            List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
+
+                            // Above returns empty list if user does not select values for all fields.
+                            if (sqlInsertValues.Count() == 0) { return; }
+
+                            // READY TO INSERT - loop through the currentDT.Rows
+                            string lastErrorMsg = string.Empty;
+                            int successCount = 0;
+                            int failureCount = 0;
+
+                            foreach (DataGridViewRow dgvRow in dataGridView1.SelectedRows)
+                            {
+                                DataRowView rowView = (DataRowView)dgvRow.DataBoundItem;
+                                DataRow dr = rowView.Row;
+
+                                // Need to get values for every column in table
+                                List<(field, string)> sqlAllInsertValues = new List<(field, string)>();
+                                // Begin by adding the user selected values
+                                foreach ((field, string) sqlInsertValue in sqlInsertValues)
+                                {
+                                    sqlAllInsertValues.Add(sqlInsertValue);
+                                }
+
+                                // Loop through all myFields, selecting ones that need inserted
+                                // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
+                                for (int i = 0; i < currentSql.myFields.Count; i++)
+                                {
+                                    field fl = currentSql.myFields[i];
+                                    if (fl.table == currentSql.myTable)  // In table
+                                    {
+                                        if (!dataHelper.isTablePrimaryKeyField(fl))  // Not primary key
+                                        {
+                                            if (!sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName)) // Not yet added
+                                            {
+                                                string fieldValue = dr.ItemArray[i].ToString();
+                                                sqlAllInsertValues.Add((fl, fieldValue));
+                                            }
+                                        }
+                                    }
+                                }
+                                // Do insert for this dr
+                                List<where> whList = new List<where>();
+                                foreach ((field, string) iv in sqlAllInsertValues)
+                                {
+                                    where wh = new where(iv.Item1, iv.Item2);
+                                    whList.Add(wh);
+                                }
+                                MsSql.SetInsertCommand(currentSql.myTable, whList, dataHelper.currentDT);  // knows to use currentDA
+                                try
+                                {
+                                    MsSql.currentDA.InsertCommand.ExecuteNonQuery();
+                                    successCount++;
+                                }
+                                catch (Exception ex)
+                                {
+                                    lastErrorMsg = ex.Message;
+                                    failureCount++;
+                                }
+                                currentSql.strManualWhereClause = string.Empty;
+                                StringBuilder sb = new StringBuilder();
+                                sb.AppendLine("Rows successfully inserted: " + successCount.ToString());
+                                sb.AppendLine("Rows failed to inserted: " + failureCount.ToString());
+                                if (lastErrorMsg != string.Empty)
+                                {
+                                    sb.AppendLine("Last error message: ");
+                                    sb.AppendLine(lastErrorMsg);
+                                }
+                                DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
+                                if (result == DialogResult.Cancel) { return; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void mnuBatchUpdate_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                writeGrid_NewFilter(true);  // O.K. but could do a 'needsReload' check before reloading.
+                SelectMultipleRows(true);
+                StringBuilder msg = new StringBuilder();
+                msg.AppendLine("Do you want to batch update / edit?");
+                msg.AppendLine(String.Empty);
+                msg.AppendLine("To Batch Update / edit :");
+                msg.AppendLine("  1. Filter the table on columns you want to edit.");
+                msg.AppendLine("  2. Select the rows you want to edit.");
+                msg.AppendLine("  3. Click on the Batch-Update button that will appear.");
+                DialogResult reply = MessageBox.Show(msg.ToString(), "Batch Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (reply == DialogResult.Yes)
+                {
+                    btnExtra.Text = "Batch-update";
+                    btnExtra.Visible = true;
+                    btnExtra.Enabled = true;
+                    btnExtra.Tag = "batchUpdate";
+                }
+            }
+        }
+
+        private void BatchUpdate()
+        {
+            if (currentSql != null)
+            {
+                int selectedRows = dataGridView1.SelectedRows.Count;
+                if (selectedRows < 1)
+                {
+                    msgText("No rows selected for batch update.", true, false);
+                }
+                else
+                {
+
+                    ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+                    ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+                    string msg = String.Format("Do you want to batch update {0} records in table {1}?"
+                        , selectedRows.ToString(), currentSql.myTable);
+                    DialogResult reply = MessageBox.Show(msg, "Batch update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (reply == DialogResult.Yes)
+                    {
+                        // 1. Select list of fields to change - must be one non-display key (not sure why)
+                        List<field> selectedFields = new List<field>();
+                        selectedFields = SelectListOfFieldsToChange(false);
+
+                        if (selectedFields.Count() > 0)
+                        {
+
+                            // 2. Get new value for the fields the user wants to change by list form for each field.
+                            List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
+
+                            // Above returns empty list if user does not select values for all fields.
+                            if (sqlInsertValues.Count() == 0) { return; }
+
+                            // Set update command - same for every row
+                            List<field> fieldsToUpdate = new List<field>();
+                            foreach ((field, string) fs in sqlInsertValues)
+                            {
+                                fieldsToUpdate.Add(fs.Item1);
+                            }
+
+                            MsSql.SetUpdateCommand(fieldsToUpdate, dataHelper.currentDT);
+
+
+                            // READY TO Update - loop through the currentDT.Rows
+                            string lastErrorMsg = string.Empty;
+                            int successCount = 0;
+                            int failureCount = 0;
+
+                            foreach (DataGridViewRow dgvRow in dataGridView1.SelectedRows)
+                            {
+                                DataRowView rowView = (DataRowView)dgvRow.DataBoundItem;
+                                DataRow dr = rowView.Row;
+
+                                //3. Make the changes in each row and then push down to the database
+
+                                // Loop through all myFields, selecting ones that need inserted
+                                // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
+                                for (int i = 0; i < currentSql.myFields.Count; i++)
+                                {
+                                    field fl = currentSql.myFields[i];
+                                    if (fl.table == currentSql.myTable)  // In table
+                                    {
+                                        if (!dataHelper.isTablePrimaryKeyField(fl))  // Not primary key
+                                        {
+
+                                            if (sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName)) // field in sqlInsertValue
+                                            {
+                                                string newFieldValue = sqlInsertValues.Find(x => x.Item1.fieldName == fl.fieldName).Item2;
+                                                dr[i] = newFieldValue;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Do update for this dr
+                                try
+                                {
+                                    DataRow[] drArray = new DataRow[1];
+                                    drArray[0] = dr;
+                                    MsSql.currentDA.Update(drArray);
+                                    successCount++;
+                                }
+                                catch (Exception ex)
+                                {
+                                    lastErrorMsg = ex.Message;
+                                    failureCount++;
+                                }
+                                currentSql.strManualWhereClause = string.Empty;
+                                StringBuilder sb = new StringBuilder();
+                                sb.AppendLine("Rows successfully updated: " + successCount.ToString());
+                                sb.AppendLine("Rows failed to update: " + failureCount.ToString());
+                                if (lastErrorMsg != string.Empty)
+                                {
+                                    sb.AppendLine("Last error message: ");
+                                    sb.AppendLine(lastErrorMsg);
+                                }
+                                DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
+                                if (result == DialogResult.Cancel) { return; }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        private List<field> SelectListOfFieldsToChange(bool needsFilteredDisplayKey)
+        {
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+            // Selected list of filtered fields to return
+            List<field> selectedFields = new List<field>();
+
+            // 1. Get list of filtered fields from GridFilterFields and their values
+            bool oneDisplayFieldFiltered = false;
+            // List of all filtered fields
+            List<field> filteredFields = new List<field>();
+            for (int i = 0; i < cmbGridFilterFields.Length; i++)
+            {
+                if (cmbGridFilterFields[i].Enabled)
+                {
+                    //cmbGridFilterFields - something is selected and all values are fields
+                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue;
+                    // Batch insert and Batch update only handles fields in myTable  
+                    if (selectedField.table == currentSql.myTable)
+                    {
+                        if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                        {
+                            filteredFields.Add(selectedField);
+                            if (dataHelper.isDisplayKey(selectedField))
+                            {
+                                oneDisplayFieldFiltered = true;   // At least on DK must be filtered on
+                            }
+                        }
+                    }
+                }
+            }
+            // Return if no key is filtered in the grid
+            if (needsFilteredDisplayKey && !oneDisplayFieldFiltered)
+            {
+                MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return selectedFields;  // Will be empty
+            }
+
+            // Ask which keys the user wants to change
+            frmListItems frmDisplayKeys = new frmListItems();
+            frmDisplayKeys.myList = filteredFields.Select(fl => fl.fieldName).ToList();
+            frmDisplayKeys.mySelectedList = new List<string>();
+            frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
+            if (needsFilteredDisplayKey)
+            {
+                frmDisplayKeys.Text = "Select the fields to change in Inserted Rows.";
+            }
+            else
+            {
+                frmDisplayKeys.Text = "Select the fields to update.";
+            }
+            frmDisplayKeys.ShowDialog();
+            int intSelectedRowsCount = frmDisplayKeys.returnIndex; // Returns -1 if exit or nothing selected
+            // Returns list of fields (or empty list if canceled or nothing selected)
+            if (intSelectedRowsCount > 0)
+            {
+                // Convert the selected strings back to fields
+                foreach (string sf in frmDisplayKeys.mySelectedList)
+                {
+                    selectedFields.Add(filteredFields.FindLast(a => a.fieldName == sf)); // there will be exactly 1
+                }
+            }
+            frmDisplayKeys = null;
+            return selectedFields;
+        }
+
+        private List<(field, string)> SelectValuesForSelectedFields(List<field> selectedFields)
+        {
+            List<(field, string)> sqlInsertValues = new List<(field, string)>();
+            // Get new values for the selected fields from dropdown options in that cmbGridFilterFields
+
+            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
+            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
+
+            List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
+            List<string> newValueDisplayMembers = new List<string>();
+            List<string> newValueValueMembers = new List<string>();
+
+            foreach (field sf in selectedFields)
+            {
+                for (int i = 0; i < cmbGridFilterFields.Length; i++)
+                {
+                    newValueDisplayMembers.Clear();
+                    newValueValueMembers.Clear();
+                    if (cmbGridFilterFields[i].Enabled)
+                    {
+                        // See if this is the correct cmbGridFilterField - there will be one
+                        field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
+                        if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
+                        {
+                            string selectedDisplayMember = cmbGridFilterValue[i].Text;
+                            // Fill up newValue lists
+                            var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
+                            foreach (DataRowView drv in itemsList)
+                            {
+                                int index = drv.Row.Table.Columns.IndexOf("ValueMember");
+                                string valueMember = string.Empty;
+                                if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
+                                {
+                                    int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
+                                    string displayMember = drv.Row.ItemArray[index2].ToString();
+                                    if (displayMember != selectedDisplayMember)
+                                    {
+                                        if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
+                                        {
+                                            int intValueMember = (int)drv.Row.ItemArray[index];
+                                            valueMember = intValueMember.ToString();
+                                        }
+                                        else
+                                        {
+                                            valueMember = drv.Row.ItemArray[index].ToString();
+                                        }
+                                        newValueValueMembers.Add(valueMember);
+                                        newValueDisplayMembers.Add(displayMember);
+                                    }
+                                }
+                            }
+                            // Get user choice
+                            frmListItems frmNewValues = new frmListItems();
+                            frmNewValues.myList = newValueDisplayMembers;
+                            frmNewValues.myJob = frmListItems.job.SelectString;
+                            frmNewValues.Text = "Select new value for " + sf.fieldName;
+                            frmNewValues.ShowDialog();
+                            string selectedItem = frmNewValues.returnString;
+                            int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
+                            frmNewValues = null;
+                            // Return if nothing is choosen
+                            if (intSelectedRowsCount < 0)
+                            {
+                                sqlInsertValues.Clear();
+                                return sqlInsertValues;
+                            }
+                            // The point of all this
+                            for (int k = 0; k < newValueValueMembers.Count; k++)
+                            {
+                                // This will be true for some k. 
+                                if (newValueDisplayMembers[k] == selectedItem)
+                                {
+                                    sqlInsertValues.Add((sf, newValueValueMembers[k]));
+                                    break;  // From 3rd for loop
+                                }
+                            }
+                        }
+                    }
+                } // Looking for the correct gridFilterField for this sf
+                  // above two breaks will break to here, and then continue 1st for loop
+            }  // End for loop - sqlInsertValues has the new values for the selected fields
+            return sqlInsertValues;
+        }
+
+
+
         #endregion
 
         //----------------------------------------------------------------------------------------------------------------------
@@ -3049,21 +3513,32 @@ namespace SqlEditor
                     msgTextError(Properties.MyResources.selectExactlyTwoRows);
                     return;
                 }
+
+                // Get two PK values - always use firstPK
+                List<DataGridViewRow> SelectedRowsOrdered =
+                    (from DataGridViewRow row in dataGridView1.SelectedRows
+                     where !row.IsNewRow
+                     orderby row.Index
+                     select row).ToList<DataGridViewRow>();
+                int firstPK = Convert.ToInt32(SelectedRowsOrdered[0].Cells[0].Value);
+                int secondPK = Convert.ToInt32(SelectedRowsOrdered[1].Cells[0].Value);
+                StringBuilder info = MergeTwoRows(currentSql.myTable, firstPK, secondPK, 0, true);
                 DialogResult reply = DialogResult.Yes;  // Used to select the default
-                reply = MessageBox.Show("Are you sure you want to merge rows?", "Merge Row", MessageBoxButtons.YesNo);
+                info.Insert(0, "Do you want to merge rows?  Expected Results: " + Environment.NewLine);
+                reply = MessageBox.Show(info.ToString(), "Merge Row", MessageBoxButtons.YesNo);
                 if (reply == DialogResult.Yes)
                 {
-
-                    // Get two PK values - always use firstPK
-                    List<DataGridViewRow> SelectedRowsOrdered =
-                        (from DataGridViewRow row in dataGridView1.SelectedRows
-                         where !row.IsNewRow
-                         orderby row.Index
-                         select row).ToList<DataGridViewRow>();
-                    int firstPK = Convert.ToInt32(SelectedRowsOrdered[0].Cells[0].Value);
-                    int secondPK = Convert.ToInt32(SelectedRowsOrdered[1].Cells[0].Value);
-                    StringBuilder info = MergeTwoRows(currentSql.myTable, firstPK, secondPK, 0);
+                    info.Clear();
+                    info = MergeTwoRows(currentSql.myTable, firstPK, secondPK, 0, false);
                     msgText(info.ToString(), true, false);
+                }
+                // Update if you are merging duplicate display keys
+                if (mnuMergeDuplicateDKs.Checked)
+                {
+                    if (mnuShowITTools.Checked && txtManualFilter.Visible)  // Redundant with above
+                    {
+                        showDuplicateDispayKeys();  // Write grid again deleting the one just merged                    
+                    }
                 }
             }
             else if (programMode == ProgramMode.delete)
@@ -3239,37 +3714,41 @@ namespace SqlEditor
             String filter = String.Format("TableName = '{0}' and is_DK = 'true'", table);
             DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
             List<where> whList = new List<where>();
-            foreach(DataRow row in drsDKFieldsDT)
+            foreach (DataRow row in drsDKFieldsDT)
             {
                 field fld = dataHelper.getFieldFromFieldsDT(row);
                 fld.tableAlias = fld.table;  // Alias will have "00" added to it.
                 string columnValue = dr[fld.fieldName].ToString();
                 where wh = new where(fld, columnValue);
                 whList.Add(wh);
-            }           
+            }
             string sqlWhere = SqlFactory.SqlStatic.sqlWhereString(whList, string.Empty, true);
             MsSqlWithDaDt dadt = new MsSqlWithDaDt(String.Format("Select * from {0} {1}", table, sqlWhere)); ;
-            if(dadt.errorMsg != string.Empty)
+            if (dadt.errorMsg != string.Empty)
             {
-                msgText(dadt.errorMsg,true,true);
+                msgText(dadt.errorMsg, true, true);
                 return 0;
             }
 
             // 2. Find a different primary key value in the same table
+            field pkFld = dataHelper.getTablePrimaryKeyField(table);
             foreach (DataRow drMatch in dadt.dt.Rows)
             {
-                int pkMatch = Int32.Parse(drMatch["pkFld.fieldName"].ToString());
-                if (pkMatch != pkDR) { return pkMatch; }
+                int pkMatch = Int32.Parse(drMatch[pkFld.fieldName].ToString());
+                if (pkMatch != pkDR)
+                {
+                    return pkMatch;
+                }
             }
             return 0;
         }
 
-        private StringBuilder MergeTwoRows(string parentTable, int pk1, int pk2, int level)
+        private StringBuilder MergeTwoRows(string parentTable, int pk1, int pk2, int level, bool messageOnly)
         {
             StringBuilder returnSB = new StringBuilder();
-            returnSB.AppendLine(String.Format("{0}. {1}: Merging pk {2} into {3}", 
-                level.ToString(), parentTable, pk2, pk1 ));
-            List<Int32> lstMergedPKs = new List<Int32> ();
+            returnSB.AppendLine(String.Format("{0}. {1}: Merging pk {2} into {3}",
+                level.ToString(), parentTable, pk2, pk1));
+            List<Int32> lstMergedPKs = new List<Int32>();
             // 1. Get all the tables that have an FK for this parent table 
             DataRow[] fkRowsInFieldsDT = dataHelper.fieldsDT.Select(
             String.Format("RefTable = '{0}'", parentTable));
@@ -3302,42 +3781,52 @@ namespace SqlEditor
                     // 6. If no duplicate, then save childTableDR down to the database
                     if (pkDuplicateRow == 0)
                     {
-                        // Save it down to the database
-                        List<field> fieldsToUpdate = new List<field>();
-                        fieldsToUpdate.Add(fkField);
-                        MsSql.SetUpdateCommand(fieldsToUpdate, dadtChild.dt);
-                        try
+                        if (!messageOnly)
                         {
-                            // dadtChild.da.Update(dadtChild.dt);
-                        }
-                        catch (Exception ex)
-                        {
-                            msgText(ex.Message, true, true);
-                            returnSB.AppendLine(String.Format("{0}. Updated PKs: {1}", level.ToString()
-                                , String.Join(",", lstMergedPKs)));
-                            returnSB.AppendLine(String.Format("Error saving {0} on PK {1} (after updating FK {1} from {2} to {3}."
-                                , childTable, pkChildDR, fkColumnName, pk2.ToString(), pk1.ToString()));
-                            return returnSB;
+                            // Save it down to the database
+                            List<field> fieldsToUpdate = new List<field>();
+                            fkField.tableAlias = fkField.table;  // Alias will have "00" added to it.
+                            fieldsToUpdate.Add(fkField);
+                            MsSql.SetUpdateCommand(fieldsToUpdate, dadtChild.da);
+                            try
+                            {
+                                dadtChild.da.Update(dadtChild.dt);
+                            }
+                            catch (Exception ex)
+                            {
+                                msgText(ex.Message, true, true);
+                                returnSB.AppendLine(String.Format("{0}. Updated PKs: {1}", level.ToString()
+                                    , String.Join(",", lstMergedPKs)));
+                                returnSB.AppendLine(String.Format("Error saving {0} on PK {1} (after updating FK {1} from {2} to {3}."
+                                    , childTable, pkChildDR, fkColumnName, pk2.ToString(), pk1.ToString()));
+                                return returnSB;
+                            }
                         }
                         lstMergedPKs.Add(pkChildDR);
                     }
                     // 7. If duplicate exists, we must merge it
                     else
                     {
-                        //MsSqlWithDaDt 
-                        StringBuilder innerSB = MergeTwoRows(childTable, pkDuplicateRow, pkChildDR, level + 1); 
+                        StringBuilder innerSB = MergeTwoRows(childTable, pkDuplicateRow, pkChildDR, level + 1, messageOnly);
                         returnSB.AppendLine(innerSB.ToString());
                     }
                 }
                 returnSB.AppendLine(String.Format("{0}. {1}: Updated PKs: {2}", (level + 1).ToString()
                     , childTable, String.Join(",", lstMergedPKs)));
             }
-            // 4.  Delete merged row from currentDT
-            //field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
-            //where wh = new where(PKField, pk1.ToString());
-            //// Set delete command, delete from currentDT and then call "update" to update the database
-            //MsSql.SetDeleteCommand(table, dataHelper.currentDT);
-            //string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
+            // 4.  Delete merged row from table
+            if (!messageOnly)
+            {
+                field PKField = dataHelper.getTablePrimaryKeyField(parentTable);
+                // Set delete command, delete from currentDT and then call "update" to update the database
+                string sqlString = String.Format("Select * from {0} where {1} = '{2}'"
+                                    , parentTable, PKField.fieldName, pk2);
+                MsSqlWithDaDt dadtParent = new MsSqlWithDaDt(sqlString);
+                where wh = new where(PKField, pk2.ToString());
+                PKField.tableAlias = PKField.table;  // Alias will have "00" added to it.
+                MsSql.SetDeleteCommand(parentTable, dadtParent.da, PKField);
+                string errorMsg = MsSql.DeleteRowsFromDT(dadtParent.da, dadtParent.dt, wh);
+            }
             returnSB.AppendLine(String.Format("{0}. {1}: Deleted pk {2}", level.ToString(), parentTable, pk2));
             return returnSB;
         }
@@ -3426,10 +3915,34 @@ namespace SqlEditor
             {
                 programMode = ProgramMode.merge;
                 btnDeleteAddMerge.Enabled = true;
-                btnDeleteAddMerge.Text = "Merge 2 rows";
-                dataGridView1.MultiSelect = true;
+                btnDeleteAddMerge.Text = "Merge";
+                SelectMultipleRows(true);
                 SetFiltersColumnsTablePanel();
             }
+        }
+
+        private void SelectMultipleRows(bool multiple)
+        {
+            int selectedRow = 0;
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                selectedRow = dataGridView1.SelectedRows[0].Index;
+            }
+            if (multiple)
+            {
+                dataGridView1.MultiSelect = true;
+            }
+            else
+            {
+                dataGridView1.MultiSelect = false;
+            }
+            // Select the original row - first one if multiple
+            if (selectedRow > 0 && dataGridView1.Rows.Count > selectedRow)
+            {
+                dataGridView1.Rows[selectedRow].Selected = true;
+            }
+
+
         }
 
         private void btnReload_Click(object sender, EventArgs e)
@@ -3779,7 +4292,6 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-
         private void txtManualFilter_TextChanged(object sender, EventArgs e)
         {
             if (!txtManualFilter.Enabled) { return; }
@@ -4026,17 +4538,24 @@ namespace SqlEditor
         private void btnExtra_Click(object sender, EventArgs e)
         {
             // MsSql.testing();
-        }
-
-
-        private void mnuRapidlyMergeDKs_Click(object sender, EventArgs e)
-        {
-            if (mnuMergeDuplicateDKs.Checked)
+            if (btnExtra.Tag == "batchInsert")
             {
-                showDuplicateDispayKeys();
+                btnExtra.Tag = String.Empty;
+                btnExtra.Visible = false;
+                btnExtra.Enabled = false;
+                BatchInsert();  // Must finish this before next command
+                SelectMultipleRows(false);
             }
-        }
+            else if (btnExtra.Tag == "batchUpdate")
+            {
+                btnExtra.Tag = String.Empty;
+                btnExtra.Visible = false;
+                btnExtra.Enabled = false;
+                BatchUpdate();  // Must finish this before next command
+                SelectMultipleRows(false);
+            }
 
+        }
 
         #region Events that are unused or do nothing (accidently entered here or storing)
         private void GridContextMenu_FindInChild_Click(object sender, EventArgs e)
@@ -4087,349 +4606,6 @@ namespace SqlEditor
         }
 
         #endregion
-
-        private void mnuBatchInsert_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                writeGrid_NewFilter(true);  // O.K. but could do a 'needsReload' check before reloading.
-
-                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch insert {0} new records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (reply == DialogResult.Yes)
-                {
-                    // 1. Select list of fields to change - must be one non-display key
-                    List<field> selectedFields = new List<field>();
-                    selectedFields = SelectListOfFieldsToChange(true);
-
-                    if (selectedFields.Count() > 0)
-                    {
-                        // Check that at least one DK is selected
-                        bool dkFiltered = false;
-                        foreach (field fld in selectedFields)
-                        {
-                            // All fields are in myTable - see above conditional
-                            if (dataHelper.isDisplayKey(fld))
-                            {
-                                dkFiltered = true;
-                                break;
-                            }
-                        }
-                        if (!dkFiltered)
-                        {
-                            MessageBox.Show("You must change at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                            return;
-                        }
-
-                        // 2. Get new value for the fields the user wants to change by list form for each field.
-
-                        List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
-
-                        // Above returns empty list if user does not select values for all fields.
-                        if (sqlInsertValues.Count() == 0) { return; }
-
-                        // READY TO INSERT - loop through the currentDT.Rows
-                        string lastErrorMsg = string.Empty;
-                        int successCount = 0;
-                        int failureCount = 0;
-                        foreach (DataRow dr in dataHelper.currentDT.Rows)
-                        {
-                            // Need to get values for every column in table
-                            List<(field, string)> sqlAllInsertValues = new List<(field, string)>();
-                            // Begin by adding the user selected values
-                            foreach ((field, string) sqlInsertValue in sqlInsertValues)
-                            {
-                                sqlAllInsertValues.Add(sqlInsertValue);
-                            }
-
-                            // Loop through all myFields, selecting ones that need inserted
-                            // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
-                            for (int i = 0; i < currentSql.myFields.Count; i++)
-                            {
-                                field fl = currentSql.myFields[i];
-                                if (fl.table == currentSql.myTable)  // In table
-                                {
-                                    if (!dataHelper.isTablePrimaryKeyField(fl))  // Not primary key
-                                    {
-                                        if (!sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName)) // Not yet added
-                                        {
-                                            string fieldValue = dr.ItemArray[i].ToString();
-                                            sqlAllInsertValues.Add((fl, fieldValue));
-                                        }
-                                    }
-                                }
-                            }
-                            // Do insert for this dr
-                            List<where> whList = new List<where>();
-                            foreach ((field, string) iv in sqlAllInsertValues)
-                            {
-                                where wh = new where(iv.Item1, iv.Item2);
-                                whList.Add(wh);
-                            }
-                            MsSql.SetInsertCommand(currentSql.myTable, whList, dataHelper.currentDT);  // knows to use currentDA
-                            try
-                            {
-                                MsSql.currentDA.InsertCommand.ExecuteNonQuery();
-                                successCount++;
-                            }
-                            catch (Exception ex)
-                            {
-                                lastErrorMsg = ex.Message;
-                                failureCount++;
-                            }
-                            currentSql.strManualWhereClause = string.Empty;
-                            StringBuilder sb = new StringBuilder();
-                            sb.AppendLine("Rows successfully inserted: " + successCount.ToString());
-                            sb.AppendLine("Rows failed to inserted: " + failureCount.ToString());
-                            if (lastErrorMsg != string.Empty)
-                            {
-                                sb.AppendLine("Last error message: ");
-                                sb.AppendLine(lastErrorMsg);
-                            }
-                            DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
-                            if (result == DialogResult.Cancel) { return; }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void mnuBatchUpdate_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                writeGrid_NewFilter(true);  // Should do a 'needsReload' check.
-
-                ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
-                ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-
-                DialogResult reply = MessageBox.Show(String.Format("Do you want to batch update {0} records in table {1}?", currentSql.RecordCount.ToString(), currentSql.myTable), "Batch Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (reply == DialogResult.Yes)
-                {
-                    // 1. Select list of fields to change - must be one non-display key (not sure why)
-                    List<field> selectedFields = new List<field>();
-                    selectedFields = SelectListOfFieldsToChange(false);
-
-                    if (selectedFields.Count() > 0)
-                    {
-
-                        // 2. Get new value for the fields the user wants to change by list form for each field.
-                        List<(field, string)> sqlInsertValues = SelectValuesForSelectedFields(selectedFields);
-
-                        // Above returns empty list if user does not select values for all fields.
-                        if (sqlInsertValues.Count() == 0) { return; }
-
-                        // Set update command - same for every row
-                        List<field> fieldsToUpdate = new List<field>();
-                        foreach ((field, string) fs in sqlInsertValues)
-                        {
-                            fieldsToUpdate.Add(fs.Item1);
-                        }
-                        MsSql.SetUpdateCommand(fieldsToUpdate, dataHelper.currentDT);
-
-
-                        // READY TO Update - loop through the currentDT.Rows
-                        string lastErrorMsg = string.Empty;
-                        int successCount = 0;
-                        int failureCount = 0;
-                        foreach (DataRow dr in dataHelper.currentDT.Rows)
-                        {
-                            //3. Make the changes in each row and then push down to the database
-
-                            // Loop through all myFields, selecting ones that need inserted
-                            // (Tech. note: Could loop through dr.Table.Columns, using dc.ItemArray(dc.Ordinal) to get value
-                            for (int i = 0; i < currentSql.myFields.Count; i++)
-                            {
-                                field fl = currentSql.myFields[i];
-                                if (fl.table == currentSql.myTable)  // In table
-                                {
-                                    if (!dataHelper.isTablePrimaryKeyField(fl))  // Not primary key
-                                    {
-
-                                        if (sqlInsertValues.Any(x => x.Item1.fieldName == fl.fieldName)) // field in sqlInsertValue
-                                        {
-                                            string newFieldValue = sqlInsertValues.Find(x => x.Item1.fieldName == fl.fieldName).Item2;
-                                            dr[i] = newFieldValue;
-                                        }
-                                    }
-                                }
-                            }
-                            // Do update for this dr
-                            try
-                            {
-                                MsSql.currentDA.UpdateCommand.ExecuteNonQuery();
-                                successCount++;
-                            }
-                            catch (Exception ex)
-                            {
-                                lastErrorMsg = ex.Message;
-                                failureCount++;
-                            }
-                            currentSql.strManualWhereClause = string.Empty;
-                            StringBuilder sb = new StringBuilder();
-                            sb.AppendLine("Rows successfully inserted: " + successCount.ToString());
-                            sb.AppendLine("Rows failed to inserted: " + failureCount.ToString());
-                            if (lastErrorMsg != string.Empty)
-                            {
-                                sb.AppendLine("Last error message: ");
-                                sb.AppendLine(lastErrorMsg);
-                            }
-                            DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
-                            if (result == DialogResult.Cancel) { return; }
-                        }
-                    }
-                }
-            }
-        }
-
-        private List<field> SelectListOfFieldsToChange(bool needsFilteredDisplayKey)
-        {
-            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
-            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-            // Selected list of filtered fields to return
-            List<field> selectedFields = new List<field>();
-
-            // 1. Get list of filtered fields from GridFilterFields and their values
-            bool oneDisplayFieldFiltered = false;
-            // List of all filtered fields
-            List<field> filteredFields = new List<field>();
-            for (int i = 0; i < cmbGridFilterFields.Length; i++)
-            {
-                if (cmbGridFilterFields[i].Enabled)
-                {
-                    //cmbGridFilterFields - something is selected and all values are fields
-                    field selectedField = (field)cmbGridFilterFields[i].SelectedValue;
-                    // Batch insert and Batch update only handles fields in myTable  
-                    if (selectedField.table == currentSql.myTable)
-                    {
-                        if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
-                        {
-                            filteredFields.Add(selectedField);
-                            if (dataHelper.isDisplayKey(selectedField))
-                            {
-                                oneDisplayFieldFiltered = true;   // At least on DK must be filtered on
-                            }
-                        }
-                    }
-                }
-            }
-            // Return if no key is filtered in the grid
-            if (needsFilteredDisplayKey && !oneDisplayFieldFiltered)
-            {
-                MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                return selectedFields;  // Will be empty
-            }
-
-            // Ask which keys the user wants to change
-            frmListItems frmDisplayKeys = new frmListItems();
-            frmDisplayKeys.myList = filteredFields.Select(fl => fl.fieldName).ToList();
-            frmDisplayKeys.mySelectedList = new List<string>();
-            frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
-            if (needsFilteredDisplayKey)
-            {
-                frmDisplayKeys.Text = "Select the fields to change in Inserted Rows.";
-            }
-            else
-            {
-                frmDisplayKeys.Text = "Select the fields to update.";
-            }
-            frmDisplayKeys.ShowDialog();
-            int intSelectedRowsCount = frmDisplayKeys.returnIndex; // Returns -1 if exit or nothing selected
-            // Returns list of fields (or empty list if canceled or nothing selected)
-            if (intSelectedRowsCount > 0)
-            {
-                // Convert the selected strings back to fields
-                foreach (string sf in frmDisplayKeys.mySelectedList)
-                {
-                    selectedFields.Add(filteredFields.FindLast(a => a.fieldName == sf)); // there will be exactly 1
-                }
-            }
-            frmDisplayKeys = null;
-            return selectedFields;
-        }
-
-        private List<(field, string)> SelectValuesForSelectedFields(List<field> selectedFields)
-        {
-            List<(field, string)> sqlInsertValues = new List<(field, string)>();
-            // Get new values for the selected fields from dropdown options in that cmbGridFilterFields
-
-            ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
-            ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
-
-            List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
-            List<string> newValueDisplayMembers = new List<string>();
-            List<string> newValueValueMembers = new List<string>();
-
-            foreach (field sf in selectedFields)
-            {
-                for (int i = 0; i < cmbGridFilterFields.Length; i++)
-                {
-                    newValueDisplayMembers.Clear();
-                    newValueValueMembers.Clear();
-                    if (cmbGridFilterFields[i].Enabled)
-                    {
-                        // See if this is the correct cmbGridFilterField - there will be one
-                        field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
-                        if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
-                        {
-                            string selectedDisplayMember = cmbGridFilterValue[i].Text;
-                            // Fill up newValue lists
-                            var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
-                            foreach (DataRowView drv in itemsList)
-                            {
-                                int index = drv.Row.Table.Columns.IndexOf("ValueMember");
-                                string valueMember = string.Empty;
-                                if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
-                                {
-                                    int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
-                                    string displayMember = drv.Row.ItemArray[index2].ToString();
-                                    if (displayMember != selectedDisplayMember)
-                                    {
-                                        if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
-                                        {
-                                            int intValueMember = (int)drv.Row.ItemArray[index];
-                                            valueMember = intValueMember.ToString();
-                                        }
-                                        else
-                                        {
-                                            valueMember = drv.Row.ItemArray[index].ToString();
-                                        }
-                                        newValueValueMembers.Add(valueMember);
-                                        newValueDisplayMembers.Add(displayMember);
-                                    }
-                                }
-                            }
-                            // Get user choice
-                            frmListItems frmNewValues = new frmListItems();
-                            frmNewValues.myList = newValueDisplayMembers;
-                            frmNewValues.myJob = frmListItems.job.SelectString;
-                            frmNewValues.Text = "Select new value for " + sf.fieldName;
-                            frmNewValues.ShowDialog();
-                            string selectedItem = frmNewValues.returnString;
-                            int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
-                            frmNewValues = null;
-                            // Return if nothing is choosen
-                            if (intSelectedRowsCount < 0)
-                            {
-                                sqlInsertValues.Clear();
-                                return sqlInsertValues;
-                            }
-                            // The point of all this
-                            for (int k = 0; k < newValueValueMembers.Count; k++)
-                            {
-                                // This will be true for some k. 
-                                if (newValueDisplayMembers[k] == selectedItem)
-                                {
-                                    sqlInsertValues.Add((sf, newValueValueMembers[k]));
-                                    break;  // From 3rd for loop
-                                }
-                            }
-                        }
-                    }
-                } // Looking for the correct gridFilterField for this sf
-                  // above two breaks will break to here, and then continue 1st for loop
-            }  // End for loop - sqlInsertValues has the new values for the selected fields
-            return sqlInsertValues;
-        }
 
     }
 }

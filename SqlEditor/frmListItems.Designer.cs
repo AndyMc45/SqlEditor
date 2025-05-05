@@ -50,6 +50,7 @@ namespace SqlEditor
             // listBox1
             // 
             listBox1.AllowDrop = true;
+            listBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
             listBox1.BackColor = SystemColors.Window;
             listBox1.Font = new Font("Microsoft Sans Serif", 8.25F);
             listBox1.ForeColor = SystemColors.WindowText;
@@ -57,7 +58,7 @@ namespace SqlEditor
             listBox1.Location = new Point(24, 43);
             listBox1.Name = "listBox1";
             listBox1.RightToLeft = RightToLeft.No;
-            listBox1.Size = new Size(345, 140);
+            listBox1.Size = new Size(345, 242);
             listBox1.TabIndex = 0;
             // 
             // lblText
