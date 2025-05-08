@@ -206,6 +206,9 @@
   <data name="pleaseSelectAvalueFor0" xml:space="preserve">
     <value>Please select a value for {0}</value>
   </data>
+  <data name="primaryKeyMustBeInt" xml:space="preserve">
+    <value>Primary key must be an integer</value>
+  </data>
   <data name="reload" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\reload.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>

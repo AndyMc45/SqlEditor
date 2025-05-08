@@ -327,6 +327,15 @@ namespace SqlEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Primary key must be an integer.
+        /// </summary>
+        public static string primaryKeyMustBeInt {
+            get {
+                return ResourceManager.GetString("primaryKeyMustBeInt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
         public static System.Drawing.Bitmap reload {

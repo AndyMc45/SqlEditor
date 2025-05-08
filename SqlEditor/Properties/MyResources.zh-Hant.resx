@@ -191,6 +191,9 @@
   <data name="pleaseSelectAvalueFor0" xml:space="preserve">
     <value>請為 {0} 選擇一個值</value>
   </data>
+  <data name="primaryKeyMustBeInt" xml:space="preserve">
+    <value>主鍵必須是整數</value>
+  </data>
   <data name="rowsThatShouldBeMerged0" xml:space="preserve">
     <value>應合併的行：{0}</value>
   </data>

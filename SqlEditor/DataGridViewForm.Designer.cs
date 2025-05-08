@@ -127,6 +127,7 @@
             toolStripButtonColumnWidth = new ToolStripButton();
             saveFileDialog1 = new SaveFileDialog();
             folderBrowserDialog1 = new FolderBrowserDialog();
+            mnuAllowDeepDelete = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -832,7 +833,7 @@
             // 
             // mnuTools
             // 
-            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuPrintCurrentTable, mnuBatchInsert, mnuBatchUpdate });
+            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuPrintCurrentTable, mnuBatchInsert, mnuBatchUpdate, mnuAllowDeepDelete });
             mnuTools.Name = "mnuTools";
             resources.ApplyResources(mnuTools, "mnuTools");
             // 
@@ -999,6 +1000,12 @@
             toolStripButtonColumnWidth.Name = "toolStripButtonColumnWidth";
             toolStripButtonColumnWidth.Click += toolStripColumnWidth_Click;
             // 
+            // mnuAllowDeepDelete
+            // 
+            mnuAllowDeepDelete.CheckOnClick = true;
+            mnuAllowDeepDelete.Name = "mnuAllowDeepDelete";
+            resources.ApplyResources(mnuAllowDeepDelete, "mnuAllowDeepDelete");
+            // 
             // DataGridViewForm
             // 
             resources.ApplyResources(this, "$this");
@@ -1127,6 +1134,7 @@
         private ToolStripMenuItem GridContextMenu_UnusedAsFK;
         private ToolStripMenuItem mnuBatchInsert;
         private ToolStripMenuItem mnuBatchUpdate;
+        private ToolStripMenuItem mnuAllowDeepDelete;
         //private Button button2;
     }
 }

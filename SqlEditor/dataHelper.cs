@@ -313,6 +313,18 @@ namespace SqlEditor
             }
         }
 
+        public static bool dbTypeIsInteger(DbType type)
+        {
+            if (type == DbType.Int16 || type == DbType.Int32 || type == DbType.Int64 || type == DbType.SByte)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public static DataRow getDataRowFromDataTable(string column, string columnValue, DataTable dt)
         {
             DataRow dr = dt.Select(string.Format("{0} = '{1}'", column, columnValue)).FirstOrDefault();

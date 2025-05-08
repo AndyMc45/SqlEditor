@@ -1739,22 +1739,28 @@
     <value>Tables</value>
   </data>
   <data name="mnuPrintCurrentTable.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
+    <value>240, 30</value>
   </data>
   <data name="mnuPrintCurrentTable.Text" xml:space="preserve">
     <value>Save Grid to Excel</value>
   </data>
   <data name="mnuBatchInsert.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
+    <value>240, 30</value>
   </data>
   <data name="mnuBatchInsert.Text" xml:space="preserve">
     <value>Batch Insert</value>
   </data>
   <data name="mnuBatchUpdate.Size" type="System.Drawing.Size, System.Drawing">
-    <value>238, 30</value>
+    <value>240, 30</value>
   </data>
   <data name="mnuBatchUpdate.Text" xml:space="preserve">
     <value>Batch update</value>
+  </data>
+  <data name="mnuAllowDeepDelete.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 30</value>
+  </data>
+  <data name="mnuAllowDeepDelete.Text" xml:space="preserve">
+    <value>Allow deep delete</value>
   </data>
   <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 29</value>
@@ -2238,6 +2244,12 @@
   </data>
   <data name="&gt;&gt;folderBrowserDialog1.Type" xml:space="preserve">
     <value>System.Windows.Forms.FolderBrowserDialog, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mnuAllowDeepDelete.Name" xml:space="preserve">
+    <value>mnuAllowDeepDelete</value>
+  </data>
+  <data name="&gt;&gt;mnuAllowDeepDelete.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>DataGridViewForm</value>

@@ -1,4 +1,5 @@
 ﻿// using DocumentFormat.OpenXml.Drawing;
+// using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using SqlEditor.Properties;
@@ -7,6 +8,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 
@@ -2125,6 +2127,7 @@ namespace SqlEditor
                 }
             }
         }
+
         private List<field> SelectListOfFieldsToChange(bool needsFilteredDisplayKey)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -3548,40 +3551,43 @@ namespace SqlEditor
                     msgTextError(Properties.MyResources.selectRowToDelete);
                     return;
                 }
-                // int index = dataGridView1.Rows.IndexOf(dataGridView1.SelectedRows[0]);
-                field PKfield = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
-                int colIndex = dataGridView1.Columns[PKfield.fieldName].Index;
+                field PkField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
+                int colIndex = dataGridView1.Columns[PkField.fieldName].Index;
                 if (colIndex != 0)
                 {
                     msgTextError(Properties.MyResources.firstColumnMustBePrimaryKey);
                     return;
                 }
-                int PKvalue = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[colIndex].Value);
-                field PKField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
-                where wh = new where(PKField, PKvalue.ToString());
-                Boolean constraintPassed = true;
-                // delete - <table, record ID, bool>
-                foreach (Func<string, int, bool> f in dgvHelper.deleteConstraints)
+                if(!dataHelper.dbTypeIsInteger(PkField.dbType))
                 {
-                    constraintPassed = f(currentSql.myTable, PKvalue);
-                    if (!constraintPassed) { break; }
+                    msgTextError(Properties.MyResources.primaryKeyMustBeInt);
+                    return;
+                }
+                int PkValue = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells[colIndex].Value);
+
+                StringBuilder firstSB = DeleteRow(currentSql.myTable, PkField, PkValue, 0, true);
+                firstSB.AppendLine("0. Deleted row from " + currentSql.myTable + " with PK = " + PkValue.ToString());
+                string msgBegin = "Do you want to delete this row?  Expected Results: " + Environment.NewLine;
+                DialogResult reply = MessageBox.Show(msgBegin + firstSB.ToString(), "Delete Row?", MessageBoxButtons.YesNo);
+                if (reply == DialogResult.Yes)
+                {
+                    if (mnuAllowDeepDelete.Checked)
+                    {
+                        reply = DialogResult.No;
+                        reply = MessageBox.Show("Are You sure?  This can't be undone!", "Delete Row", MessageBoxButtons.YesNo);
+                    }
+                    if (reply == DialogResult.Yes)
+                    {
+                        StringBuilder secondSB = DeleteRow(currentSql.myTable, PkField, PkValue, 0, false);
+                        secondSB.AppendLine("0. Deleted row from " + currentSql.myTable + " with PK = " + PkValue.ToString());
+                        MessageBox.Show(secondSB.ToString(), "Delete Row", MessageBoxButtons.OK);
+                        // currentSql.strManualWhereClause = string.Empty;
+                        // rbView.Checked = true;
+                        writeGrid_NewFilter(true);
+                    }
                 }
 
-                string errorMsg = MsSql.DeleteRowsFromDT(dataHelper.currentDT, wh);
-
-                if (errorMsg != string.Empty)
-                {
-                    msgTextError(errorMsg);
-                    MessageBox.Show(String.Format("Error deleting row: {0}", errorMsg), "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    currentSql.strManualWhereClause = string.Empty;
-                    rbView.Checked = true;
-                    writeGrid_NewFilter(true);
-                }
             }
-
             else if (programMode == ProgramMode.add)
             {
                 // 1. Check that all display keys and foreign keys are loaded - and build where list
@@ -3708,6 +3714,83 @@ namespace SqlEditor
             }
         }
 
+        private StringBuilder DeleteRow(string table, field PkField, int PkValue, int level, bool messageOnly)
+        {
+            StringBuilder returnSB = new StringBuilder();
+            //returnSB.AppendLine(String.Format("{0}. Deleting pk {1} from {2}.",
+            //    level.ToString(), PkValue.ToString(), table));
+
+            // 1. Check for plugin constraint violation: Delete-<table, record ID, bool>
+
+            Boolean constraintPassed = true;
+            foreach (Func<string, int, bool> f in dgvHelper.deleteConstraints)
+            {
+                constraintPassed = f(table, PkValue);
+                if (!constraintPassed) 
+                {
+                    returnSB.AppendLine("Plugin constraint prevented delete: " + f.Method.Name);
+                    return returnSB; 
+                }
+            }
+
+            // 2. Deep Delete if allowed - recursive delete all rows in child tables with this row as FK
+            if (mnuAllowDeepDelete.Checked)
+            { 
+                List<Int32> lstDeletedPKs = new List<Int32>();
+                // 1. Get all the tables that have an FK for this parent table 
+                DataRow[] fkRowsInFieldsDT = dataHelper.fieldsDT.Select(
+                String.Format("RefTable = '{0}'", table));
+                // OUTER LOOP - CHILDTABLES
+                foreach (DataRow dr in fkRowsInFieldsDT)
+                {
+                    // 2. Delete rows in childTable with PkValue as FK)
+                    string childTable = dataHelper.getColumnValueinDR(dr, "TableName");
+                    string fkColumnName = dataHelper.getColumnValueinDR(dr, "ColumnName");
+                    field fkField = dataHelper.getFieldFromFieldsDT(childTable, fkColumnName);
+                    // 3. Select rows where FK value in pk2
+                    string sqlChildString = String.Format("Select * from {0} where {1} = '{2}'"
+                                        , childTable, fkColumnName, PkValue.ToString());
+                    MsSqlWithDaDt dadtChild = new MsSqlWithDaDt(sqlChildString);
+                    string errorMsg2 = dadtChild.errorMsg;
+                    if (errorMsg2 != string.Empty)
+                    {
+                        msgText("Strange error using: " + sqlChildString, true, true);
+                    }
+                    // INNER LOOP - Delete rows in Child table
+                    field pkChildTable = dataHelper.getTablePrimaryKeyField(childTable);
+                    pkChildTable.tableAlias = childTable;
+                    MsSql.SetDeleteCommand(childTable, dadtChild.da, pkChildTable);
+                    lstDeletedPKs.Clear();
+                    foreach (DataRow childTableDR in dadtChild.dt.Rows)
+                    {
+                        int pkChildValue = Int32.Parse(dataHelper.getColumnValueinDR(childTableDR, pkChildTable.fieldName)); 
+                        StringBuilder innerSB = DeleteRow(childTable, pkChildTable, pkChildValue, level + 1, messageOnly);
+                        returnSB.Append(innerSB);    
+                        lstDeletedPKs.Add(pkChildValue);
+                    }
+                    returnSB.AppendLine(String.Format("{0}. Deleted PKs in {1}: {2}", (level + 1).ToString()
+                        , childTable, String.Join(",", lstDeletedPKs)));
+                }
+            }
+            // 3. Set delete command, delete from currentDT and then call "update" to update the database
+            string sqlString = String.Format("Select * from {0} where {1} = '{2}'"
+                                , table, PkField.fieldName, PkValue.ToString());
+            MsSqlWithDaDt dadt = new MsSqlWithDaDt(sqlString);
+            where wh = new where(PkField, PkValue.ToString());
+            PkField.tableAlias = PkField.table;  // Alias will have "00" added to it.
+            MsSql.SetDeleteCommand(table, dadt.da, PkField);
+            if (!messageOnly)
+            {
+                string errorMsg = MsSql.DeleteRowsFromDT(dadt.da, dadt.dt, wh);
+                if (errorMsg != string.Empty)
+                {
+                    returnSB.AppendLine("Delete error: " + errorMsg);
+                    return returnSB;
+                }
+            }
+            return returnSB;
+        }
+
         private int GetDuplicateRow(string table, int pkDR, DataRow dr)
         {
             //1. Get list of display keys in this table
@@ -3826,6 +3909,10 @@ namespace SqlEditor
                 PKField.tableAlias = PKField.table;  // Alias will have "00" added to it.
                 MsSql.SetDeleteCommand(parentTable, dadtParent.da, PKField);
                 string errorMsg = MsSql.DeleteRowsFromDT(dadtParent.da, dadtParent.dt, wh);
+                if (errorMsg != string.Empty)
+                {
+                    returnSB.AppendLine("Delete error: " + errorMsg);
+                }
             }
             returnSB.AppendLine(String.Format("{0}. {1}: Deleted pk {2}", level.ToString(), parentTable, pk2));
             return returnSB;
@@ -3864,7 +3951,7 @@ namespace SqlEditor
                 btnDeleteAddMerge.Enabled = true;
                 btnDeleteAddMerge.Text = "Delete row";
                 // Add deleteCommand
-                MsSql.SetDeleteCommand(currentSql.myTable, dataHelper.currentDT);
+                // MsSql.SetDeleteCommand(currentSql.myTable, dataHelper.currentDT);
                 SetFiltersColumnsTablePanel();
             }
         }
