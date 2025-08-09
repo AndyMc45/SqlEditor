@@ -863,7 +863,7 @@
         },
         "runtime": {
           "SqlEditor.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         },
@@ -876,7 +876,7 @@
       "SqlEditor.PluginsInterface/1.0.0": {
         "runtime": {
           "SqlEditor.PluginsInterface.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }

@@ -88,6 +88,24 @@ namespace SqlEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to use deep delete?.
+        /// </summary>
+        public static string deepDeleteAreYouSure1 {
+            get {
+                return ResourceManager.GetString("deepDeleteAreYouSure1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deep delete is dangerous! When you delete a row, it deletes the chosen row AND all its children, grandchildren, etc..
+        /// </summary>
+        public static string deepDeleteAreYouSure2 {
+            get {
+                return ResourceManager.GetString("deepDeleteAreYouSure2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Display key value array must be unique..
         /// </summary>
         public static string displayKeyValueArrayMustBeUnique {

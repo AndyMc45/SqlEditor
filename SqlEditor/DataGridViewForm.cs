@@ -55,21 +55,6 @@ namespace SqlEditor
 
         #endregion
 
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (keyData == (Keys.Control | Keys.M))
-            {
-                GridContextMenu_SetAsMainFilter_Click(null, null);
-                return true;
-            }
-            else if (keyData == (Keys.Control | Keys.F))
-            {
-                GridContextMenu_SetFkAsMainFilter_Click(null, null);
-                return true;
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
@@ -77,6 +62,12 @@ namespace SqlEditor
 
         public DataGridViewForm(ILogger<DataGridViewForm> logger)
         {
+            // DO NOT DELETE
+            // THIS IS USED EVEN THOUGH IT SAYS "0 REFERENCES"
+            // It is used in the constructor of the main form and in the plugins
+            // It is used from program.cs - related to dependency injection.
+
+
             myLogger = logger;
             // pluginError = true if the last load of the program did not cause error.
             string pluginError = AppData.GetKeyValue("PluginError");
@@ -181,6 +172,33 @@ namespace SqlEditor
                     mnuTools.DropDownItems.Add(tsiNew);
                 }
             }
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // DO NOT DELETE
+            // This is used on every press - It "overrides" ProcessCmdKey.
+            if (keyData == (Keys.Control | Keys.M))
+            {
+                GridContextMenu_SetAsMainFilter_Click(null, null);
+                return true;
+            }
+            else if (keyData == (Keys.Control | Keys.F))
+            {
+                GridContextMenu_SetFkAsMainFilter_Click(null, null);
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void Application_Restart()
+        {
+            try
+            {
+                Application.Restart();
+                Environment.Exit(0);
+            }
+            catch { }
         }
 
         private void DataGridViewForm_Load(object sender, EventArgs e)
@@ -337,7 +355,7 @@ namespace SqlEditor
             {
                 case ComboBox cmb:
                     if (e.KeyValue == 13 && currentSql != null)
-                    { 
+                    {
                         if (cmb.Name.Contains("cmbGridFilterValue"))
                         {
                             writeGrid_NewFilter(true);
@@ -1780,6 +1798,7 @@ namespace SqlEditor
                 Application.Restart();
             }
         }
+        
         internal void Load_mnuDatabaseList()
         {
             //Get list from App.Data
@@ -1893,7 +1912,7 @@ namespace SqlEditor
                 {
                     msgText("No rows selected for batch insert.", true, false);
                 }
-                else 
+                else
                 {
                     string msg = String.Format("Do you want to batch insert {0} new records in table {1}?"
                         , selectedRows.ToString(), currentSql.myTable);
@@ -2278,7 +2297,185 @@ namespace SqlEditor
             return sqlInsertValues;
         }
 
+        private void mnuAllowDeepDelete_Click(object sender, EventArgs e)
+        {
+            if (mnuAllowDeepDelete.Checked)
+            {
+                StringBuilder sbMsg = new StringBuilder();
+                sbMsg.AppendLine(MyResources.deepDeleteAreYouSure1);
+                sbMsg.AppendLine(MyResources.deepDeleteAreYouSure2);
+                DialogResult result = MessageBox.Show(sbMsg.ToString(), "Deep Delete Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.No)
+                {
+                    mnuAllowDeepDelete.Checked = false;
+                }
+            }
+        }
 
+        private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
+        {
+            if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
+            {
+                Application_Restart();
+            }
+            else
+            {
+                foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
+                {
+                    // txtManualFilter shown if mnuShowITTools.Checked;
+                    // So if you want them to show, check it if it is not checked
+                    if (mi.Name != mnuShowITTools.Name)
+                    {
+                        mi.Visible = mnuShowITTools.Checked;
+                        txtManualFilter.Visible = mnuShowITTools.Checked;
+                        lblManualFilter.Visible = mnuShowITTools.Checked;
+                        txtManualFilter.Enabled = mnuShowITTools.Checked;
+                    }
+                }
+                if (mnuShowITTools.Checked)
+                {
+                    SetTableLayoutPanelHeight();
+                    mnuIT_Tools.ShowDropDown();
+                }
+            }
+        }
+
+        private void mnuLoadPlugin_Click(object sender, EventArgs e)
+        {
+            string myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string selectedFolder = SelectFolder(myDocumentsFolder, false);
+            if (selectedFolder != string.Empty)
+            {
+                if (Directory.Exists(selectedFolder))
+                {
+                    string directoryName = new DirectoryInfo(selectedFolder).Name;
+                    string appDataFolder = Application.CommonAppDataPath;
+                    if (Directory.Exists(appDataFolder))
+                    {
+                        string plugInFolder = String.Format("{0}\\{1}\\{2}", appDataFolder, "PluginsToConsume", directoryName);
+                        if (Directory.Exists(plugInFolder))
+                        {
+                            Directory.Delete(plugInFolder, true);
+                        }
+                        Directory.CreateDirectory(plugInFolder);
+                        CopyDirectory(selectedFolder, plugInFolder, true);
+                        Application_Restart();
+                    }
+                }
+            }
+        }
+
+        static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+        {
+            // Get information about the source directory
+            var dir = new DirectoryInfo(sourceDir);
+
+            // Check if the source directory exists
+            if (!dir.Exists) { return; }
+
+            // Cache directories before we start copying
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Create the destination directory
+            Directory.CreateDirectory(destinationDir);
+
+            // Get the files in the source directory and copy to the destination directory
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath);
+            }
+
+            // If recursive and copying subdirectories, recursively call this method
+            if (recursive)
+            {
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                    CopyDirectory(subDir.FullName, newDestinationDir, true);
+                }
+            }
+        }
+
+        private void mnuRemovePlugin_Click(object sender, EventArgs e)
+        {
+            // Get information about the source directory
+            string plugInDirectory = String.Format("{0}\\{1}", Application.CommonAppDataPath, "PluginsToConsume");
+            DirectoryInfo dirInfo = new DirectoryInfo(plugInDirectory);
+
+            // Check if the source directory exists
+            if (!dirInfo.Exists) { return; }
+            // Cache directories before we start copying
+            DirectoryInfo[] subDirsInfo = dirInfo.GetDirectories();
+            List<string> pluginDirectories = new List<string>();
+            foreach (DirectoryInfo subDir in subDirsInfo)
+            {
+                pluginDirectories.Add(subDir.FullName);
+            }
+
+            frmListItems directoryListForm = new frmListItems();
+            directoryListForm.myList = pluginDirectories;
+            directoryListForm.myJob = frmListItems.job.SelectString;
+            directoryListForm.Text = "Select Plugin";
+            directoryListForm.ShowDialog();
+            string selectedDirectory = directoryListForm.returnString;
+            int intSelectedDirectory = directoryListForm.returnIndex;
+            directoryListForm = null;
+            if (intSelectedDirectory > -1)
+            {
+                // Executed on next load
+                AppData.SaveKeyValue("deletePluginPath", selectedDirectory);
+                Application_Restart();
+            }
+        }
+
+        private void mnuDisplayKeysList_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                // Get list of display keys for current table
+                frmListItems frmDisplayKeys = new frmListItems();
+                frmDisplayKeys.myList = new List<string>();
+                frmDisplayKeys.mySelectedList = new List<string>();
+                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
+                DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
+                List<string> columnList = new List<string>();
+                foreach (DataRow dr in drsList)
+                {
+                    columnList.Add(dr["ColumnName"].ToString());
+                }
+                List<string> dkColumnList = new List<string>();
+                foreach (DataRow dr in drsSelectedList)
+                {
+                    dkColumnList.Add(dr["ColumnName"].ToString());
+                }
+                frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
+                frmDisplayKeys.Text = "Edit Display Keys (internal list)";
+                frmDisplayKeys.myList = columnList;
+                frmDisplayKeys.mySelectedList = dkColumnList;
+                frmDisplayKeys.ShowDialog();
+                List<string> selectedDKs = frmDisplayKeys.mySelectedList;
+                int intSelectedDirectory = frmDisplayKeys.returnIndex;
+                frmDisplayKeys = null;
+                if (intSelectedDirectory > -1)
+                {
+                    //Select the DKs - NO - must turn unselected off
+                    foreach (String columnName in columnList)
+                    {
+                        // Set Dk in fields
+                        DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
+                        if (selectedDKs.Contains(columnName))
+                        {
+                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
+                        }
+                        else
+                        {
+                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
+                        }
+                    }
+                }
+            }
+        }
 
         #endregion
 
@@ -3493,7 +3690,7 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Add-Delete-Merge Button
+        #region Event - Add-Delete-Merge Button
         private void btnDeleteAddMerge_Click(object sender, EventArgs e)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -3558,7 +3755,7 @@ namespace SqlEditor
                     msgTextError(Properties.MyResources.firstColumnMustBePrimaryKey);
                     return;
                 }
-                if(!dataHelper.dbTypeIsInteger(PkField.dbType))
+                if (!dataHelper.dbTypeIsInteger(PkField.dbType))
                 {
                     msgTextError(Properties.MyResources.primaryKeyMustBeInt);
                     return;
@@ -3726,16 +3923,16 @@ namespace SqlEditor
             foreach (Func<string, int, bool> f in dgvHelper.deleteConstraints)
             {
                 constraintPassed = f(table, PkValue);
-                if (!constraintPassed) 
+                if (!constraintPassed)
                 {
                     returnSB.AppendLine("Plugin constraint prevented delete: " + f.Method.Name);
-                    return returnSB; 
+                    return returnSB;
                 }
             }
 
             // 2. Deep Delete if allowed - recursive delete all rows in child tables with this row as FK
             if (mnuAllowDeepDelete.Checked)
-            { 
+            {
                 List<Int32> lstDeletedPKs = new List<Int32>();
                 // 1. Get all the tables that have an FK for this parent table 
                 DataRow[] fkRowsInFieldsDT = dataHelper.fieldsDT.Select(
@@ -3763,9 +3960,9 @@ namespace SqlEditor
                     lstDeletedPKs.Clear();
                     foreach (DataRow childTableDR in dadtChild.dt.Rows)
                     {
-                        int pkChildValue = Int32.Parse(dataHelper.getColumnValueinDR(childTableDR, pkChildTable.fieldName)); 
+                        int pkChildValue = Int32.Parse(dataHelper.getColumnValueinDR(childTableDR, pkChildTable.fieldName));
                         StringBuilder innerSB = DeleteRow(childTable, pkChildTable, pkChildValue, level + 1, messageOnly);
-                        returnSB.Append(innerSB);    
+                        returnSB.Append(innerSB);
                         lstDeletedPKs.Add(pkChildValue);
                     }
                     returnSB.AppendLine(String.Format("{0}. Deleted PKs in {1}: {2}", (level + 1).ToString()
@@ -3924,7 +4121,7 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region 5 Radio buttons and other Buttons (Reload, Wide columns)
+        #region Events - 5 Radio buttons and other Buttons (Reload, Wide columns)
 
         private void rbView_CheckedChanged(object sender, EventArgs e)
         {
@@ -4057,7 +4254,7 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region 5 paging buttons & RecordsPerPage (RPP)
+        #region Events - 5 paging buttons & RecordsPerPage (RPP)
         // Paging - <<
         private void txtRecordsPerPage_Leave(object sender, EventArgs e)
         {
@@ -4135,6 +4332,83 @@ namespace SqlEditor
                 }
             }
         }
+        #endregion
+
+        //----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
+
+        #region Events - Other events and related functions
+
+
+        private void txtManualFilter_TextChanged(object sender, EventArgs e)
+        {
+            if (!txtManualFilter.Enabled) { return; }
+
+            string text = txtManualFilter.Text;
+            if (text.Length == 0) { return; }
+
+            // Show fields in 
+            if (text.Length > 3)
+            {
+                if (text.Substring(text.Length - 2, 2) == "].")
+                {
+                    foreach (string key in aliasTableDictionary.Keys)
+                    {
+                        if (text.Length > key.Length + 2)
+                        {
+                            if (text.Substring(text.Length - (key.Length + 3)) == String.Format("[{0}].", key))
+                            {
+                                txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
+                                txtManualFilter.AutoCompleteCustomSource = null;
+                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
+                                AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
+                                foreach (string fieldName in aliasTableDictionary[key])
+                                {
+                                    lstStrings.Add(text + "[" + fieldName + "]");
+
+                                }
+                                txtManualFilter.AutoCompleteCustomSource = lstStrings;
+                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                                return;
+                            }
+                        }
+                    }
+                    return;  // Found ]. but not with a table
+                }
+
+            }
+            else
+            {
+                bool showTables = false;
+                if (text == "[") { showTables = true; }
+                else if (text.Length > 3)
+                {
+                    if (text.Substring(text.Length - 1) == "[" && text.Substring(text.Length - 2) != ".[")
+                    { showTables = true; }
+                }
+                if (showTables)
+                {
+                    txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
+                    txtManualFilter.AutoCompleteCustomSource = null;
+                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
+                    AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
+                    foreach (string key in aliasTableDictionary.Keys)
+                    {
+                        lstStrings.Add(text + key + "].");
+                    }
+                    txtManualFilter.AutoCompleteCustomSource = lstStrings;
+                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                }
+            }
+        }
+
+        public void setTxtManualFilterText(string text)
+        {
+            // Show filter
+            if (!mnuShowITTools.Checked) { mnuShowITTools.Checked = true; }
+            txtManualFilter.Text = text;
+        }
+
         #endregion
 
         //----------------------------------------------------------------------------------------------------------------------
@@ -4379,249 +4653,6 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-        private void txtManualFilter_TextChanged(object sender, EventArgs e)
-        {
-            if (!txtManualFilter.Enabled) { return; }
-
-            string text = txtManualFilter.Text;
-            if (text.Length == 0) { return; }
-
-            // Show fields in 
-            if (text.Length > 3)
-            {
-                if (text.Substring(text.Length - 2, 2) == "].")
-                {
-                    foreach (string key in aliasTableDictionary.Keys)
-                    {
-                        if (text.Length > key.Length + 2)
-                        {
-                            if (text.Substring(text.Length - (key.Length + 3)) == String.Format("[{0}].", key))
-                            {
-                                txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
-                                txtManualFilter.AutoCompleteCustomSource = null;
-                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
-                                AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
-                                foreach (string fieldName in aliasTableDictionary[key])
-                                {
-                                    lstStrings.Add(text + "[" + fieldName + "]");
-
-                                }
-                                txtManualFilter.AutoCompleteCustomSource = lstStrings;
-                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                                return;
-                            }
-                        }
-                    }
-                    return;  // Found ]. but not with a table
-                }
-
-            }
-            else
-            {
-                bool showTables = false;
-                if (text == "[") { showTables = true; }
-                else if (text.Length > 3)
-                {
-                    if (text.Substring(text.Length - 1) == "[" && text.Substring(text.Length - 2) != ".[")
-                    { showTables = true; }
-                }
-                if (showTables)
-                {
-                    txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
-                    txtManualFilter.AutoCompleteCustomSource = null;
-                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
-                    AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
-                    foreach (string key in aliasTableDictionary.Keys)
-                    {
-                        lstStrings.Add(text + key + "].");
-                    }
-                    txtManualFilter.AutoCompleteCustomSource = lstStrings;
-                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                }
-            }
-        }
-
-        public void setTxtManualFilterText(string text)
-        {
-            // Show filter
-            if (!mnuShowITTools.Checked) { mnuShowITTools.Checked = true; }
-            txtManualFilter.Text = text;
-        }
-
-        private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
-        {
-            if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
-            {
-                Application_Restart();
-            }
-            else
-            {
-                foreach (ToolStripMenuItem mi in mnuIT_Tools.DropDownItems.OfType<ToolStripMenuItem>())
-                {
-                    // txtManualFilter shown if mnuShowITTools.Checked;
-                    // So if you want them to show, check it if it is not checked
-                    if (mi.Name != mnuShowITTools.Name)
-                    {
-                        mi.Visible = mnuShowITTools.Checked;
-                        txtManualFilter.Visible = mnuShowITTools.Checked;
-                        lblManualFilter.Visible = mnuShowITTools.Checked;
-                        txtManualFilter.Enabled = mnuShowITTools.Checked;
-                    }
-                }
-                if (mnuShowITTools.Checked)
-                {
-                    SetTableLayoutPanelHeight();
-                    mnuIT_Tools.ShowDropDown();
-                }
-            }
-        }
-
-        private void mnuLoadPlugin_Click(object sender, EventArgs e)
-        {
-            string myDocumentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string selectedFolder = SelectFolder(myDocumentsFolder, false);
-            if (selectedFolder != string.Empty)
-            {
-                if (Directory.Exists(selectedFolder))
-                {
-                    string directoryName = new DirectoryInfo(selectedFolder).Name;
-                    string appDataFolder = Application.CommonAppDataPath;
-                    if (Directory.Exists(appDataFolder))
-                    {
-                        string plugInFolder = String.Format("{0}\\{1}\\{2}", appDataFolder, "PluginsToConsume", directoryName);
-                        if (Directory.Exists(plugInFolder))
-                        {
-                            Directory.Delete(plugInFolder, true);
-                        }
-                        Directory.CreateDirectory(plugInFolder);
-                        CopyDirectory(selectedFolder, plugInFolder, true);
-                        Application_Restart();
-                    }
-                }
-            }
-        }
-        static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
-        {
-            // Get information about the source directory
-            var dir = new DirectoryInfo(sourceDir);
-
-            // Check if the source directory exists
-            if (!dir.Exists) { return; }
-
-            // Cache directories before we start copying
-            DirectoryInfo[] dirs = dir.GetDirectories();
-
-            // Create the destination directory
-            Directory.CreateDirectory(destinationDir);
-
-            // Get the files in the source directory and copy to the destination directory
-            foreach (FileInfo file in dir.GetFiles())
-            {
-                string targetFilePath = Path.Combine(destinationDir, file.Name);
-                file.CopyTo(targetFilePath);
-            }
-
-            // If recursive and copying subdirectories, recursively call this method
-            if (recursive)
-            {
-                foreach (DirectoryInfo subDir in dirs)
-                {
-                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
-                    CopyDirectory(subDir.FullName, newDestinationDir, true);
-                }
-            }
-        }
-
-        private void mnuRemovePlugin_Click(object sender, EventArgs e)
-        {
-            // Get information about the source directory
-            string plugInDirectory = String.Format("{0}\\{1}", Application.CommonAppDataPath, "PluginsToConsume");
-            DirectoryInfo dirInfo = new DirectoryInfo(plugInDirectory);
-
-            // Check if the source directory exists
-            if (!dirInfo.Exists) { return; }
-            // Cache directories before we start copying
-            DirectoryInfo[] subDirsInfo = dirInfo.GetDirectories();
-            List<string> pluginDirectories = new List<string>();
-            foreach (DirectoryInfo subDir in subDirsInfo)
-            {
-                pluginDirectories.Add(subDir.FullName);
-            }
-
-            frmListItems directoryListForm = new frmListItems();
-            directoryListForm.myList = pluginDirectories;
-            directoryListForm.myJob = frmListItems.job.SelectString;
-            directoryListForm.Text = "Select Plugin";
-            directoryListForm.ShowDialog();
-            string selectedDirectory = directoryListForm.returnString;
-            int intSelectedDirectory = directoryListForm.returnIndex;
-            directoryListForm = null;
-            if (intSelectedDirectory > -1)
-            {
-                // Executed on next load
-                AppData.SaveKeyValue("deletePluginPath", selectedDirectory);
-                Application_Restart();
-            }
-        }
-
-        private void Application_Restart()
-        {
-            try
-            {
-                Application.Restart();
-                Environment.Exit(0);
-            }
-            catch { }
-        }
-
-        private void mnuDisplayKeysList_Click(object sender, EventArgs e)
-        {
-            if (currentSql != null)
-            {
-                // Get list of display keys for current table
-                frmListItems frmDisplayKeys = new frmListItems();
-                frmDisplayKeys.myList = new List<string>();
-                frmDisplayKeys.mySelectedList = new List<string>();
-                DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
-                DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
-                List<string> columnList = new List<string>();
-                foreach (DataRow dr in drsList)
-                {
-                    columnList.Add(dr["ColumnName"].ToString());
-                }
-                List<string> dkColumnList = new List<string>();
-                foreach (DataRow dr in drsSelectedList)
-                {
-                    dkColumnList.Add(dr["ColumnName"].ToString());
-                }
-                frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
-                frmDisplayKeys.Text = "Edit Display Keys (internal list)";
-                frmDisplayKeys.myList = columnList;
-                frmDisplayKeys.mySelectedList = dkColumnList;
-                frmDisplayKeys.ShowDialog();
-                List<string> selectedDKs = frmDisplayKeys.mySelectedList;
-                int intSelectedDirectory = frmDisplayKeys.returnIndex;
-                frmDisplayKeys = null;
-                if (intSelectedDirectory > -1)
-                {
-                    //Select the DKs - NO - must turn unselected off
-                    foreach (String columnName in columnList)
-                    {
-                        // Set Dk in fields
-                        DataRow dataRow = dataHelper.getDataRowFromFieldsDT(currentSql.myTable, columnName);
-                        if (selectedDKs.Contains(columnName))
-                        {
-                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "true");
-                        }
-                        else
-                        {
-                            dataHelper.setColumnValueInDR(dataRow, "is_DK", "false");
-                        }
-                    }
-                }
-            }
-        }
-
         private void btnExtra_Click(object sender, EventArgs e)
         {
             // MsSql.testing();
@@ -4693,7 +4724,6 @@ namespace SqlEditor
         }
 
         #endregion
-
     }
 }
 

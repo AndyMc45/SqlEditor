@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Microsoft.Data.SqlClient;
+using System.Data;
 using System.Text;
 
 namespace SqlEditor.TranscriptPlugin
@@ -114,10 +115,12 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
+        // Update every StudentDegree status (signified by -1)
         public static int UpdateStudentDegreeStatus(ref int rowsAffected)
         {
             return UpdateStudentDegreeStatus(-1, ref rowsAffected);
         }
+        // Update a specific StudentDegree status
         public static int UpdateStudentDegreeStatus(int studentDegreeID, ref int rowsAffected)
         {
             int returnInt = -1;
@@ -134,6 +137,141 @@ namespace SqlEditor.TranscriptPlugin
             }
             return returnInt;
         }
+
+        public static string FillPluginTranscript(DataTable plugTransDT, int studentDegreeID)
+        {
+            string query = "GetStudentTranscript";
+            CommandType commandType = CommandType.StoredProcedure;
+            List<(string, string)> parameters = new List<(string, string)>();
+            SqlParameter sqlPar1 = new SqlParameter("@StudentDegreeID", studentDegreeID.ToString());
+            parameters.Add(("@StudentDegreeID", studentDegreeID.ToString()));
+            int rowsAffected = 0;
+            string error = MsSql.FillDataTable(plugTransDT, query, parameters, commandType);
+            return error;
+        }
+
+        public static string FillStudentReq(DataTable StuReqDT, int studentDegreeID)
+        {
+            string query = "GetStudentRequirementTable";
+            CommandType commandType = CommandType.StoredProcedure;
+            List<(string, string)> parameters = new List<(string, string)>();
+            SqlParameter sqlPar1 = new SqlParameter("@StudentDegreeID", studentDegreeID.ToString());
+            parameters.Add(("@StudentDegreeID", studentDegreeID.ToString()));
+            int rowsAffected = 0;
+            string error = MsSql.FillDataTable(StuReqDT, query, parameters, commandType);
+            return error;
+        }
+
+        public static StringBuilder getCTETranscriptSQL(int StudentDegreeID, string boolForCreditRows)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("   DECLARE @sd_ID int;");
+            sb.AppendLine(String.Format("   SET @sd_ID = {0}", StudentDegreeID.ToString()));
+            sb.AppendLine("");
+            sb.AppendLine("   DECLARE @sDegree_ID int;");
+            sb.AppendLine("   SET @sDegree_ID = (Select sd.degreeID from StudentDegrees as sd where sd.studentDegreeID = @sd_ID) ");
+            sb.AppendLine("");
+            sb.AppendLine("   DECLARE @sHandbook_ID int;");
+            sb.AppendLine("   SET @sHandbook_ID = (Select sd.handbookID from StudentDegrees as sd where sd.studentDegreeID = @sd_ID) ");
+            sb.AppendLine("");
+            sb.AppendLine("   DECLARE @BoolValue nchar(6);");
+            sb.AppendLine(String.Format("   SET @BoolValue = '{0}'", boolForCreditRows));
+            sb.AppendLine("");
+            sb.AppendLine("; with stTrans AS");
+            sb.AppendLine("(");
+            sb.AppendLine("   Select s.credits as sCredits, g.earnedCredits as eCredits, cDegreeLevel = cdl.degreeLevel, ");
+            sb.AppendLine("         cra.reqArea as cReqArea, cra.Ancestors as cReqAncestors, g.grade as cGrade, ");
+            sb.AppendLine("         g.creditsInQPA as cCreditsInQPA, g.QP as cGradeQP");
+            sb.AppendLine("      From Transcript as t  ");
+            sb.AppendLine("      inner join StudentDegrees as sd on t.studentDegreeID = sd.studentDegreeID AND sd.studentDegreeID = @sd_ID  -- Ian hua - Dao shuo");
+            sb.AppendLine("      inner join HandBooks as hb on sd.handbookID = hb.handbookID");
+            sb.AppendLine("      inner join Grades as g on t.gradeID = g.gradesID");
+            sb.AppendLine("      inner join GradeStatus as gs on t.gradeStatusID = gs.gradeStatusID");
+            sb.AppendLine("      inner join CourseTermSection as cts on t.courseTermSectionID = cts.courseTermSectionID");
+            sb.AppendLine("      inner join Section as s on s.sectionID = cts.sectionID");
+            sb.AppendLine("      Inner Join DegreeLevel as cdl on s.degreeLevelID = cdl.degreeLevelID ");
+            sb.AppendLine("      inner join CourseTerms as ct on ct.courseTermID = cts.courseTermID");
+            sb.AppendLine("      inner join Courses as c on c.courseID = ct.courseID");
+            sb.AppendLine("      inner join RequirementArea as cra on c.requirementAreaID = cra.requirementAreaID");
+            sb.AppendLine("   where gs.forCredit = @BoolValue");
+            sb.AppendLine(")");
+            return sb;
+        }
+
+        public static StringBuilder getFillStudentRequirementTableSql(int StudentDegreeID)
+        {
+            /// I added "courses" - but deleted the "Needed"-- calculate this in printout or datagrid ?
+            StringBuilder sb = getCTETranscriptSQL(StudentDegreeID, "True");
+            sb.AppendLine(" Select grt.cReqType as ReqType, grt.reqTypeDK as eReqTYpe, ra.reqArea as ReqArea, ra.eReqArea as eReqArea, dm.delMethName as DelMethName,");
+            sb.AppendLine("  dm.eDelMethName as eDelMethName, dm.deliveryLevel as rDeliveryLevel, gr.reqUnits as Required, gr.creditLimit as Limit");
+            sb.AppendLine("  , (Select Count(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ) ");
+            sb.AppendLine("  as Courses    ");
+            sb.AppendLine("  ,");
+            sb.AppendLine("  CASE");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'credits' or LOWER(grt.reqTypeDK) = 'hours' THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'qpa'THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'  ");
+            sb.AppendLine("    AND stTrans.cCreditsInQPA = 'True'");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'times' THEN 0");
+            sb.AppendLine("  Else 0 ");
+            sb.AppendLine("  END as Earned    ");
+            sb.AppendLine("  , ");
+            sb.AppendLine("  CASE");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'credits' or LOWER(grt.reqTypeDK) = 'hours' THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.cGrade = 'NG'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'times' THEN");
+            sb.AppendLine("  (Select Count(stTrans.sCredits) From stTrans ");
+            sb.AppendLine("   Where stTrans.cGrade = 'NG'  ");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  )");
+            sb.AppendLine("  WHEN LOWER(grt.reqTypeDK) = 'qpa' THEN");
+            sb.AppendLine("  ISNULL((Select Sum(stTrans.sCredits * stTrans.cGradeQP) From stTrans ");
+            sb.AppendLine("   Where stTrans.eCredits = 'True'");
+            sb.AppendLine("    AND stTrans.cCreditsInQPA = 'True'");
+            sb.AppendLine("    AND stTrans.cDegreeLevel >= rLevel.degreeLevel");
+            sb.AppendLine("    AND(ra.Ancestors = 'ALL' or stTrans.cReqArea = ra.reqArea");
+            sb.AppendLine("     or Exists(Select value From string_split(stTrans.cReqAncestors, ',') Where value = ra.ReqArea))");
+            sb.AppendLine("  ), 0) ");
+            sb.AppendLine("  ELSE 0");
+            sb.AppendLine("  END as InProgress  ");
+            sb.AppendLine("  ,");
+            sb.AppendLine("  ra.zOrder");
+            sb.AppendLine(" ");
+            sb.AppendLine("  From GradRequirements as gr ");
+            sb.AppendLine("   Inner Join RequirementArea ra on gr.reqAreaID = ra.requirementAreaID");
+            sb.AppendLine("   Inner Join GradRequirementType as grt on gr.gradReqTypeID = grt.gradReqTypeID");
+            sb.AppendLine("   Inner Join DeliveryMethod as dm on gr.rDeliveryMethodID = dm.deliveryMethodID");
+            sb.AppendLine("   Inner Join Degrees as rDegree on gr.degreeID = rDegree.degreeID");
+            sb.AppendLine("   Inner Join DegreeLevel as rLevel on rDegree.degreeLevelID = rLevel.degreeLevelID");
+            sb.AppendLine("  where gr.degreeID = @sDegree_ID AND gr.handbookID = @sHandbook_ID");
+            sb.AppendLine("  ORDER BY ra.zOrder ");
+            return sb;
+        }
+
+
     }
 }
 

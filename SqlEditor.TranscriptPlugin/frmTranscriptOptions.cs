@@ -138,8 +138,10 @@ namespace SqlEditor.TranscriptPlugin
 
             }
 
+            // Load the data tables for the job type (but not the DataGridViews)
             errorLoadingData = loadPrintToWordDataTables();
 
+            // Choose correct tab and enable buttons on it
             if (myJob == frmTranscriptOptions.Job.printTranscript && !errorLoadingData)
             {
                 btnPrintTranscript.Enabled = true;
@@ -152,13 +154,13 @@ namespace SqlEditor.TranscriptPlugin
                 btnPrintCourseGrades.Enabled = true;
                 tabControl1.SelectedTab = tabActions;
             }
-
-            if (myJob == frmTranscriptOptions.Job.options)
+            else if (myJob == frmTranscriptOptions.Job.options)
             {
                 tabControl1.SelectedTab = tabOptions;
             }
         }
 
+        // Fills the correct DataTables for the job type, but this does not fill the DataGridViews.
         private bool loadPrintToWordDataTables()
         {
             if (myJob == frmTranscriptOptions.Job.options)
@@ -250,7 +252,7 @@ namespace SqlEditor.TranscriptPlugin
                     {
                         if (myJob == frmTranscriptOptions.Job.printTranscript)
                         {
-                            dgvStudent.DataSource = PrintToWord.studentDegreeInfoDT;
+                            dgvStudent.DataSource = PrintToWord.studentDegreeDT;
                             sqlStudentDegrees = new SqlFactory(TableName.studentDegrees, 0, 0);  // Only needed to allow following
                             dgvHelper.SetHeaderColorsOnWritePage(dgvStudent, sqlStudentDegrees.myTable, sqlStudentDegrees.myFields);
                             dgvHelper.SetNewColumnWidths(dgvStudent, sqlStudentDegrees.myFields, true);
@@ -286,7 +288,14 @@ namespace SqlEditor.TranscriptPlugin
                         if (dgvTranscript.DataSource == null)
                         {
                             dgvTranscript.DataSource = PrintToWord.transcriptDT;
-                            sqlTranscript = new SqlFactory(TableName.transcript, 0, 0, false); // Danger: must be same as in fillStudentTranscript
+                            if (myJob == frmTranscriptOptions.Job.printTranscript)
+                            {
+                                sqlTranscript = new SqlFactory("PluginTranscript", 0, 0, false); // Danger: must be same as in fillStudentTranscript
+                            }
+                            else if (myJob == frmTranscriptOptions.Job.printClassList)
+                            {
+                                sqlTranscript = new SqlFactory(TableName.transcript, 0, 0, false); // Danger: must be same as in fillCourseRoleTable
+                            }
                             dgvHelper.SetHeaderColorsOnWritePage(dgvTranscript, sqlTranscript.myTable, sqlTranscript.myFields);
                             dgvHelper.SetNewColumnWidths(dgvTranscript, sqlTranscript.myFields, true);
                             dgvHelper.TranslateHeaders(dgvTranscript);

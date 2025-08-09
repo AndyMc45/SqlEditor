@@ -9,137 +9,136 @@ namespace SqlEditor.TranscriptPlugin
 {
     public static class PrintToWord
     {
+        #region Datatable variables
+            // There are 4 dataTables for transcript and one extra for course role 
+            public static System.Data.DataTable studentDegreeDT { get; set; } // No editing - 1 data row only for this studentDegree 
+            public static System.Data.DataTable studentDegreeStatusDT { get; set; } // No editing - 1 data row only for this studentDegree 
+            public static System.Data.DataTable transcriptDT { get; set; }  // No editing. Built from scratch and loaded with SP
+            public static System.Data.DataTable studentReqDT { get; set; } // No editing.  Built from scratch and loaded with SP 
+            public static System.Data.DataTable courseTermInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
+        #endregion
 
-        // There are 4 dataTables for transcript and one extra for course role 
-        public static System.Data.DataTable studentDegreeInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
-        public static System.Data.DataTable studentDegreeStatusInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
-
-        public static System.Data.DataTable transcriptDT { get; set; }  // No editing. Transcripts filtered on this studentDegree
-
-        // StudentReqDT is created from scratch -columns added to mainform dataHelper.fieldDT to allows sqlStudentReq factory
-        public static System.Data.DataTable studentReqDT { get; set; } // No editing.  
-
-        // A 4th Datatable and Sql for course role - I also use transcriptDT / sql for course role but filter on course
-        // No editing - 1 data row only for this studentDegree
-        public static System.Data.DataTable courseTermInfoDT { get; set; } // No editing - 1 data row only for this studentDegree 
-
-        private static void InsertTextInTable(Table table, int intRow, int intCell, string text)
-        {
-            InsertTextInTable(table, intRow, intCell, text, JustificationValues.Center);
-        }
-        private static void InsertTextInTable(Table table, int intRow, int intCell, string text, JustificationValues jv)
-        {
-            // Find the third cell in the row.
-            TableRow row = table.Elements<TableRow>().ElementAt(intRow);
-            TableCell cell = row.Elements<TableCell>().ElementAt(intCell);
-            // Find the first paragraph in the table cell.
-            if (cell.Elements<Paragraph>().Count() == 0)
+        #region Inserting text and formatting in Word document
+            private static void InsertTextInTable(Table table, int intRow, int intCell, string text)
             {
-                Paragraph newPara = new Paragraph();
-                cell.AddChild(newPara);
+                InsertTextInTable(table, intRow, intCell, text, JustificationValues.Center);
             }
-            Paragraph p = cell.Elements<Paragraph>().First();
-            ParagraphProperties pp = GetPP(ref p);
-            Justification just = new Justification() { Val = jv };
-            pp.Append(just);
-
-            // Find the first run in the paragraph.
-            if (p.Elements<Run>().Count() == 0)
+            private static void InsertTextInTable(Table table, int intRow, int intCell, string text, JustificationValues jv)
             {
-                Run run = new Run();
-                p.AddChild(run);
-            }
-            Run r = p.Elements<Run>().First();
-            if (r.Elements<Text>().Count() == 0)
-            {
-                Text eText = new Text();
-                r.AddChild(eText);
-            }
-            // Set the text for the run.
-            Text t = r.Elements<Text>().First();
-            t.Text = text;
-        }
-        private static void RemoveInnerCellBorders(Table table, int intRow, int intStartCell, int intEndCell)
-        {
-            TableRow row = table.Elements<TableRow>().ElementAt(intRow);
-            for (int i = intStartCell; i <= intEndCell; i++)
-            {
-                TableCell cell = row.Elements<TableCell>().ElementAt(i);
-                // Find the tableCellProperty
-                TableCellProperties tcp = GetTCP(ref cell);
-                RightBorder rb = new RightBorder() { Val = new EnumValue<BorderValues>(BorderValues.Nil) };
-                LeftBorder lb = new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Nil) };
-                TableCellBorders tableCellBorders = new TableCellBorders();
-                if (i == intStartCell) { tableCellBorders.Append(rb); }
-                else if (i == intEndCell) { tableCellBorders.Append(lb); }
-                else { tableCellBorders.Append(lb); tableCellBorders.Append(rb); }
-                tcp.AppendChild(tableCellBorders);
-            }
-        }
-        private static void MergeTableCells(Table table, int intRow, int intStartCell, int intEndCell)
-        {
-            TableRow row = table.Elements<TableRow>().ElementAt(intRow);
-            for (int i = intStartCell; i <= intEndCell; i++)
-            {
-                TableCell currentCell = row.Elements<TableCell>().ElementAt(i);
-                TableCellProperties tcp = GetTCP(ref currentCell);
-                if (i == intStartCell)
+                // Find the third cell in the row.
+                TableRow row = table.Elements<TableRow>().ElementAt(intRow);
+                TableCell cell = row.Elements<TableCell>().ElementAt(intCell);
+                // Find the first paragraph in the table cell.
+                if (cell.Elements<Paragraph>().Count() == 0)
                 {
-                    HorizontalMerge startMerge = new HorizontalMerge() { Val = MergedCellValues.Restart };
-                    currentCell.AppendChild(startMerge);
+                    Paragraph newPara = new Paragraph();
+                    cell.AddChild(newPara);
+                }
+                Paragraph p = cell.Elements<Paragraph>().First();
+                ParagraphProperties pp = GetPP(ref p);
+                Justification just = new Justification() { Val = jv };
+                pp.Append(just);
+
+                // Find the first run in the paragraph.
+                if (p.Elements<Run>().Count() == 0)
+                {
+                    Run run = new Run();
+                    p.AddChild(run);
+                }
+                Run r = p.Elements<Run>().First();
+                if (r.Elements<Text>().Count() == 0)
+                {
+                    Text eText = new Text();
+                    r.AddChild(eText);
+                }
+                // Set the text for the run.
+                Text t = r.Elements<Text>().First();
+                t.Text = text;
+            }
+            private static void RemoveInnerCellBorders(Table table, int intRow, int intStartCell, int intEndCell)
+            {
+                TableRow row = table.Elements<TableRow>().ElementAt(intRow);
+                for (int i = intStartCell; i <= intEndCell; i++)
+                {
+                    TableCell cell = row.Elements<TableCell>().ElementAt(i);
+                    // Find the tableCellProperty
+                    TableCellProperties tcp = GetTCP(ref cell);
+                    RightBorder rb = new RightBorder() { Val = new EnumValue<BorderValues>(BorderValues.Nil) };
+                    LeftBorder lb = new LeftBorder() { Val = new EnumValue<BorderValues>(BorderValues.Nil) };
+                    TableCellBorders tableCellBorders = new TableCellBorders();
+                    if (i == intStartCell) { tableCellBorders.Append(rb); }
+                    else if (i == intEndCell) { tableCellBorders.Append(lb); }
+                    else { tableCellBorders.Append(lb); tableCellBorders.Append(rb); }
+                    tcp.AppendChild(tableCellBorders);
+                }
+            }
+            private static void MergeTableCells(Table table, int intRow, int intStartCell, int intEndCell)
+            {
+                TableRow row = table.Elements<TableRow>().ElementAt(intRow);
+                for (int i = intStartCell; i <= intEndCell; i++)
+                {
+                    TableCell currentCell = row.Elements<TableCell>().ElementAt(i);
+                    TableCellProperties tcp = GetTCP(ref currentCell);
+                    if (i == intStartCell)
+                    {
+                        HorizontalMerge startMerge = new HorizontalMerge() { Val = MergedCellValues.Restart };
+                        currentCell.AppendChild(startMerge);
+                    }
+                    else
+                    {
+                        HorizontalMerge continueMerge = new HorizontalMerge() { Val = MergedCellValues.Continue };
+                        currentCell.AppendChild(continueMerge);
+
+                    }
+                }
+                //    // Find Start tableCellProperty and append
+                //    TableCellProperties start_tcp = GetTCP(ref startCell);
+                //start_tcp.AppendChild(startMerge);
+
+                //// Repeat for end
+                //TableCellProperties end_tcp = GetTCP(ref endCell);
+                //HorizontalMerge endMerge = new HorizontalMerge() { Val = MergedCellValues.Continue };
+                //end_tcp.AppendChild(endMerge);
+            }
+            private static TableCellProperties GetTCP(ref TableCell cell)
+            {
+                TableCellProperties tcp;
+                if (cell.Elements<TableCellProperties>().Count() > 0)
+                {
+                    tcp = cell.Elements<TableCellProperties>().ElementAt(0);
                 }
                 else
                 {
-                    HorizontalMerge continueMerge = new HorizontalMerge() { Val = MergedCellValues.Continue };
-                    currentCell.AppendChild(continueMerge);
-
+                    tcp = new TableCellProperties();
+                    cell.InsertAt(tcp, 0);
                 }
+                return tcp;
             }
-            //    // Find Start tableCellProperty and append
-            //    TableCellProperties start_tcp = GetTCP(ref startCell);
-            //start_tcp.AppendChild(startMerge);
+            private static ParagraphProperties GetPP(ref Paragraph para)
+            {
+                ParagraphProperties pp;
+                if (para.Elements<ParagraphProperties>().Count() > 0)
+                {
+                    pp = para.Elements<ParagraphProperties>().ElementAt(0);
+                }
+                else
+                {
+                    pp = new ParagraphProperties();
+                    para.InsertAt(pp, 0);
+                }
+                return pp;
+            }
+        #endregion
 
-            //// Repeat for end
-            //TableCellProperties end_tcp = GetTCP(ref endCell);
-            //HorizontalMerge endMerge = new HorizontalMerge() { Val = MergedCellValues.Continue };
-            //end_tcp.AppendChild(endMerge);
-        }
-        private static TableCellProperties GetTCP(ref TableCell cell)
-        {
-            TableCellProperties tcp;
-            if (cell.Elements<TableCellProperties>().Count() > 0)
-            {
-                tcp = cell.Elements<TableCellProperties>().ElementAt(0);
-            }
-            else
-            {
-                tcp = new TableCellProperties();
-                cell.InsertAt(tcp, 0);
-            }
-            return tcp;
-        }
-        private static ParagraphProperties GetPP(ref Paragraph para)
-        {
-            ParagraphProperties pp;
-            if (para.Elements<ParagraphProperties>().Count() > 0)
-            {
-                pp = para.Elements<ParagraphProperties>().ElementAt(0);
-            }
-            else
-            {
-                pp = new ParagraphProperties();
-                para.InsertAt(pp, 0);
-            }
-            return pp;
-        }
-
-        public static void printTranscript(PrintJob printJob, bool includeAuditedCourses, ref StringBuilder sbErrors)
+        #region - Word documents - open, fill, print
+            public static void printTranscript(PrintJob printJob, bool includeAuditedCourses, ref StringBuilder sbErrors)
         {
             string transTemplate = AppData.GetKeyValue("TranscriptTemplate");
             if (printJob == PrintJob.printEnglishTranscript) { transTemplate = AppData.GetKeyValue("EnglishTranscriptTemplate"); }
             if (File.Exists(transTemplate))
             {
-                if (studentDegreeInfoDT != null && studentDegreeInfoDT.Rows.Count == 1)
+                // StudentDegreeInfoDT has already been updated and instantiated.  But still check.
+                if (studentDegreeDT != null && studentDegreeDT.Rows.Count == 1)
                 {
                     string studentName = string.Empty;  // Used in file name
                     // Write file to byteArray and read it into a memory stream
@@ -155,27 +154,28 @@ namespace SqlEditor.TranscriptPlugin
                             Body wordDocBody = myMainDocumentPart.Document.Body;
 
                             //StudentDegree table
-                            studentName = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "studentName");
-                            string studentDegree = dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "degreeName");
+                            studentName = dataHelper.getColumnValueinDR(studentDegreeDT.Rows[0], "studentName");
+                            string studentDegree = dataHelper.getColumnValueinDR(studentDegreeDT.Rows[0], "degreeName");
 
-                            //StudentDegreeStatus table
-                            string strCreditsEarned = dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "creditsEarned");
-                            string strQPA = dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "QPA");
-                            int sdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "firstTermID"));
+                            //StudentDegreeStatus table - has been updated including the firstTermID (copied from sd table)
+                            string strCreditsEarned = dataHelper.getColumnValueinDR(studentDegreeStatusDT.Rows[0], "creditsEarned");
+                            string strQPA = dataHelper.getColumnValueinDR(studentDegreeStatusDT.Rows[0], "QPA");
+                            int sdFirstTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusDT.Rows[0], "firstTermID"));
 
+                            // Get start and end dates for the degree - 1st from SD table, second from SDS table)
                             List<string> sdTermsColNames = new List<string> { "startYear", "startMonth" };
                             Dictionary<string, string> sdTermsColValues = TranscriptHelper.GetPkRowColumnValues(
-                                    TableName.terms, sdTermID, sdTermsColNames, ref sbErrors);
+                                    TableName.terms, sdFirstTermID, sdTermsColNames, ref sbErrors);
                             string startDate = String.Format("{0} / {1}", sdTermsColValues["startMonth"], sdTermsColValues["startYear"]);
 
-                            int fdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "lastTermID"));
+                            int fdTermID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusDT.Rows[0], "lastTermID"));
                             List<string> fdTermsColNames = new List<string> { "endYear", "endMonth" };
                             Dictionary<string, string> fdTermsColValues = TranscriptHelper.GetPkRowColumnValues(
                                     TableName.terms, fdTermID, fdTermsColNames, ref sbErrors);
                             string endDate = String.Format("{0} / {1}", fdTermsColValues["endMonth"], fdTermsColValues["endYear"]);
 
                             // Add student status to end date
-                            int academicStatusID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusInfoDT.Rows[0], "academicStatusID"));
+                            int academicStatusID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeStatusDT.Rows[0], "academicStatusID"));
                             List<string> academicStatusColNames = new List<string> { "statusName", "eStatusName" };
                             Dictionary<string, string> academicStatusColValues = TranscriptHelper.GetPkRowColumnValues(
                                     TableName.academicStatus, academicStatusID, academicStatusColNames, ref sbErrors);
@@ -184,8 +184,8 @@ namespace SqlEditor.TranscriptPlugin
                             // B. Translate to English
                             if (printJob == PrintJob.printEnglishTranscript)
                             {
-                                int studentID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "studentID"));
-                                int studentDegreeID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeInfoDT.Rows[0], "degreeID"));
+                                int studentID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeDT.Rows[0], "studentID"));
+                                int studentDegreeID = Int32.Parse(dataHelper.getColumnValueinDR(studentDegreeDT.Rows[0], "degreeID"));
                                 //Get English name
                                 List<string> studentInfoColNames = new List<string> { "eStudentName" };
                                 Dictionary<string, string> studentColValues = TranscriptHelper.GetPkRowColumnValues(
@@ -218,7 +218,7 @@ namespace SqlEditor.TranscriptPlugin
 
                             // D. Find second table and fill it
                             table = wordDocBody.Elements<Table>().ElementAt(1);
-                            int currentTermID = -1;
+                            int intCurrentTerm = -1;
                             int currentRow = 1;  // Starts at 1; first row is the title row
                             foreach (DataRow transDR in transcriptDT.Rows)
                             {
@@ -227,33 +227,22 @@ namespace SqlEditor.TranscriptPlugin
                                 if (statusKey != "audit" || includeAuditedCourses)
                                 {
                                     // Get information about current term
-                                    int termID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "termID"));
-                                    List<string> tTermsColNames = new List<string> { "term", "termName", "eTermName", "startYear", "startMonth", "endYear", "endMonth" };
-                                    Dictionary<string, string> tTermsColValues = TranscriptHelper.GetPkRowColumnValues(
-                                            TableName.terms, termID, tTermsColNames, ref sbErrors);
-                                    string term = tTermsColValues["term"];
-                                    if (termID != currentTermID)
+                                    int intTerm = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "term"));
+                                    string term = intTerm.ToString();
+                                    if (intTerm != intCurrentTerm)
                                     {
-                                        string termName = tTermsColValues["termName"];
-                                        string startYear = tTermsColValues["startYear"];
-                                        string endYear = tTermsColValues["endYear"];
-                                        string termDate = startYear;
-                                        if (startYear != endYear)
-                                        {
-                                            termDate = string.Format("{0} - {1}", startYear, endYear);
-                                        }
+                                        string termTitle = dataHelper.getColumnValueinDR(transDR, "termTitle");
+                                        termTitle = termTitle.Replace("nian2", "年");
                                         // Translate to English
-                                        if (printJob == PrintJob.printTranscript) { termDate = termDate + "年 "; }
-                                        else if (printJob == PrintJob.printEnglishTranscript)
-                                        {
-                                            termDate = termDate + " ";
-                                            termName = tTermsColValues["eTermName"];
+                                        if (printJob == PrintJob.printEnglishTranscript) 
+                                        { 
+                                            termTitle = dataHelper.getColumnValueinDR(transDR, "eTermTitle");
                                         }
                                         //Make this a new Term row and insert term in cell 2
 
                                         RemoveInnerCellBorders(table, currentRow, 2, 6);
                                         MergeTableCells(table, currentRow, 0, 1);
-                                        InsertTextInTable(table, currentRow, 2, termDate + termName, JustificationValues.Left);
+                                        InsertTextInTable(table, currentRow, 2, termTitle, JustificationValues.Left);
 
                                         // Prepare for next row    
                                         TableRow newTermRow = new TableRow();
@@ -264,7 +253,7 @@ namespace SqlEditor.TranscriptPlugin
                                         }
                                         table.Append(newTermRow);
                                         currentRow = currentRow + 1;
-                                        currentTermID = termID;
+                                        intCurrentTerm = intTerm;
                                     }
 
                                     string courseName = dataHelper.getColumnValueinDR(transDR, "courseName");
@@ -272,12 +261,7 @@ namespace SqlEditor.TranscriptPlugin
                                     string department = dataHelper.getColumnValueinDR(transDR, "depName");
                                     string credits = dataHelper.getColumnValueinDR(transDR, "credits");
                                     string grade = dataHelper.getColumnValueinDR(transDR, "grade");
-                                    int requirementAreaID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "requirementAreaID"));
-                                    List<string> reqAreaColNames = new List<string> { "reqArea", "eReqArea" };
-                                    Dictionary<string, string> reqAreaColValues = TranscriptHelper.GetPkRowColumnValues(
-                                            TableName.requirementArea, requirementAreaID, reqAreaColNames, ref sbErrors);
-                                    string reqArea = reqAreaColValues["reqArea"];
-                                    string eReqArea = reqAreaColValues["eReqArea"];
+                                    string reqArea = dataHelper.getColumnValueinDR(transDR, "reqArea");
                                     // Round off the credits
                                     decimal dCredits = Decimal.Parse(credits);
                                     dCredits = Decimal.Round(dCredits, 2);
@@ -285,19 +269,11 @@ namespace SqlEditor.TranscriptPlugin
                                     // Translate to English
                                     if (printJob == PrintJob.printEnglishTranscript)
                                     {
+                                        string eReqArea = dataHelper.getColumnValueinDR(transDR, "eReqArea");
                                         if (!String.IsNullOrEmpty(eReqArea)) { reqArea = eReqArea; }
-                                        int courseNameID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "courseNameID"));
-                                        int facultyID = Int32.Parse(dataHelper.getColumnValueinDR(transDR, "facultyID"));
-                                        //Get English for courseName and facultyName
-                                        List<string> courseColNames = new List<string> { "eCourseName" };
-                                        Dictionary<string, string> courseColValues = TranscriptHelper.GetPkRowColumnValues(
-                                                TableName.courseNames, courseNameID, courseColNames, ref sbErrors);
-                                        string eCourseName = courseColValues["eCourseName"];
+                                        string eCourseName = dataHelper.getColumnValueinDR(transDR, "eCourseName");
                                         if (!String.IsNullOrEmpty(eCourseName)) { courseName = eCourseName; }
-                                        List<string> facultyColNames = new List<string> { "eFacultyName" };
-                                        Dictionary<string, string> facultyColValues = TranscriptHelper.GetPkRowColumnValues(
-                                                TableName.faculty, facultyID, facultyColNames, ref sbErrors);
-                                        string eFacultyName = facultyColValues["eFacultyName"];
+                                        string eFacultyName = dataHelper.getColumnValueinDR(transDR, "eFacultyName");
                                         if (!String.IsNullOrEmpty(eFacultyName)) { facultyName = eFacultyName; }
                                     }
                                     InsertTextInTable(table, currentRow, 0, term);
@@ -387,7 +363,7 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
-        public static void printCourseStudentList(PrintJob printJob, ref StringBuilder sbErrors)
+            public static void printCourseStudentList(PrintJob printJob, ref StringBuilder sbErrors)
         {
             // Only major difference between printing class role and printing course role is template
             // Only minor difference is number of columns to merge in row with section name
@@ -543,7 +519,7 @@ namespace SqlEditor.TranscriptPlugin
             }
         }
 
-        public static byte[] UseBinaryReader(Stream stream)
+            public static byte[] UseBinaryReader(Stream stream)
         {
             byte[] bytes;
             stream.Position = 0;
@@ -553,7 +529,7 @@ namespace SqlEditor.TranscriptPlugin
             }
             return bytes;
         }
-
+        #endregion
     }
 
     public enum PrintJob
@@ -563,8 +539,6 @@ namespace SqlEditor.TranscriptPlugin
         printCourseGradeSheet,
         printClassRole
     }
-
-
 
 }
 

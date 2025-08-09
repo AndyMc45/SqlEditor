@@ -105,6 +105,7 @@
             mnuPrintCurrentTable = new ToolStripMenuItem();
             mnuBatchInsert = new ToolStripMenuItem();
             mnuBatchUpdate = new ToolStripMenuItem();
+            mnuAllowDeepDelete = new ToolStripMenuItem();
             mnuIT_Tools = new ToolStripMenuItem();
             mnuDatabaseInfo = new ToolStripMenuItem();
             mnuToolsBackupDatabase = new ToolStripMenuItem();
@@ -127,7 +128,6 @@
             toolStripButtonColumnWidth = new ToolStripButton();
             saveFileDialog1 = new SaveFileDialog();
             folderBrowserDialog1 = new FolderBrowserDialog();
-            mnuAllowDeepDelete = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -855,6 +855,13 @@
             resources.ApplyResources(mnuBatchUpdate, "mnuBatchUpdate");
             mnuBatchUpdate.Click += mnuBatchUpdate_Click;
             // 
+            // mnuAllowDeepDelete
+            // 
+            mnuAllowDeepDelete.CheckOnClick = true;
+            mnuAllowDeepDelete.Name = "mnuAllowDeepDelete";
+            resources.ApplyResources(mnuAllowDeepDelete, "mnuAllowDeepDelete");
+            mnuAllowDeepDelete.Click += mnuAllowDeepDelete_Click;
+            // 
             // mnuIT_Tools
             // 
             mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDuplicateDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
@@ -999,12 +1006,6 @@
             toolStripButtonColumnWidth.Margin = new Padding(10, 0, 10, 0);
             toolStripButtonColumnWidth.Name = "toolStripButtonColumnWidth";
             toolStripButtonColumnWidth.Click += toolStripColumnWidth_Click;
-            // 
-            // mnuAllowDeepDelete
-            // 
-            mnuAllowDeepDelete.CheckOnClick = true;
-            mnuAllowDeepDelete.Name = "mnuAllowDeepDelete";
-            resources.ApplyResources(mnuAllowDeepDelete, "mnuAllowDeepDelete");
             // 
             // DataGridViewForm
             // 

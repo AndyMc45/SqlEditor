@@ -19,11 +19,12 @@ namespace SqlEditor.TranscriptPlugin
             return dt;
         }
 
+        //Given a table name, primary key value, and a list of column names, return a dictionary with column names as keys and their values as values.
         internal static Dictionary<string, string> GetPkRowColumnValues(string tableName, int pkValue, List<string> columnNames, ref StringBuilder sbErrors)
         {
             var columnValues = new Dictionary<string, string>();
             DataTable dt = GetOneRowDataTable(tableName, pkValue, ref sbErrors);
-            SqlFactory sqlFactory = new SqlFactory(tableName, 0, 0);
+            // SqlFactory sqlFactory = new SqlFactory(tableName, 0, 0);
             // Should be exactly one row in requirementAreaDaDt.dt
             if (dt.Rows.Count != 1)
             {
@@ -42,11 +43,11 @@ namespace SqlEditor.TranscriptPlugin
 
         internal static void fillStudentDegreeDataRow(int studentDegreeID, ref StringBuilder sbErrors)
         {
-            PrintToWord.studentDegreeInfoDT = TranscriptHelper.GetOneRowDataTable(TableName.studentDegrees, studentDegreeID, ref sbErrors);
+            PrintToWord.studentDegreeDT = TranscriptHelper.GetOneRowDataTable(TableName.studentDegrees, studentDegreeID, ref sbErrors);
         }
         internal static void fillStudentDegreeStatusDataRow(int studentDegreeStatusID, ref StringBuilder sbErrors)
         {
-            PrintToWord.studentDegreeStatusInfoDT = TranscriptHelper.GetOneRowDataTable(TableName.studentDegreesStatus, studentDegreeStatusID, ref sbErrors);
+            PrintToWord.studentDegreeStatusDT = TranscriptHelper.GetOneRowDataTable(TableName.studentDegreesStatus, studentDegreeStatusID, ref sbErrors);
         }
 
         internal static void fillCourseTermDataRow(int courseTermID, ref StringBuilder sbErrors)
@@ -54,47 +55,136 @@ namespace SqlEditor.TranscriptPlugin
             PrintToWord.courseTermInfoDT = TranscriptHelper.GetOneRowDataTable(TableName.courseTerms, courseTermID, ref sbErrors);
         }
 
-        internal static void fillStudentTranscriptTable(int studentDegreeID, ref StringBuilder sbErrors)
-        {
-            // Filter transcript table on studentDegreeID
-            fillTranscriptTable(TableName.studentDegrees, studentDegreeID, ref sbErrors);
-        }
-
         internal static void fillCourseRoleTable(int courseTermID, ref StringBuilder sbErrors)
         {
-            // Filter transcript table on courseTermID
-            fillTranscriptTable(TableName.courseTerms, courseTermID, ref sbErrors);
-        }
-
-        private static void fillTranscriptTable(string referenceTable, int pkRefTable, ref StringBuilder sbErrors)  // Used for print transcript and print role
-        {
-            // 0, 0 means no paging - false means don't include all columns of all foreign keys - would be 89 if we did
             SqlFactory sqlTranscript = new SqlFactory(TableName.transcript, 0, 0, false);
-            if (referenceTable == TableName.studentDegrees)
-            {
-                field fkField = dataHelper.getForeignKeyFromRefTableName(TableName.transcript, referenceTable);
-                where wh = new where(fkField, pkRefTable.ToString());
-                sqlTranscript.myWheres.Add(wh);
-                field term = new field(TableName.terms, "term", DbType.Int32, 4);
-                orderBy ob = new orderBy(term, System.Windows.Forms.SortOrder.Ascending);
-                sqlTranscript.myOrderBys.Add(ob);
-            }
-            else if (referenceTable == TableName.courseTerms)
-            {
-                field fkField = dataHelper.getForeignKeyFromRefTableName(TableName.courseTermSection, referenceTable);
-                where wh = new where(fkField, pkRefTable.ToString());
-                sqlTranscript.myWheres.Add(wh);
-                field section = new field(TableName.section, "sectionID", DbType.Int32, 4);
-                orderBy ob = new orderBy(section, System.Windows.Forms.SortOrder.Ascending);  // Could order by deliveryMethodID
-                sqlTranscript.myOrderBys.Add(ob);
-            }
+            field fkField = dataHelper.getForeignKeyFromRefTableName(TableName.courseTermSection, TableName.courseTerms);
+            where wh = new where(fkField, courseTermID.ToString());
+            sqlTranscript.myWheres.Add(wh);
+            field section = new field(TableName.section, "sectionID", DbType.Int32, 4);
+            orderBy ob = new orderBy(section, System.Windows.Forms.SortOrder.Ascending);  // Could order by deliveryMethodID
+            sqlTranscript.myOrderBys.Add(ob);
             string sqlString = sqlTranscript.returnSql(command.selectAll);
             PrintToWord.transcriptDT = new System.Data.DataTable();
-            // I fill the transcript table into a datatable, and show it in the "transcript" tab
+            // I fill the Course Role table into a datatable, and show it in the "transcript" tab
             string strError = MsSql.FillDataTable(PrintToWord.transcriptDT, sqlString);
             if (strError != string.Empty)
             {
                 sbErrors.AppendLine(String.Format("ERROR filling transcript table: {0}", strError));
+            }
+        }
+
+        // Filter transcript table on studentDegreeID
+        internal static void fillStudentTranscriptTable(int studentDegreeID, ref StringBuilder sbErrors)
+        {
+            // 1. Create a table "Printabletranscript" - this table is not in the database.
+            // Add this table to dataHelper.fieldsDT so that I can use an sqlFactory to style the table 
+            // Add rows to dataHelper.fieldsDT. Only do it once in a session
+            string filter = "TableName = 'PluginTranscript'";
+            DataRow[] drs = dataHelper.fieldsDT.Select(filter);
+
+            // If no rows in above, the rows need to be added to dataHelper.fieldsDT.  Add 18 rows with 14 columns:
+            // public static void AddRowToFieldsDT(string TableName, int ColNum, string ColumnName, string ColumnDisplayName
+            //      , string DataType, bool Nullable, bool _identity, bool is_PK, bool is_FK
+            //      , bool is_DK, short MaxLength, string RefTable, string RefPkColumn, int Width)
+
+            if (drs.Count() == 0)
+            {
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 1, "transcriptID" , "transcriptID", "int", false, true, true, false, false, 4, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 2, "studentDegreeID", "studentDegreeID", "int", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 3, "studentName", "studentName", "nvarchar", false, false, false, false, true, 100, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 4, "eStudentName", "eStudentName", "nvarchar", false, false, false, false, false, 100, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 5, "term", "term", "smallint", false, false, false, false, false, 2, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 6, "termTitle", "termTitle", "nvarchar", false, false, false, false, true, 100, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 7, "eTermTitle", "eTermTitle", "nvarchar", false, false, false, false, false, 100, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 6, "courseName", "courseName", "nvarchar", false, false, false, false, true, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 7, "eCourseName", "eCourseName", "nvarchar", false, false, false, false, false, 100, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 8, "depName", "depName", "nvarchar", false, false, false, false, false, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 9, "eDepName", "eDepName", "nvarchar", false, false, false, false, false, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 10, "reqArea", "reqArea", "nvarchar", false, false, false, false, true, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 11, "eReqArea", "eReqArea", "nvarchar", false, false, false, false, false, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 12, "Ancestors", "Ancestors", "nvarchar", false, false, false, false, false, 300, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 13, "facultyName", "facultyName", "nvarchar", false, false, false, false, true, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 14, "eFacultyName", "eFacultyName", "nvarchar", false, false, false, false, false, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 15, "degreeLevelName", "degreeLevelName", "nvarchar", false, false, false, false, false, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 16, "degreeLevel", "degreeLevel", "int", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 17, "delMethName", "delMethName", "nvarchar", false, false, false, false, true, 300, String.Empty, String.Empty, 70);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 18, "eDelMethName", "eDelMethName", "nvarchar", false, false, false, false, false, 300, String.Empty, String.Empty, 70);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 19, "credits", "credits", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 20, "statusKey", "statusKey", "nvarchar", false, false, false, false, false, 100, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 21, "forCredit", "forCredit", "bit", false, false, false, false, false, 2, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 22, "grade", "grade", "nvarchar", false, false, false, false, false, 50, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 23, "earnedCredits", "earnedCredits", "bit", false, false, false, false, false, 2, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 24, "creditsInQPA", "creditsInQPA", "bit", false, false, false, false, false, 2, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 25, "QP", "QP", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
+                dataHelper.AddRowToFieldsDT("PluginTranscript", 26, "note", "note", "nvarchar", false, false, false, false, false, 255, String.Empty, String.Empty, 0);
+
+            }
+
+            // 2.  Fill Student PluginTranscript by Stored procedure
+
+            DataTable PluginTranscriptDT = new DataTable();
+
+            string error = TranscriptMsSql.FillPluginTranscript(PluginTranscriptDT,studentDegreeID);
+            if (!String.IsNullOrEmpty(error))
+            {
+                MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                // 3. Create transcriptDT and add a column for each field in PluginTranscript pseudo table.
+                PrintToWord.transcriptDT = new System.Data.DataTable();
+
+                //3a. Create sqlFactory for StudentReq
+                SqlFactory sqlPluginTranscript = new SqlFactory("PluginTranscript", 0, 0);
+                foreach (field f in sqlPluginTranscript.myFields)
+                {
+                    DataColumn dc = new DataColumn(f.fieldName, dataHelper.ConvertDbTypeToType(f.dbType));
+                    // Make transciptID the primary key - this will auto increment below
+                    if (f.fieldName == "transcriptID")
+                    {
+                        dc.AutoIncrement = true;
+                        dc.AutoIncrementSeed = 1;
+                        dc.AutoIncrementStep = 1;
+                    }
+                    PrintToWord.transcriptDT.Columns.Add(dc);
+                }
+
+                // 3b. Transfer pluginTranscriptDT into PrintToWord.transcript
+                foreach (DataRow transcriptDR in PluginTranscriptDT.Rows)
+                {
+                    DataRow dr = PrintToWord.transcriptDT.NewRow();
+                    dataHelper.setColumnValueInDR(dr, "studentDegreeID", transcriptDR["studentDegreeID"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "studentName", transcriptDR["studentName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eStudentName", transcriptDR["eStudentName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "term", transcriptDR["term"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "termTitle", transcriptDR["termTitle"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eTermTitle", transcriptDR["eTermTitle"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "courseName", transcriptDR["courseName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eCourseName", transcriptDR["eCourseName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "depName", transcriptDR["depName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eDepName", transcriptDR["eDepName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "reqArea", transcriptDR["reqArea"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eReqArea", transcriptDR["eReqArea"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "Ancestors", transcriptDR["Ancestors"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "facultyName", transcriptDR["facultyName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eFacultyName", transcriptDR["eFacultyName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "degreeLevelName", transcriptDR["degreeLevelName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "degreeLevel", transcriptDR["degreeLevel"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "delMethName", transcriptDR["delMethName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "eDelMethName", transcriptDR["eDelMethName"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "credits",transcriptDR["credits"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "statusKey", transcriptDR["statusKey"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "forCredit", transcriptDR["forCredit"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "grade", transcriptDR["grade"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "earnedCredits", transcriptDR["earnedCredits"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "creditsInQPA", transcriptDR["creditsInQPA"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "QP", transcriptDR["QP"].ToString());
+                    dataHelper.setColumnValueInDR(dr, "note", transcriptDR["note"].ToString());
+
+                    //Add this row to the table
+                    PrintToWord.transcriptDT.Rows.Add(dr);
+                }
             }
         }
 
@@ -126,19 +216,16 @@ namespace SqlEditor.TranscriptPlugin
                 // GradRequirement Table itself
                 dataHelper.AddRowToFieldsDT("StudentReq", 5, "Required", "Required", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 17, "Limit", "Limit", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
-                // Need to calucate the following from transcript
+                // Need to calculate the following from transcript
                 dataHelper.AddRowToFieldsDT("StudentReq", 6, "Courses", "Courses", "int", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 7, "Earned", "Earned", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 8, "Needed", "Needed", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 9, "InProgress", "InProgress", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
-                //                dataHelper.AddRowToFieldsDT("StudentReq", 18, "Icredits", "Icredits", "real", false, false, false, false, false, 4, String.Empty, String.Empty, 0);
             }
 
             // 2.  Get the Student Requirements table via SQL
-            StringBuilder sb = MsSql.getFillStudentRequirementTableSql(studentDegreeID);
             DataTable requirementsDT = new DataTable();
-            String sqlString = sb.ToString();
-            MsSql.FillDataTable(requirementsDT, sqlString);
+            TranscriptMsSql.FillStudentReq(requirementsDT, studentDegreeID);
 
             // 3. Create studentReqDT and add a column for each field in StudentReq pseudo table.
             PrintToWord.studentReqDT = new System.Data.DataTable();
@@ -160,26 +247,11 @@ namespace SqlEditor.TranscriptPlugin
             // 3b. Transfer requirementsDT into PrintToWord.studentReqDT
             foreach (DataRow requirementsDR in requirementsDT.Rows)
             {
+                // These three are calculated by Stored procedure
                 Decimal required = Decimal.Parse(requirementsDR["Required"].ToString());
                 Decimal earned = Decimal.Parse(requirementsDR["Earned"].ToString());
                 Decimal inprogress = Decimal.Parse(requirementsDR["InProgress"].ToString());
-
-                // Adjust values for qpa - Earned is credits and InProgress is the quality points earned
-                if (requirementsDR["ReqType"].ToString().ToLower() == "qpa")
-                {
-                    if (inprogress > 0)
-                    {
-                        Decimal qpa = earned / inprogress;
-                        qpa = Math.Round(qpa, 2);
-                        earned = qpa;
-                        inprogress = 0;
-                    }
-                    else
-                    {
-                        earned = 0;
-                        inprogress = 0;
-                    }
-                }
+                // Calculate "needed" - Not in Stored procedure
                 Decimal needed = Math.Max(0, required - earned);
 
                 DataRow dr = PrintToWord.studentReqDT.NewRow();
@@ -193,17 +265,15 @@ namespace SqlEditor.TranscriptPlugin
                 dataHelper.setColumnValueInDR(dr, "eDelMethName", requirementsDR["eDelMethName"].ToString());
                 dataHelper.setColumnValueInDR(dr, "rDeliveryLevel", requirementsDR["rDeliveryLevel"].ToString());
                 dataHelper.setColumnValueInDR(dr, "ReqType", requirementsDR["ReqType"].ToString());
+                dataHelper.setColumnValueInDR(dr, "eReqType", requirementsDR["eReqType"].ToString());
 
-                dataHelper.setColumnValueInDR(dr, "Courses", requirementsDR["Courses"].ToString());
-                dataHelper.setColumnValueInDR(dr, "Earned", earned);
-                dataHelper.setColumnValueInDR(dr, "InProgress", inprogress);
-                dataHelper.setColumnValueInDR(dr, "Needed", needed);
-
+                dataHelper.setColumnValueInDR(dr, "courses", requirementsDR["Courses"].ToString());
+                dataHelper.setColumnValueInDR(dr, "earned", earned);
+                dataHelper.setColumnValueInDR(dr, "inProgress", inprogress);
+                dataHelper.setColumnValueInDR(dr, "needed", needed);
                 //Add this row to the table
                 PrintToWord.studentReqDT.Rows.Add(dr);
             }
-
-
         }
 
         public static Dictionary<string, string> FillColumnHeaderTranslationDictionary()

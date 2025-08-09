@@ -89,88 +89,95 @@ namespace SqlEditor.TranscriptPlugin
         // Define CallBack - If things are good, then open the form with 'job'
         void Transcript_CallBack(object? sender, EventArgs<string> e)
         {
-            if (e.Value == "transcriptMenu")
+            try
             {
-                // Disable some menuItems
-
-            }
-            else if (e.Value == "options")
-            {
-                frmTranscriptOptions fOptions = new frmTranscriptOptions();
-                fOptions.myJob = frmTranscriptOptions.Job.options;
-                fOptions.ShowDialog();
-            }
-            else if (e.Value == "printTranscript")
-            {
-                int studentDegreeID = SetStudentDegreeID();  // Shows error message if any
-                if (studentDegreeID == 0)
+                if (e.Value == "transcriptMenu")
                 {
-                    // Messages shown already by setStudentDegreeID and so do nothing here.
+                    // Disable some menuItems
+
+                }
+                else if (e.Value == "options")
+                {
+                    frmTranscriptOptions fOptions = new frmTranscriptOptions();
+                    fOptions.myJob = frmTranscriptOptions.Job.options;
+                    fOptions.ShowDialog();
+                }
+                else if (e.Value == "printTranscript")
+                {
+                    int studentDegreeID = SetStudentDegreeID();  // Shows error message if any
+                    if (studentDegreeID == 0)
+                    {
+                        // Messages shown already by setStudentDegreeID and so do nothing here.
+                    }
+                    else
+                    {
+                        // Update this studentDegreeID information - Error message already shown.
+                        int rowsAffected = 0;
+                        int sdsPK = TranscriptMsSql.UpdateStudentDegreeStatus(studentDegreeID, ref rowsAffected);
+
+                        //Open form
+                        frmTranscriptOptions fOptions = new frmTranscriptOptions();
+                        fOptions.myJob = frmTranscriptOptions.Job.printTranscript;
+                        fOptions.studentDegreeID = studentDegreeID;
+                        fOptions.studentDegreeStatusID = sdsPK;
+                        fOptions.headerTranslations = cntTemplate.ColumnHeaderTranslations;
+                        fOptions.translationCultureName = cntTemplate.TranslationCultureName;
+
+                        fOptions.ShowDialog();    // 
+                    }
+                }
+                // The only difference between class role and grade sheet is the template that is used
+                else if (e.Value == "printClassList")
+                {
+                    int courseTermID = SetCourseTermDegreeID();  // Shows error message if any
+                    if (courseTermID == 0)
+                    {
+                        // Messages shown already by SetCourseTermDegreeID() so do nothing more.
+                    }
+                    else
+                    {
+                        frmTranscriptOptions fOptions = new frmTranscriptOptions();
+                        fOptions.myJob = frmTranscriptOptions.Job.printClassList;
+                        fOptions.courseTermID = courseTermID;
+                        fOptions.headerTranslations = cntTemplate.ColumnHeaderTranslations;
+                        fOptions.translationCultureName = cntTemplate.TranslationCultureName;
+                        fOptions.ShowDialog();    // 
+                    }
+                }
+                else if (e.Value == "updateStudentDegreesTable")
+                {
+                    // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
+                    DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
+                    // 1. Ask
+                    string msgStr = String.Format("{1}{0}{2} {3}",
+                        Environment.NewLine,
+                        PluginResources.doYouWantToUpdateStDeTable,
+                        PluginResources.thiswillUpdateTheStudentDegreesTable,
+                        PluginResources.andUpdateQPAbasedOnTranscriptTable);
+                    DialogResult result = MessageBox.Show(msgStr, PluginResources.updateStudentDegreesTable, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                    // 2. Upgrade StudentDegrees Table
+                    if (result == DialogResult.Yes)
+                    {
+                        // 2a. Upgrade academicStatusID column
+                        int rowsAffected = 0;
+                        TranscriptMsSql.UpdateStudentDegreeStatus(ref rowsAffected);
+                    }
+                }
+                else if (e.Value == "checkForTranscriptErrors")
+                {
+                    // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
+                    DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
+                    TranscriptMsSql.transcriptProblems(dgvForm);
                 }
                 else
                 {
-                    // Update this studentDegreeID information - Error message already shown.
-                    int rowsAffected = 0;
-                    int sdsPK = TranscriptMsSql.UpdateStudentDegreeStatus(studentDegreeID, ref rowsAffected);
-
-                    //Open form
-                    frmTranscriptOptions fOptions = new frmTranscriptOptions();
-                    fOptions.myJob = frmTranscriptOptions.Job.printTranscript;
-                    fOptions.studentDegreeID = studentDegreeID;
-                    fOptions.studentDegreeStatusID = sdsPK;
-                    fOptions.headerTranslations = cntTemplate.ColumnHeaderTranslations;
-                    fOptions.translationCultureName = cntTemplate.TranslationCultureName;
-
-                    fOptions.ShowDialog();    // 
+                    MessageBox.Show("Message From ToolStrip, Received in Inherited User Control : " + e.Value);
                 }
             }
-            // The only difference between class role and grade sheet is the template that is used
-            else if (e.Value == "printClassList")
+            catch (Exception ex)
             {
-                int courseTermID = SetCourseTermDegreeID();  // Shows error message if any
-                if (courseTermID == 0)
-                {
-                    // Messages shown already by SetCourseTermDegreeID() so do nothing more.
-                }
-                else
-                {
-                    frmTranscriptOptions fOptions = new frmTranscriptOptions();
-                    fOptions.myJob = frmTranscriptOptions.Job.printClassList;
-                    fOptions.courseTermID = courseTermID;
-                    fOptions.headerTranslations = cntTemplate.ColumnHeaderTranslations;
-                    fOptions.translationCultureName = cntTemplate.TranslationCultureName;
-                    fOptions.ShowDialog();    // 
-                }
-            }
-            else if (e.Value == "updateStudentDegreesTable")
-            {
-                // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
-                DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
-                // 1. Ask
-                string msgStr = String.Format("{1}{0}{2} {3}",
-                    Environment.NewLine,
-                    PluginResources.doYouWantToUpdateStDeTable,
-                    PluginResources.thiswillUpdateTheStudentDegreesTable,
-                    PluginResources.andUpdateQPAbasedOnTranscriptTable);
-                DialogResult result = MessageBox.Show(msgStr, PluginResources.updateStudentDegreesTable, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-                // 2. Upgrade StudentDegrees Table
-                if (result == DialogResult.Yes)
-                {
-                    // 2a. Upgrade academicStatusID column
-                    int rowsAffected = 0;
-                    TranscriptMsSql.UpdateStudentDegreeStatus(ref rowsAffected);
-                }
-            }
-            else if (e.Value == "checkForTranscriptErrors")
-            {
-                // MainForm variable in the plugin has been set to the mainForm of the program by a delegate.
-                DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
-                TranscriptMsSql.transcriptProblems(dgvForm);
-            }
-            else
-            {
-                MessageBox.Show("Message From ToolStrip, Received in Inherited User Control : " + e.Value);
+                MessageBox.Show(ex.Message, "Error in transcript plugin", MessageBoxButtons.OK,MessageBoxIcon.Error);
             }
         }
 
@@ -423,6 +430,7 @@ namespace SqlEditor.TranscriptPlugin
                 return true;
             });
 
+        // Action to preform when user loads a new table
         private static Action<string> newTableTranscriptPlugin =
             new Action<string>((table) =>
         {

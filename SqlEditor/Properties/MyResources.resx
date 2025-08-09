@@ -185,6 +185,9 @@
   <data name="mainFilterShort" xml:space="preserve">
     <value>MF</value>
   </data>
+  <data name="deepDeleteAreYouSure1" xml:space="preserve">
+    <value>Are you sure you want to use deep delete?</value>
+  </data>
   <data name="MustPassTestBeforeOKButton" xml:space="preserve">
     <value>You must pass test before O.K. button is enabled</value>
   </data>
@@ -248,5 +251,8 @@
   </data>
   <data name="youNeedtoMergeRowIn0" xml:space="preserve">
     <value>You will need to merge rows in {0} first.</value>
+  </data>
+  <data name="deepDeleteAreYouSure2" xml:space="preserve">
+    <value>Deep delete is dangerous! When you delete a row, it deletes the chosen row AND all its children, grandchildren, etc.</value>
   </data>
 </root>

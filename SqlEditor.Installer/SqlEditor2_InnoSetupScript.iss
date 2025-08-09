@@ -11,7 +11,7 @@
 #include "CodeDependencies.iss"
 
 #define MyAppName "SqlEditor"
-#define MyAppVersion "0.821"
+#define MyAppVersion "0.83"
 #define MyAppPublisher "McCafferty"
 #define MyAppURL "http://www.crts.edu/"
 #define MyAppExeName "SqlEditor.exe"

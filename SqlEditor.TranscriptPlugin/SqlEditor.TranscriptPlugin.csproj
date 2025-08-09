@@ -57,7 +57,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo D|xCopy &quot;$(OutDir)\SqlEditor.TranscriptPlugin*.*&quot; &quot;$(ProjectDir)/../SqlEditorPlugin&quot; /Y /e /s" />
+    <Exec Command="echo D|xCopy &quot;$(OutDir)\SqlEditor.TranscriptPlugin*.*&quot; &quot;$(ProjectDir)/../SqlEditorPlugin&quot; /Y &#xD;&#xA;echo D|xCopy &quot;$(OutDir)\zh-Hant\SqlEditor.TranscriptPlugin*.*&quot; &quot;$(ProjectDir)/../SqlEditorPlugin\zh-Hant\&quot; /Y" />
   </Target>
 
 </Project>
