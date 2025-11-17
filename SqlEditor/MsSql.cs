@@ -545,9 +545,11 @@ namespace SqlEditor
             sb.Append("sc.is_identity as _identity, ");
             sb.Append("CAST('0' as bit) as is_PK, CAST('0' as bit) as is_FK, CAST('0' as bit) as is_DK, ");
             sb.Append("sc.max_length as MaxLength, ");
-            sb.Append("'' as RefTable, '' as RefPkColumn, 0 as Width ");
+            sb.Append("'' as RefTable, '' as RefPkColumn, 0 as Width, ");
+            sb.Append("d.definition as defaultValue ");
             sb.Append("FROM sys.objects so inner join sys.columns sc on so.object_id = sc.object_id ");
             sb.Append("inner join sys.tables st on so.object_id = st.object_id ");
+            sb.Append("left join sys.default_constraints d on sc.default_object_id = d.object_id ");
             sb.Append("WHERE so.is_ms_shipped <> 1 AND so.type = 'U' and st.lob_data_space_id = 0 ");
             sb.Append("ORDER BY ColNum ");
             string sqlFields = sb.ToString();
@@ -558,6 +560,11 @@ namespace SqlEditor
             dataHelper.updateFieldsDTtableOnProgramLoad(); // fills in many columns that are used in the rest of the program
             return errorNotice;
         }
+        //SELECT c.name AS ColumnName, d.definition AS DefaultValue
+        //    FROM sys.columns c
+        //    LEFT JOIN sys.default_constraints d
+        //    ON c.default_object_id = d.object_id
+        //    WHERE c.object_id = OBJECT_ID('Employees');
 
     }
 }

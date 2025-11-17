@@ -106,9 +106,13 @@
             mnuBatchInsert = new ToolStripMenuItem();
             mnuBatchUpdate = new ToolStripMenuItem();
             mnuAllowDeepDelete = new ToolStripMenuItem();
+            toolStripSeparator4 = new ToolStripSeparator();
+            mnuAggregateTable = new ToolStripMenuItem();
+            toolStripSeparator5 = new ToolStripSeparator();
             mnuIT_Tools = new ToolStripMenuItem();
             mnuDatabaseInfo = new ToolStripMenuItem();
             mnuToolsBackupDatabase = new ToolStripMenuItem();
+            mnuShowSql = new ToolStripMenuItem();
             toolStripSeparator2 = new ToolStripSeparator();
             mnuForeignKeyMissing = new ToolStripMenuItem();
             mnuDisplayKeysList = new ToolStripMenuItem();
@@ -833,7 +837,7 @@
             // 
             // mnuTools
             // 
-            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuPrintCurrentTable, mnuBatchInsert, mnuBatchUpdate, mnuAllowDeepDelete });
+            mnuTools.DropDownItems.AddRange(new ToolStripItem[] { mnuPrintCurrentTable, mnuBatchInsert, mnuBatchUpdate, mnuAllowDeepDelete, toolStripSeparator4, mnuAggregateTable, toolStripSeparator5 });
             mnuTools.Name = "mnuTools";
             resources.ApplyResources(mnuTools, "mnuTools");
             // 
@@ -862,9 +866,25 @@
             resources.ApplyResources(mnuAllowDeepDelete, "mnuAllowDeepDelete");
             mnuAllowDeepDelete.Click += mnuAllowDeepDelete_Click;
             // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            resources.ApplyResources(toolStripSeparator4, "toolStripSeparator4");
+            // 
+            // mnuAggregateTable
+            // 
+            mnuAggregateTable.Name = "mnuAggregateTable";
+            resources.ApplyResources(mnuAggregateTable, "mnuAggregateTable");
+            mnuAggregateTable.Click += mnuAggregateTable_Click;
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            resources.ApplyResources(toolStripSeparator5, "toolStripSeparator5");
+            // 
             // mnuIT_Tools
             // 
-            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDuplicateDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
+            mnuIT_Tools.DropDownItems.AddRange(new ToolStripItem[] { mnuDatabaseInfo, mnuToolsBackupDatabase, mnuShowSql, toolStripSeparator2, mnuForeignKeyMissing, mnuDisplayKeysList, mnuDuplicateDisplayKeys, mnuMergeDuplicateDKs, toolStripSeparator3, mnuLoadPlugin, mnuRemovePlugin, mnuShowITTools });
             mnuIT_Tools.Name = "mnuIT_Tools";
             resources.ApplyResources(mnuIT_Tools, "mnuIT_Tools");
             // 
@@ -879,6 +899,12 @@
             mnuToolsBackupDatabase.Name = "mnuToolsBackupDatabase";
             resources.ApplyResources(mnuToolsBackupDatabase, "mnuToolsBackupDatabase");
             mnuToolsBackupDatabase.Click += mnuToolsBackupDatabase_Click;
+            // 
+            // mnuShowSql
+            // 
+            mnuShowSql.Name = "mnuShowSql";
+            resources.ApplyResources(mnuShowSql, "mnuShowSql");
+            mnuShowSql.Click += mnuShowSql_Click;
             // 
             // toolStripSeparator2
             // 
@@ -1119,11 +1145,9 @@
         private SaveFileDialog saveFileDialog1;
         private FolderBrowserDialog folderBrowserDialog1;
         private Label lblManualFilter;
-        private TextBox txtManualFilter;
         private ToolStripMenuItem mnuTools;
         internal ToolStripMenuItem mnuIT_Tools;
         public ToolStripMenuItem mnuPrintCurrentTable;
-        private ToolStripMenuItem mnuShowITTools;
         private ToolStripMenuItem mnuLoadPlugin;
         private ToolStripMenuItem mnuRemovePlugin;
         private ToolStripMenuItem mnuDisplayKeysList;
@@ -1136,6 +1160,12 @@
         private ToolStripMenuItem mnuBatchInsert;
         private ToolStripMenuItem mnuBatchUpdate;
         private ToolStripMenuItem mnuAllowDeepDelete;
+        private ToolStripMenuItem mnuAggregateTable;
+        private ToolStripSeparator toolStripSeparator4;
+        private ToolStripMenuItem mnuShowSql;
+        public ToolStripMenuItem mnuShowITTools;
+        public TextBox txtManualFilter;
+        private ToolStripSeparator toolStripSeparator5;
         //private Button button2;
     }
 }

@@ -60,7 +60,13 @@ namespace SqlEditor
                     // lbl.Anchor = AnchorStyles.D;
                     lbl.Width = 30;
                     left += 600;
+                    if (i > 99)
+                    {
+                        lbl.Font = new Font("Segoe UI", 7);
+                    }
+
                     this.Controls.Add(lbl);
+
                 }
             }
             else if (job == "tableCollection")

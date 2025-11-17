@@ -1,9 +1,9 @@
 ﻿// using DocumentFormat.OpenXml.Drawing;
 // using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualBasic;
 using SqlEditor.Properties;
-
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
@@ -11,6 +11,8 @@ using System.Globalization;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using Windows.Media.AppBroadcasting;
+using System.Windows.Forms;
 
 
 namespace SqlEditor
@@ -22,7 +24,7 @@ namespace SqlEditor
     //User actions, and how the program reacts to each as follows
     //0.  Form Load - Loads user settings and other things which don't depend on the Connection
     //1.  Open New connection -- called near end of Form Load and by File-->connection menu
-    //    First calls closeConnection (reinitiae everything to empty state; list tables in menu), 
+    //    First calls closeConnection (reinitiate everything to empty state; list tables in menu), 
     //    and then open the new connection
     //2.  Open New Table -- calls writeGrid_NewTable
     //    WriteGrid_NewTable - Sets new sqlCurrent - Calls sqlCurrent.SetInnerJoins which sets sql table strings and field strings.
@@ -60,13 +62,13 @@ namespace SqlEditor
 
         #region Entire Form constructor, events, and Log file
 
+        // No reference but use
         public DataGridViewForm(ILogger<DataGridViewForm> logger)
         {
             // DO NOT DELETE
             // THIS IS USED EVEN THOUGH IT SAYS "0 REFERENCES"
             // It is used in the constructor of the main form and in the plugins
             // It is used from program.cs - related to dependency injection.
-
 
             myLogger = logger;
             // pluginError = true if the last load of the program did not cause error.
@@ -147,8 +149,7 @@ namespace SqlEditor
                 MainMenu1.Items.AddRange(pluginMenus.Items);
             }
 
-            // Invoke delegate - this will load mainForm into all plugins
-            //dgvMainFormDelegate(this);
+            // Load mainForm into all plugins
             Plugins.ExportForm(this);
 
             // Clone context menu items and add them to Tools menu.
@@ -174,6 +175,7 @@ namespace SqlEditor
             }
         }
 
+        // No reference but used
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             // DO NOT DELETE
@@ -217,8 +219,9 @@ namespace SqlEditor
             formOptions = AppData.GetFormOptions();  // Sets initial option values
             formOptions.narrowColumns = false;  // Always begin with wide columns
             formOptions.runTimer = false;  // Set to true when debugging to check what is slow
-
-            // 0.  Main filter datasource always a list of wheres and 'last' element always the same (i.e. "No Reasearch object")
+            btnExtra.Enabled = false;  // Set to true to test
+            btnExtra.Visible = false;  // Set to true to test
+            // 0.  Main filter datasource always a list of wheres and 'last' element always the same (i.e. "None")
             field fi = new field("none", "none", DbType.Int32, 4, fieldType.pseudo);
             where wh = new where(fi, "0");
             wh.DisplayMember = MyResources.MainFilterNotSet;
@@ -226,11 +229,11 @@ namespace SqlEditor
             MainFilterList.Add(wh);
             cmbMainFilter.DisplayMember = "DisplayMember";
             cmbMainFilter.ValueMember = "ValueMemeber";
-
             formOptions.loadingMainFilter = true;
             cmbMainFilter.DataSource = MainFilterList;
             formOptions.loadingMainFilter = false;
             cmbMainFilter.Enabled = false;  // Enabled by EnableMainFilter() when more than one element
+            txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;  // Can't do it in enter
 
             // 1. Set pageSize
             formOptions.pageSize = 100;
@@ -253,22 +256,25 @@ namespace SqlEditor
             Load_mnuDatabaseList();  // Add previously open databases to databases menu dropdown list
 
             // 4. Open Log file
-            // openLogFile(); //errors ignored 
+            // openLogFile(); //not implemented, errors ignored 
 
-            // 5. Open last connection 
+            // 5. Open last connection - if there was one 
             myLogger.LogInformation("Opening Connection");
-            string msg = OpenConnection();  // Returns any error msg
+            string msg = OpenConnection();  // Returns any error msg or "No previous connection" msg
             if (msg != string.Empty)
             {
                 myLogger.LogInformation("Error Opening connection: {msg}", msg);
                 msgText(msg); txtMessages.ForeColor = System.Drawing.Color.Red;
             }
 
-            // 6. Set Mode and filters to "none".
+            // 6. Set DataGridView width to form widthd
+            dataGridView1.Width = this.Width;
+
+            // 7. Set Mode and filters to "none".
             programMode = ProgramMode.none;
             SetFiltersColumnsTablePanel(); // Will disable filters and call SetTableLayoutPanelHeight();
 
-            // 7. Hide IT tools
+            // 8. Hide IT tools
             mnuShowITTools.Checked = false;
             myLogger.LogInformation("Form Loaded");
         }
@@ -495,17 +501,19 @@ namespace SqlEditor
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
             mnuOpenTables.HideDropDown();  // Close the menu to help debugging
-            Stopwatch watch = new Stopwatch(); if (formOptions.runTimer) { watch.Start(); }
+            // Run timer if .runTimer option is hard set by me to 'true'.
+            Stopwatch watch = new Stopwatch();
+            if (formOptions.runTimer) { watch.Start(); }
 
             // 0. New tableOptions and Clear Grid-Combo filters
-            tableOptions = new TableOptions(); // Resets options - WritingNewTable and firsttimeWritingTable are true
+            tableOptions = new TableOptions();
 
             // 1 - Record lastFilter for last table and then clear filters
             if (currentSql != null)  // This is the currentSql from the last Table
             {
                 RecordLastFilter();  // Old table
             }
-            dirtyGFCombos.Clear();  // All GF combos will be rebound 
+            dirtyGFCombos.Clear();
             tableOptions.writingTable = true;  // Only make it true when it is needed
             ClearFilters(clearManualFilter); // All events are cancelled via "if(Selected_index != -1) . . ."
             rbView.Checked = true;  // 
@@ -529,7 +537,7 @@ namespace SqlEditor
 
 
             //2. Create currentSql - same currentSql used until new table is loaded - same myFields and myInnerJoins
-            //   Creating currentSql does not load any data into it
+            //   Creating currentSql does not load any data into anything - just prepares the sql
             currentSql = new SqlFactory(table, 1, formOptions.pageSize);
 
             // Check if above produces error message - very rare
@@ -543,19 +551,34 @@ namespace SqlEditor
             }
 
             //3. Get aliasTableList - For use in txtManualFilter
+            //   For each tableAlias, make a list of its real fields
             aliasTableDictionary.Clear();
-            foreach (field fl in currentSql.myFields)
+            foreach (field fl in currentSql.myFields2)
             {
+                // Add the empty definition if it does not exist
                 if (!aliasTableDictionary.ContainsKey(fl.tableAlias))
                 {
                     List<string> fieldNameList = new List<string>();
+                    // Get list of all non-key fields in key-table (table is key.Item2)
+                    string filter = String.Format(
+                        "TableName='{0}'", fl.table);
+                    DataRow[] drs = dataHelper.fieldsDT.Select(filter);
+                    // Loop through the fields in table. 
+                    foreach (DataRow dr in drs)
+                    {
+                        string fieldName = dataHelper.getColumnValueinDR(dr, "ColumnName");
+                        fieldNameList.Add(fieldName);
+                    }
                     aliasTableDictionary.Add(fl.tableAlias, fieldNameList);
+                    // Add all the fields in this table to the definition
+
                 }
-                aliasTableDictionary[fl.tableAlias].Add(fl.fieldName);
+                // Add this field to the list of fields for this tableAlias
+                // aliasTableDictionary[fl.tableAlias].Add(fl.fieldName);
             }
 
             //4. Check if table has foreign keys
-            foreach (field fl in currentSql.myFields)
+            foreach (field fl in currentSql.myFields2)
             {
                 if (fl.table == currentSql.myTable && dataHelper.isForeignKeyField(fl))
                 {
@@ -580,11 +603,19 @@ namespace SqlEditor
                     foreignKeyList.Add(fi);  // All keys are in myTable -
                 }
                 // Bind the cmbComboTableList Combo control
+                // Logic: There are 3 types of fields in bottom combo filters
+                // 1. cmbComboTableList - this is loaded here and doesn't change afterwards
+                // 2. lblCmbFilterField - these are loaded when cmbComboTableList is changed.
+                // 3. cmbComboFilterValue - these are also loaded when cmbComboTableList is changed.
+                //    However, we can't do step 3 (load cmbComboFilterValues) here,
+                //    because this uses currentDT and currentDT is not yet loaded 
+                //    So we set "firstTimeWritingTable = true" and do step 3 in "Write_Grid"
+                //    when "firstTimeWritingTable = true"
+                // Note: nothing fires step 2 and 3 except change in cmbComboTableList
+
                 cmbComboTableList.BindingContext = new BindingContext();  // Required to change 1-by-1.
                 cmbComboTableList.DisplayMember = "DisplayMember";
                 cmbComboTableList.ValueMember = "ValueMember";  //Entire field
-                // Must not attempt to load values into cmbComboFieldValue, because currentDT is not loaded 
-                // Use "firstTimeWritingTable = true" to shut this off.
                 tableOptions.writingTable = true; // Shuts off the rebinding of cmbGridFilterValues
                 cmbComboTableList.DataSource = foreignKeyList;
                 tableOptions.writingTable = false;
@@ -597,12 +628,20 @@ namespace SqlEditor
             }
 
             //5. Bind 9 cmbGridFilterFields with fields for user to select
-            //    Only setting up cmbGridFilterFields - cmbGridFilterValues set on cmbGridFilterField SelectionChanged event
-            //    All cmbGridFilterFields values are fields in myTable
-            int comboNumber = 0;  // Keeps track of which cmbGridFilterField we are loading
+            //   Logic: There are 2 types of fields in upper Grid Filter combos:
+            //   1. cmbGridFilterFields - name of field that is being filtered
+            //      (These fields are all in "myTable".  May be PK, DK, FK, or text / non-key field.)
+            //      (cmbGridFilterFields_1 is unique in that it has different fields in its DropDownLists)
+            //      Here we set the GridFilterFields and these don't change.
+            //   2. cmbGridFilterValues - value of the filter field in corresponding cmbGridFilterField.
+            //   We do not set the cmbGridFilterValues here or in write_Grid below
+            //   Rather, we keep a list of which cmbGridFilterValues are 'dirty' and so need rebound.
+            //   We rebind a dirty cmbGridFilterValues when the user enters that combo.
+
             //5a.  Bind first cmbGridFilterFields[0] to all "yellow" text fields in my table (non-DK, non-FK, non-PK)
+            int comboNumber = 0;  // Keeps track of which cmbGridFilterField we are loading
             BindingList<field> filterFields = new BindingList<field>();
-            foreach (field fl in currentSql.myFields)
+            foreach (field fl in currentSql.myFields2)
             {
                 // Yellow Keys                
                 if (!(dataHelper.isTablePrimaryKeyField(fl) || dataHelper.isForeignKeyField(fl) || dataHelper.isDisplayKey(fl)))
@@ -613,7 +652,7 @@ namespace SqlEditor
             // Add Primary key at end
             field pkField = dataHelper.getTablePrimaryKeyField(currentSql.myTable);
             filterFields.Add(pkField);
-            //Then Bind combo to filterFields bindingList - will be comboNumber 0.
+            //Then Bind cmbGridFilterFields_0 to this filterFields bindingList.
             cmbGridFilterFields[comboNumber].BindingContext = new BindingContext();  // Previously Required, but I still use it.
             cmbGridFilterFields[comboNumber].DisplayMember = "DisplayMember";
             cmbGridFilterFields[comboNumber].ValueMember = "ValueMember";  //Entire field
@@ -624,7 +663,7 @@ namespace SqlEditor
             comboNumber++; // O goes to 1
 
             //5b.   Bind one cmbGridFilterFields for each DK and FK - 
-            foreach (field fl in currentSql.myFields)
+            foreach (field fl in currentSql.myFields2)
             {
                 if (fl.table == currentSql.myTable && (dataHelper.isForeignKeyField(fl) || (dataHelper.isDisplayKey(fl))))
                 {
@@ -662,14 +701,9 @@ namespace SqlEditor
 
         public void writeGrid_NewFilter(bool newLastFilter)
         {
-            RecordLastFilter();
             // 1. Update lastFilter and currentSql.myWheres
+            RecordLastFilter();
             SetSqlWheresFromFilters();
-            // Do after above, because on first load cmbCombo filters use Last Filter
-            // since the combo filters are not yet added.
-            //if (newLastFilter) { 
-            //    UpdateLastFilter(); 
-            //}
 
             // 2. Get record Count
             string strSql = currentSql.returnSql(command.count);
@@ -688,9 +722,13 @@ namespace SqlEditor
                 return;
             }
             // 3. Fetch must have an order by clause - so I may add one on first column
-            if (currentSql.myOrderBys.Count == 0)  //Should always be true at this point
+            if (currentSql.myOrderBys.Count == 0)
             {
                 orderBy ob = new orderBy(currentSql.myFields[0], System.Windows.Forms.SortOrder.Ascending);
+                if (currentSql.isAggregateTable)
+                {
+                    ob = new orderBy(currentSql.myAggFieldList[0], System.Windows.Forms.SortOrder.Ascending);
+                }
                 currentSql.myOrderBys.Add(ob);
             }
 
@@ -699,8 +737,9 @@ namespace SqlEditor
 
         public void writeGrid_NewPage()
         {
-            Stopwatch watch = new Stopwatch(); if (formOptions.runTimer) { watch.Start(); }
-            msgTimer("New Page. ");
+            Stopwatch watch = new Stopwatch();
+            if (formOptions.runTimer) { watch.Start(); }
+            msgTimer("New Page. ");  //Only writes anything if timer is running
 
             // 1. Get the Sql command for grid
             //    CENTRAL and Only USE OF sqlCurrent.returnSql IN PROGRAM
@@ -717,7 +756,7 @@ namespace SqlEditor
 
             msgTimer(" NewPage0: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
 
-            // 3. Fill currentDT and Bind the Grid to it.
+            // 3a. Fill currentDT.
             dataHelper.currentDT = new DataTable();
             string errorMsg = MsSql.FillDataTable(dataHelper.currentDT, strSql);
             if (errorMsg != string.Empty)
@@ -726,37 +765,48 @@ namespace SqlEditor
                 MessageBox.Show(errorMsg, "ERROR in WriteGrid_NewPage", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            // Bind Grid
+
+            // 3b. Bind Grid to currentDT
             tableOptions.writingTable = true;
             // Add all the columns - doing this manually because it is faster
             for (int i = 0; i < dataHelper.currentDT.Columns.Count; i++)  // currentDT already bound
             {
                 DataGridViewColumn column = new DataGridViewTextBoxColumn();
                 DataColumn dc = dataHelper.currentDT.Columns[i];
-                field fl = currentSql.myFields[i];
-                if (dataHelper.isTablePrimaryKeyField(fl) || dataHelper.isForeignKeyField(fl))
+                column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+                field fl = currentSql.myFields2[i];  // myFields or myAggTableFields
+                // Set the width for aggregate functions and non-aggregate
+                if (fl.AggregateFieldName != String.Empty)
                 {
-                    column.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
-                    // These have a width of 3 in narrow columns; 
-                    if (formOptions.narrowColumns)
-                    {
-                        column.DefaultCellStyle.ForeColor = System.Drawing.Color.White;
-                    }
-                    else
-                    {
-                        column.DefaultCellStyle.ForeColor = System.Drawing.Color.Navy;
-                    }
-                }
-                column.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                //Change to default width if set in afdFieldData
-                int savedWidth = dataHelper.getStoredWidth(fl.table, fl.fieldName, 0);
-                if (savedWidth == 0)
-                {
-                    column.Width = 90;
+                    column.Width = 200; // Change later
+                    dc.ColumnName = fl.AggregateFieldName; // Used below
                 }
                 else
                 {
-                    column.Width = savedWidth;
+                    if (dataHelper.isTablePrimaryKeyField(fl) || dataHelper.isForeignKeyField(fl))
+                    {
+                        // These have a width of 3 in narrow columns; 
+                        if (formOptions.narrowColumns)
+                        {
+                            column.DefaultCellStyle.ForeColor = System.Drawing.Color.White;
+                        }
+                        else
+                        {
+                            column.DefaultCellStyle.ForeColor = System.Drawing.Color.Navy;
+                        }
+                    }
+                    column.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+                    //Change to default width if set in afdFieldData
+                    int savedWidth = dataHelper.getStoredWidth(fl.table, fl.fieldName, 0);
+                    if (savedWidth == 0)
+                    {
+                        column.Width = 90;
+                    }
+                    else
+                    {
+                        column.Width = savedWidth;
+                    }
                 }
                 column.DataPropertyName = dc.ColumnName;
                 column.Name = dc.ColumnName;
@@ -772,7 +822,7 @@ namespace SqlEditor
                 int intCols = dataGridView1.ColumnCount;
                 for (int i = 0; i < intCols; i++)
                 {
-                    if (dataHelper.isForeignKeyField(currentSql.myFields[i]))
+                    if (dataHelper.isForeignKeyField(currentSql.myFields2[i]))
                     {
                         DataGridViewColumn dgvCol = dataGridView1.Columns[i];
                         int colWidth = dgvCol.Width;
@@ -798,9 +848,12 @@ namespace SqlEditor
             tableOptions.writingTable = false;
 
             // Add columnNames
-            for (int i = 0; i < currentSql.myFields.Count; i++)
+            for (int i = 0; i < dataGridView1.Columns.Count; i++)
             {
-                currentSql.myFields[i].ColumnName = dataGridView1.Columns[i].DataPropertyName;
+                //if (!currentSql.isAggregateTable)
+                //{ 
+                currentSql.myFields2[i].ColumnName = dataGridView1.Columns[i].DataPropertyName;
+                //}
             }
 
             msgTimer(" NewPage2: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
@@ -814,14 +867,14 @@ namespace SqlEditor
             {
                 sb.Append(AppData.databaseName + " -  ");
             }
-
-            // StringBuilder sb = new StringBuilder(dbPath.Substring(dbPath.LastIndexOf("\\") + 1));
             sb.Append(dgvHelper.TranslateString(currentSql.myTable));
             string strRowsAndPage = String.Format(MyResources.XrowsPageY, currentSql.RecordCount.ToString(), currentSql.myPage.ToString());
             sb.Append("    -     " + strRowsAndPage);
             this.Text = sb.ToString();
-            // c. Show correct orderby glyph
-            if (currentSql.myOrderBys.Count > 0)
+            // c. Show correct orderby glyph 
+            // Aggregate function error between 840 and 848
+            if (!currentSql.isAggregateTable
+                    && currentSql.myOrderBys.Count > 0)
             {
                 field fldob = currentSql.myOrderBys[0].fld;
                 int gridColumn = currentSql.myFields.FindIndex(x => x == fldob);  // gridColumn index = myFields index
@@ -829,9 +882,11 @@ namespace SqlEditor
                 dataGridView1.Columns[gridColumn].SortMode = DataGridViewColumnSortMode.Programmatic;
                 dataGridView1.Columns[gridColumn].HeaderCell.SortGlyphDirection = sortOrder;
             }
-
             // e. Format the rest of the grid and form
-            dgvHelper.SetHeaderColorsOnWritePage(dataGridView1, currentSql.myTable, currentSql.myFields);// Must do everytime we re-write grid
+            if (!currentSql.isAggregateTable)
+            {
+                dgvHelper.SetHeaderColorsOnWritePage(dataGridView1, currentSql.myTable, currentSql.myFields);// Must do everytime we re-write grid
+            }
             SetColumnsReadOnlyProperty(); // Might change editable column
             SetFiltersColumnsTablePanel();   // Because Write_NewPage may require changes
             // A plugin might add translations and a translationCultureName
@@ -841,29 +896,25 @@ namespace SqlEditor
             tableOptions.writingTable = false;
             if (tableOptions.firstTimeWritingTable)
             {
-                ColorComboBoxes();   // Must do after the above for some reason
+                // Uses header colors and so after SetHeaderColorsOnWritePage
+                ColorComboBoxes();
             }
-
             msgTimer(" NewPage5: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
 
-
-            //7. Restore any cmbComboValues if the first time loading table
+            //7. Bind cmbComboFilterValues if the first time loading table
+            //   This does not get done in Write_NewTable because grid not yet loaded
             tableOptions.writingTable = true;
             if (tableOptions.firstTimeWritingTable && tableOptions.tableHasForeignKeys)
             {
                 tableOptions.firstTimeWritingTable = false;
-                // Bind all cmbComboFieldValue combos - this does not get done in Write_NewTable because grid not yet loaded
-                // I suspect I could all the combo filter things here and then show rows, but this works 
-                tableOptions.writingTable = false;  // the switch that makes the following do the binding
+                tableOptions.writingTable = false;
+                // firstTimeWritingTable = false makes the following do the binding
+                // This will also color the cmbComboFieldFields and Values.
                 BindAllComboFilterValueCombos();
-                // This will color the cmbComboFieldFields and Values.
-                // I have already added any lastFilter cmbComboFieldValues to the currentSql.myWheres
-                // This will put them in the combobox values
-                // GridContextMenu_RestoreFilters_ComboFilters();
             }
             tableOptions.writingTable = false;
             if (formOptions.runTimer) { watch.Stop(); }
-            ; msgTimer(" NewPage6: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
+            msgTimer(" NewPage6: " + Math.Round(watch.Elapsed.TotalMilliseconds, 2).ToString() + ". ");
         }
 
         private bool RecordLastFilter()
@@ -972,6 +1023,7 @@ namespace SqlEditor
             return filterRowChanged;
         }
 
+        // Called in writeGrid_NewFilter
         private void SetSqlWheresFromFilters()
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -1111,24 +1163,6 @@ namespace SqlEditor
             currentSql.strManualWhereClause = txtManualFilter.Text;
         }
 
-        internal void SetToStoredColumnWidths()
-        {
-            // dataGridView1.RowHeadersWidth = 27; //default
-            for (int i = 0; i <= dataGridView1.ColumnCount - 1; i++)
-            {
-                string fld = currentSql.myFields[i].fieldName;
-                string baseTable = currentSql.myFields[i].table;
-                //Change to default width if set in afdFieldData
-                int currentWidth = dataGridView1.Columns[i].Width;
-                int savedWidth = dataHelper.getStoredWidth(baseTable, fld, currentWidth);
-                // Time consuming for transcript - so seek to avoid
-                if (savedWidth != currentWidth)
-                {
-                    dataGridView1.Columns[i].Width = savedWidth;
-                }
-            }
-
-        }
 
         #endregion
 
@@ -1138,7 +1172,7 @@ namespace SqlEditor
         #region Setting up Filters, Colors, TablePanel
         private void SetTableLayoutPanelHeight()
         {
-            // tableLayoutPanel.RowStyles[4] = new RowStyle(SizeType.Absolute, 19);
+            // The order is from smallest to largest.
             int height = 2;
             if (programMode != ProgramMode.none) //2nd Row
             {
@@ -1156,8 +1190,8 @@ namespace SqlEditor
             {
                 height = cmbGridFilterFields_6.Top + cmbGridFilterFields_6.Height + 10;
             }
-
-            if (txtManualFilter.Enabled && programMode != ProgramMode.none)  // First always true as of now
+            // Actually, as of now txtManuelFilter is always enabled, but empty when hidden.
+            if (txtManualFilter.Enabled && programMode != ProgramMode.none)
             {
                 height = txtManualFilter.Top + txtManualFilter.Height + 10;
             }
@@ -1174,7 +1208,7 @@ namespace SqlEditor
             tableLayoutPanel.Height = height;
             if (splitContainer1.Width > 0)
             {
-                // Catching error: "Splitterdistance must be between panel1minsize and width and pan2minsize.
+                // Catching error: "SplitterDistance must be between panel1minsize and width and pan2minsize.
                 try
                 {
                     this.splitContainer1.SplitterDistance = txtMessages.Height + tableLayoutPanel.Height;
@@ -1213,6 +1247,9 @@ namespace SqlEditor
             }
         }
 
+        // Called on first load of table; Boxes contain a field,
+        // the color of a box is the header color of dgv column with field.
+        // Header color set in "SetHeaderColorsOnWritePage"
         private void ColorComboBoxes()
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
@@ -1222,17 +1259,19 @@ namespace SqlEditor
 
             for (int i = 0; i < cmbGridFilterFields.Length; i++)
             {
-                // Color all 12 "Filter Grid" combos
+                // Color all 9 "Filter Grid" combos
                 if (cmbGridFilterFields[i].Enabled == true)
                 {
                     field selectedField = (field)cmbGridFilterFields[i].SelectedValue;
-                    for (int j = 0; j < currentSql.myFields.Count; j++)
+                    for (int j = 0; j < currentSql.myFields2.Count; j++)
                     {
-                        field colField = currentSql.myFields[j];
+                        field colField = currentSql.myFields2[j]; //myFields order same as column order
+                        // Field found
                         if (selectedField.key.Equals(colField.key))
                         {
-                            if (dataGridView1.Columns.Count > 0)
+                            if (dataGridView1.Columns.Count > 0) // Columns loaded
                             {
+                                // Set field cmb and value to same color
                                 cmbGridFilterValue[i].BackColor = dataGridView1.Columns[j].HeaderCell.Style.BackColor;
                                 cmbGridFilterFields[i].BackColor = dataGridView1.Columns[j].HeaderCell.Style.BackColor;
                             }
@@ -1247,12 +1286,13 @@ namespace SqlEditor
                 // Color combobox the same as corresponding header
                 if (lblCmbFilterFields[i].Enabled == true)
                 {
+                    // field in filter stored in tag
                     field selectedField = (field)cmbComboFilterValue[i].Tag; // Set in indexChange event
                     if (selectedField != null)
                     {
-                        for (int j = 0; j < currentSql.myFields.Count; j++)
+                        for (int j = 0; j < currentSql.myFields2.Count; j++)
                         {
-                            field colField = currentSql.myFields[j];
+                            field colField = currentSql.myFields2[j];
                             if (selectedField.key.Equals(colField.key))
                             {
                                 if (dataGridView1.Columns.Count > 0)
@@ -1267,7 +1307,7 @@ namespace SqlEditor
             }
         }
 
-        // Results of this coloring use in color combo boxes above
+        // Results of this coloring use in colorComboBoxes
         // Called when Write_NewPage (near end),
         // Also called by Open connection, Load Form, Change of radio button (View, Edit, etc)
         // This calls SetColumnsReadOnlyProperty(); SetSelectedCellsColor(); SetTableLayoutPanelHeight();
@@ -1535,6 +1575,206 @@ namespace SqlEditor
 
         #region EVENTS - Main Menu events
 
+        private void mnuAggregateTable_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                bool canceled = true;
+                // Get the Group By fields list - Long
+                List<field> GroupByFieldsFinal = GetGroupByFieldList();
+                // Get aggregate field list
+                string aggFieldName = GetAggFieldName(ref canceled);
+                if (!canceled)
+                {
+                    List<field> aggFields = GetAggFieldList(aggFieldName); // 1 or 2 fields in list
+                    WriteAggregateTable(GroupByFieldsFinal, aggFields);
+                }
+            }
+        }
+        public void WriteAggregateTable(List<field> GroupByFields, List<field> AggFields)
+        {
+            if (AggFields.Count > 0)
+            {
+                currentSql.myGroupByFields = GroupByFields; // Empty list OK.
+                currentSql.myAggFieldList = AggFields;
+                orderBy ob = new orderBy(AggFields[0], SortOrder.Descending);
+                currentSql.myOrderBys.Clear();
+                currentSql.myOrderBys.Add(ob);
+                writeGrid_NewPage();
+            }
+        }
+        public List<field> GetGroupByFieldList()
+        {
+            List<string> fieldsList = new List<string>();
+            foreach (field fld in currentSql.myFields)
+            {
+                fieldsList.Add(fld.fieldName);
+            }
+            frmListItems frmList_GroupBy = new frmListItems();
+            frmList_GroupBy.myList = fieldsList;
+            frmList_GroupBy.myJob = frmListItems.job.SelectMultipleStrings;
+            frmList_GroupBy.Text = "Select fields to group by.";
+            frmList_GroupBy.ShowDialog();
+            bool OK_chosen = frmList_GroupBy.OK;
+            List<int> chosenFieldNameIndices = frmList_GroupBy.mySelectedIndexes;
+            frmList_GroupBy = null;
+            List<field> GroupByFields = new List<field>();
+            if (OK_chosen)
+            {
+                foreach (int i in chosenFieldNameIndices)
+                {
+                    GroupByFields.Add(currentSql.myFields[i]);
+                }
+            }
+            // Clean up GroupByFields-using tuples
+            List<Tuple<string, string, string>> GroupByTuplesFinal = new List<Tuple<string, string, string>>();
+            List<field> GroupByFieldsFinal = new List<field>();
+            foreach (field fld in GroupByFields)
+            {
+                if (dataHelper.isForeignKeyField(fld))
+                {
+                    field PK_RefTable = dataHelper.getForeignKeyRefField(fld);
+                    Tuple<string, string, string> PK_Tuple = PK_RefTable.key;
+                    // Perhaps always true, but just in case
+                    if (currentSql.PKs_OstensiveDictionary.ContainsKey(PK_Tuple))
+                    {
+                        List<field> DisplayFields = currentSql.PKs_OstensiveDictionary[PK_Tuple];
+                        foreach (field dk in DisplayFields)
+                        {
+                            if (!GroupByTuplesFinal.Contains(dk.key))
+                            {
+                                GroupByTuplesFinal.Add(dk.key);
+                                GroupByFieldsFinal.Add(dk);
+                            }
+                        }
+                    }
+                }
+                else if (dataHelper.isDisplayKey(fld))
+                {
+                    if (!GroupByTuplesFinal.Contains(fld.key))
+                    {
+                        GroupByTuplesFinal.Add(fld.key);
+                        GroupByFieldsFinal.Add(fld);
+                    }
+                }
+                else if (dataHelper.isTablePrimaryKeyField(fld))
+                {
+                    // This will limit each group to 1 element, but allow it.
+                    GroupByTuplesFinal.Add(fld.key);
+                    GroupByFieldsFinal.Add(fld);
+                }
+                else  // Not a display key, foreign key or my table primary key
+                {
+                    GroupByTuplesFinal.Add(fld.key);
+                    GroupByFieldsFinal.Add(fld);
+                }
+            }
+            return GroupByFieldsFinal;
+        }
+        private string GetAggFieldName(ref bool cancelled)
+        {
+            // 1. Get list of fields that can be an aggregated field
+            List<field> FieldsToAggregate = new List<field>();
+            // Use tupleList to check for duplicate fields
+            List<Tuple<string, string>> tupleList = new List<Tuple<string, string>>();
+            // Loop through all keys in PKs_InnerjoinMap
+            foreach (Tuple<string, string, string> key in currentSql.PKs_InnerjoinMap.Keys)
+            {
+                // Get list of all non-key fields in key-table (table is key.Item2)
+                string filter = String.Format("TableName='{0}' and is_FK='false' and is_PK='false'", key.Item2);
+                DataRow[] drs = dataHelper.fieldsDT.Select(filter);
+                // Loop through the fields in table. 
+                foreach (DataRow dr in drs)
+                {
+                    field fi = dataHelper.getFieldFromFieldsDT(dr);
+                    // Add field to FieldsToAggregate if it is integer / decimal field.
+                    if (!tupleList.Contains(fi.baseKey))
+                    {
+                        tupleList.Add(fi.baseKey);
+                        DbTypeType dbTypeType = dataHelper.GetDbTypeType(fi.dbType);
+                        if (dbTypeType == DbTypeType.isInteger || dbTypeType == DbTypeType.isDecimal)
+                        {
+                            FieldsToAggregate.Add(fi);
+                        }
+                    }
+                }
+            }
+            // 2. Get aggregate strings from FieldsToAggregate list. 
+            List<string> someAggFields = new List<string>();
+            foreach (field fld in FieldsToAggregate)
+            {
+                foreach (aggregateFunction af in Enum.GetValues(typeof(aggregateFunction)))
+                {
+                    string aggFieldName = dataHelper.StandardAggregateFieldName(fld, af);
+                    someAggFields.Add(aggFieldName);
+                }
+            }
+            // 3. Show Form
+            frmListItems frmList_AggFieldName = new frmListItems();
+            frmList_AggFieldName.myList = someAggFields;
+            frmList_AggFieldName.myJob = frmListItems.job.SelectString;
+            frmList_AggFieldName.AllowNewValue = true;
+            frmList_AggFieldName.Text = "Select aggregate function:";
+            frmList_AggFieldName.ShowDialog();
+            bool OK_chosen = frmList_AggFieldName.OK;
+            string selectedAggFieldName = String.Empty;
+            if (frmList_AggFieldName.mySelectedValues.Count > 0)
+            {
+                selectedAggFieldName = frmList_AggFieldName.mySelectedValues[0];
+            }
+            frmList_AggFieldName = null;
+            if (!OK_chosen)
+            {
+                cancelled = true;
+                return String.Empty;
+            }
+            else
+            {
+                cancelled = false;
+                return selectedAggFieldName;
+            }
+        }
+        public List<field> GetAggFieldList(string aggFieldName)
+        {
+            List<field> aggFields = new List<field>();
+            string countField = "count(*)";  // Default
+            if (!String.IsNullOrEmpty(aggFieldName))
+            {
+                field aggField = new field(aggFieldName);
+                aggFields.Add(aggField);
+            }
+            else  // if no aggFunction chosen, ask about distinct count
+            {
+                List<string> fieldsList = new List<string>();
+                foreach (field fld in currentSql.myFields)
+                {
+                    fieldsList.Add(dataHelper.QualifiedAliasFieldName(fld));
+                }
+                frmListItems frmList_DistinctFields = new frmListItems();
+                frmList_DistinctFields.myList = fieldsList;
+                frmList_DistinctFields.myJob = frmListItems.job.SelectString;
+                frmList_DistinctFields.AllowNewValue = true;
+                frmList_DistinctFields.Text = "Use Count (DISTINCT [fieldName])?";
+                frmList_DistinctFields.ShowDialog();
+                bool OK_chosen = frmList_DistinctFields.OK;
+                string chosenFieldName = String.Empty;
+                if (frmList_DistinctFields.mySelectedIndexes.Count > 0)
+                {
+                    chosenFieldName = frmList_DistinctFields.mySelectedValues[0];
+                }
+
+                frmList_DistinctFields = null;
+                if (OK_chosen && !String.IsNullOrEmpty(chosenFieldName))
+                {
+                    countField = String.Format("count(distinct {0})",chosenFieldName);
+                }
+            }
+            // Add count - something always added
+            field aggCount = new field(countField);
+            aggFields.Add(aggCount);
+            return aggFields;
+        }
+
         private void mnuPrintCurrentTable_Click(object sender, EventArgs e)
         {
 
@@ -1581,133 +1821,6 @@ namespace SqlEditor
             this.Close();
         }
 
-        private void mnuForeignKeyMissing_Click(object sender, EventArgs e)
-        {
-            // Get list of Non-foriegn keys - with perhaps one intended as foreign key
-            DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_PK = 'False' AND is_FK = 'False' AND DataType = 'int'", currentSql.myTable));
-            if (drs.Count() > 0)
-            {
-                // 1. Get user choice for proposed FK
-                List<string> columnList = new List<string>();
-                foreach (DataRow dr in drs)
-                {
-                    columnList.Add(dr["ColumnName"].ToString());
-                }
-                frmListItems nonFK_ListForm = new frmListItems();
-                nonFK_ListForm.myList = columnList;
-                nonFK_ListForm.myJob = frmListItems.job.SelectString;
-                nonFK_ListForm.Text = "Select column you want to make a foreign key";
-                nonFK_ListForm.ShowDialog();
-                string selectedNonFK = nonFK_ListForm.returnString;
-                int selectedNonFKIndex = nonFK_ListForm.returnIndex;
-                nonFK_ListForm = null;
-                if (selectedNonFKIndex > -1 && !String.IsNullOrEmpty(selectedNonFK))
-                {
-                    // 2. Get user choice for proposed Ref Table
-                    DataRow[] drs2 = dataHelper.fieldsDT.Select("is_PK = 'True'");
-                    List<string> refTableList = new List<string>();
-                    foreach (DataRow dr2 in drs2)
-                    {
-                        refTableList.Add(dr2["TableName"].ToString());
-                    }
-                    frmListItems RefTable_ListForm = new frmListItems();
-                    RefTable_ListForm.myList = refTableList;
-                    RefTable_ListForm.myJob = frmListItems.job.SelectString;
-                    RefTable_ListForm.Text = "Select Reference Table";
-                    RefTable_ListForm.ShowDialog();
-                    string selectedRefTable = RefTable_ListForm.returnString;
-                    int selectedRefTableIndex = RefTable_ListForm.returnIndex;
-                    RefTable_ListForm = null;
-                    if (selectedRefTableIndex > -1)
-                    {
-                        DataRow dr = drs[selectedNonFKIndex];  // Index in form same as index in drs.
-                        // Get two inner join fields
-                        field refField = dataHelper.getTablePrimaryKeyField(selectedRefTable);
-                        field nonFkField = dataHelper.getFieldFromFieldsDT(currentSql.myTable, selectedNonFK);
-                        StringBuilder sbWhere = new StringBuilder();
-                        sbWhere.Append(" (NOT EXISTS (SELECT ");
-                        sbWhere.Append(refField.fieldName + " FROM " + refField.table + " AS " + refField.tableAlias);
-                        sbWhere.Append(" WHERE ");
-                        sbWhere.Append(dataHelper.QualifiedAliasFieldName(refField) + " = " + dataHelper.QualifiedAliasFieldName(nonFkField));
-                        sbWhere.Append("))");
-                        txtManualFilter.Text = sbWhere.ToString(); // Will change currentSql.returnSql();
-                        msgText(Properties.MyResources.eachOfDisplayedRowsHasEmptyFK + "  " + Properties.MyResources.ifNoDisplayedRowsNoEmptyFK);
-                        writeGrid_NewFilter(false);
-                    }
-                }
-            }
-        }
-
-        private void mnuToolDuplicateDisplayKeys_Click(object sender, EventArgs e)
-        {
-            // Get display key list of strings from fields table
-            if (currentSql == null) { return; }
-            showDuplicateDispayKeys();
-        }
-
-        private void showDuplicateDispayKeys()
-        {
-            if (currentSql == null) { return; }
-
-            String filter = String.Format("TableName = '{0}' and is_DK = 'true'", currentSql.myTable);
-            DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
-
-            if (drsDKFieldsDT.Count() == 0)
-            {
-                msgText("No display keys!", true, false);
-                mnuMergeDuplicateDKs.Checked = false;
-                return;
-            }
-
-            List<String> dkFields = new List<String>();
-            foreach (DataRow row in drsDKFieldsDT)
-            {
-                dkFields.Add(row["ColumnName"].ToString());
-            }
-            string fields = String.Join(",", dkFields);
-            string fields2 = fields + ", Count(*)";
-            String sqlSelectDuplicates = String.Format("Select {0} From {1} Group By {2} Having Count(*) > 1", fields2, currentSql.myTable, fields);
-            MsSqlWithDaDt DaDt = new MsSqlWithDaDt(sqlSelectDuplicates);
-            if (DaDt.errorMsg != string.Empty)
-            {
-                MessageBox.Show(DaDt.errorMsg, "ERROR in mnuToolDuplicateDisplayKeys_Click");
-                return;
-            }
-            else if (DaDt.dt.Rows.Count == 0)
-            {
-                msgText(Properties.MyResources.EverythingOkNoDuplicates, true, false);
-                mnuMergeDuplicateDKs.Checked = false; // Reset 
-                return;
-            }
-            msgText("Count: " + DaDt.dt.Rows.Count.ToString());
-
-            List<String> andConditions = new List<String>();
-            foreach (DataRow row in DaDt.dt.Rows)
-            {
-                List<String> atomicStatements = new List<String>();
-                foreach (string dkField in dkFields)
-                {
-                    field fl = new field(currentSql.myTable, dkField, DbType.String, 0);
-                    String atomicStatement = String.Format("({0} = '{1}' OR {0} IS NULL)", dataHelper.QualifiedAliasFieldName(fl), row[dkField].ToString());
-                    atomicStatements.Add(atomicStatement);
-                }
-                andConditions.Add("(" + String.Join(" AND ", atomicStatements) + ")");
-                if (mnuMergeDuplicateDKs.Checked)
-                {
-                    break;  // Break after first row - i.e. fix one by one
-                }
-            }
-            string whereCondition = String.Join(" OR ", andConditions);
-            txtManualFilter.Text = whereCondition;
-            writeGrid_NewFilter(false);
-        }
-
-        private void mnuToolsDatabaseInformation_Click(object sender, EventArgs e)
-        {
-            frmDatabaseInfo formDBI = new frmDatabaseInfo();
-            formDBI.ShowDialog();
-        }
-
         private void mnuDeleteConnectionString_Click(object sender, EventArgs e)
         {
             List<connectionString> csList = AppData.GetConnectionStringList();
@@ -1721,14 +1834,19 @@ namespace SqlEditor
             databaseListForm.myList = strCsList;
             databaseListForm.myJob = frmListItems.job.DeleteConnections;
             databaseListForm.ShowDialog();
-            string returnString = databaseListForm.returnString;
+            string selectedString = string.Empty;
+            if (databaseListForm.mySelectedValues.Count > 0)
+            {
+                selectedString = databaseListForm.mySelectedValues[0];
+            }
+            bool OKselected = databaseListForm.OK;
             databaseListForm = null;
-            if (returnString != null)
+            if (OKselected & selectedString != string.Empty)
             {
                 foreach (connectionString cs in csList)
                 {
                     string strCS = String.Format(cs.comboString, cs.server, cs.databaseName, cs.user, "*******");
-                    if (strCS == returnString)
+                    if (strCS == selectedString)
                     {
                         csList.Remove(cs);
                         break;   // Only remove the first one or you will get an error
@@ -1798,7 +1916,7 @@ namespace SqlEditor
                 Application.Restart();
             }
         }
-        
+
         internal void Load_mnuDatabaseList()
         {
             //Get list from App.Data
@@ -1809,72 +1927,6 @@ namespace SqlEditor
                 // {0} for server, {1} for Database, {2} for user, {3} for password (unknown)
                 string csString = String.Format(cs.comboString, cs.server, cs.databaseName, cs.user, "******");
                 mnuConnectionList.DropDownItems.Add(csString);
-            }
-        }
-
-        private void mnuToolsBackupDatabase_Click(object sender, EventArgs e)
-        {
-            if (MsSql.cn != null)
-            {
-                // Get folder
-                string folder = AppData.GetKeyValue("DatabaseBackupFolder");
-                if (string.IsNullOrEmpty(folder) || !Path.Exists(folder))
-                {
-                    folder = SelectFolder(folder, true);  // Returns string.Empty if dialog canceled
-                    if (folder == string.Empty)
-                    {
-                        return;
-                    }
-                }
-
-                //Set complete path
-                string filename = string.Format("{0}-{1}.bak", MsSql.cn.Database, DateTime.Now.ToString("yyyy-MM-dd-hh-mm"));
-                string completeFilePath = Path.Combine(folder, filename);
-                DialogResult result = MessageBox.Show(String.Format("Backup database to {0}?", completeFilePath), "Backup Database", MessageBoxButtons.YesNo);
-                if (result == DialogResult.No)
-                {
-                    result = MessageBox.Show("Choose a different folder?", "Change folder", MessageBoxButtons.YesNo);
-                    if (result == DialogResult.No)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        folder = SelectFolder(folder, true);
-                        if (folder == String.Empty)
-                        {
-                            return;
-                        }
-                        completeFilePath = Path.Combine(folder, filename);
-                    }
-                }
-                if (MsSql.BackupCurrentDatabase(completeFilePath))
-                {
-                    MessageBox.Show(String.Format("Saved Database to {0}.", completeFilePath), "Backup Database");
-                }
-            }
-        }
-
-        private string SelectFolder(string defaultFolder, bool allowNewFolder)
-        {
-            folderBrowserDialog1 = new FolderBrowserDialog();
-            folderBrowserDialog1.ShowNewFolderButton = allowNewFolder;
-            if (Path.Exists(defaultFolder))
-            {
-                folderBrowserDialog1.SelectedPath = defaultFolder;
-            }
-            DialogResult result = folderBrowserDialog1.ShowDialog();
-            string fbdPath = folderBrowserDialog1.SelectedPath;
-            if (result == DialogResult.Cancel) { return string.Empty; }
-            AppData.SaveKeyValue("DatabaseBackupFolder", fbdPath);
-            return fbdPath;
-        }
-
-        private void mnuMergeDuplicateDKs_Click(object sender, EventArgs e)
-        {
-            if (mnuMergeDuplicateDKs.Checked)
-            {
-                showDuplicateDispayKeys();
             }
         }
 
@@ -1889,7 +1941,7 @@ namespace SqlEditor
                 msg.AppendLine(String.Empty);
                 msg.AppendLine("To Batch Insert / Copy :");
                 msg.AppendLine("  1. Filter the table on columns you want to replace in new rows.");
-                msg.AppendLine("     (These filters must include at least one display key.");
+                msg.AppendLine("     (These filters must include at least one display key.)");
                 msg.AppendLine("  2. Select the rows you want to copy.");
                 msg.AppendLine("  3. Click on the Batch Insert button that will appear.");
                 DialogResult reply = MessageBox.Show(msg.ToString(), "Batch Insert", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -1905,7 +1957,7 @@ namespace SqlEditor
 
         private void BatchInsert()
         {
-            if (currentSql != null)
+            if (currentSql != null && !currentSql.isAggregateTable)
             {
                 int selectedRows = dataGridView1.SelectedRows.Count;
                 if (selectedRows < 1)
@@ -2012,12 +2064,17 @@ namespace SqlEditor
                                     sb.AppendLine(lastErrorMsg);
                                 }
                                 DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
-                                if (result == DialogResult.Cancel) { return; }
+                                if (result == DialogResult.Cancel) {
+                                    btnExtra.Visible = false;
+                                    btnExtra.Enabled = false;
+                                    return; }
                             }
                         }
                     }
                 }
             }
+            btnExtra.Visible = false;
+            btnExtra.Enabled = false;
         }
 
         private void mnuBatchUpdate_Click(object sender, EventArgs e)
@@ -2046,12 +2103,14 @@ namespace SqlEditor
 
         private void BatchUpdate()
         {
-            if (currentSql != null)
+            if (currentSql != null && !currentSql.isAggregateTable)
             {
                 int selectedRows = dataGridView1.SelectedRows.Count;
                 if (selectedRows < 1)
                 {
                     msgText("No rows selected for batch update.", true, false);
+                    btnExtra.Visible = false;
+                    btnExtra.Enabled = false;
                 }
                 else
                 {
@@ -2139,15 +2198,23 @@ namespace SqlEditor
                                     sb.AppendLine(lastErrorMsg);
                                 }
                                 DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
-                                if (result == DialogResult.Cancel) { return; }
+                                if (result == DialogResult.Cancel) 
+                                {
+                                    btnExtra.Visible = false;
+                                    btnExtra.Enabled = false;
+
+                                    return; 
+                                }
                             }
                         }
                     }
                 }
             }
+            btnExtra.Visible = false;
+            btnExtra.Enabled = false;
         }
 
-        private List<field> SelectListOfFieldsToChange(bool needsFilteredDisplayKey)
+        private List<field> SelectListOfFieldsToChange(bool inserting)
         {
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
@@ -2167,7 +2234,11 @@ namespace SqlEditor
                     // Batch insert and Batch update only handles fields in myTable  
                     if (selectedField.table == currentSql.myTable)
                     {
-                        if (cmbGridFilterValue[i].SelectedIndex > 0) // 0 is the pseudo item
+                        // 0 is the pseudo item for dropdownlists
+                        if ((cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList &&
+                                cmbGridFilterValue[i].SelectedIndex > 0) ||
+                             (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown &&
+                                cmbGridFilterValue[i].Text != string.Empty))
                         {
                             filteredFields.Add(selectedField);
                             if (dataHelper.isDisplayKey(selectedField))
@@ -2179,7 +2250,7 @@ namespace SqlEditor
                 }
             }
             // Return if no key is filtered in the grid
-            if (needsFilteredDisplayKey && !oneDisplayFieldFiltered)
+            if (inserting && !oneDisplayFieldFiltered)
             {
                 MessageBox.Show("You must select at least one Display Key to batch insert.", "Batch Insert", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return selectedFields;  // Will be empty
@@ -2188,9 +2259,14 @@ namespace SqlEditor
             // Ask which keys the user wants to change
             frmListItems frmDisplayKeys = new frmListItems();
             frmDisplayKeys.myList = filteredFields.Select(fl => fl.fieldName).ToList();
-            frmDisplayKeys.mySelectedList = new List<string>();
+            if (frmDisplayKeys.myList.Count == 0)
+            {
+                MessageBox.Show("You must filter on fields you want to change.", "No filtered fields", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return selectedFields;  // Will be empty
+            }
+            frmDisplayKeys.mySelectedValues = new List<string>();
             frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
-            if (needsFilteredDisplayKey)
+            if (inserting)
             {
                 frmDisplayKeys.Text = "Select the fields to change in Inserted Rows.";
             }
@@ -2199,14 +2275,14 @@ namespace SqlEditor
                 frmDisplayKeys.Text = "Select the fields to update.";
             }
             frmDisplayKeys.ShowDialog();
-            int intSelectedRowsCount = frmDisplayKeys.returnIndex; // Returns -1 if exit or nothing selected
             // Returns list of fields (or empty list if canceled or nothing selected)
-            if (intSelectedRowsCount > 0)
+            if (frmDisplayKeys.OK && frmDisplayKeys.mySelectedValues.Count > 0)
             {
                 // Convert the selected strings back to fields
-                foreach (string sf in frmDisplayKeys.mySelectedList)
+                foreach (string sf in frmDisplayKeys.mySelectedValues)
                 {
-                    selectedFields.Add(filteredFields.FindLast(a => a.fieldName == sf)); // there will be exactly 1
+                    // there will be exactly 1
+                    selectedFields.Add(filteredFields.FindLast(a => a.fieldName == sf));
                 }
             }
             frmDisplayKeys = null;
@@ -2215,18 +2291,22 @@ namespace SqlEditor
 
         private List<(field, string)> SelectValuesForSelectedFields(List<field> selectedFields)
         {
+            // This method searches through the selected fields only.
             List<(field, string)> sqlInsertValues = new List<(field, string)>();
             // Get new values for the selected fields from dropdown options in that cmbGridFilterFields
 
             ComboBox[] cmbGridFilterFields = { cmbGridFilterFields_0, cmbGridFilterFields_1, cmbGridFilterFields_2, cmbGridFilterFields_3, cmbGridFilterFields_4, cmbGridFilterFields_5, cmbGridFilterFields_6, cmbGridFilterFields_7, cmbGridFilterFields_8 };
             ComboBox[] cmbGridFilterValue = { cmbGridFilterValue_0, cmbGridFilterValue_1, cmbGridFilterValue_2, cmbGridFilterValue_3, cmbGridFilterValue_4, cmbGridFilterValue_5, cmbGridFilterValue_6, cmbGridFilterValue_7, cmbGridFilterValue_8 };
 
-            List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
+            // We show the user the display members in our list box form,
+            // but the actual value is the value member.
             List<string> newValueDisplayMembers = new List<string>();
             List<string> newValueValueMembers = new List<string>();
+            List<(string, string)> SelectedFieldsWithNewValues = new List<(string, string)>();
 
             foreach (field sf in selectedFields)
             {
+                // Find the cmbGridFilterFields[i] that filters selectedField
                 for (int i = 0; i < cmbGridFilterFields.Length; i++)
                 {
                     newValueDisplayMembers.Clear();
@@ -2237,27 +2317,37 @@ namespace SqlEditor
                         field cmbFilterField = (field)cmbGridFilterFields[i].SelectedValue; // DropDownList so SelectedIndex > -1
                         if (cmbFilterField.fieldName == sf.fieldName && cmbFilterField.table == currentSql.myTable)
                         {
+                            // DropDown combos are strings - allow the user to select a new value
+                            bool showNewValueButton = false;
+                            if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown)
+                            {
+                                showNewValueButton = true;
+                            }
+                            // Get display member - already the DK list of for ID's.
                             string selectedDisplayMember = cmbGridFilterValue[i].Text;
-                            // Fill up newValue lists
+                            // Fill itemsList with the all the items in the combo dropdown
                             var itemsList = cmbGridFilterValue[i].Items.Cast<DataRowView>();
                             foreach (DataRowView drv in itemsList)
                             {
-                                int index = drv.Row.Table.Columns.IndexOf("ValueMember");
+                                // Get index of the valueMember in the drv
+                                int vmIndex = drv.Row.Table.Columns.IndexOf("ValueMember");
                                 string valueMember = string.Empty;
-                                if (!Convert.IsDBNull(drv.Row.ItemArray[index]))
+                                if (!Convert.IsDBNull(drv.Row.ItemArray[vmIndex]))
                                 {
-                                    int index2 = drv.Row.Table.Columns.IndexOf("DisplayMember");
-                                    string displayMember = drv.Row.ItemArray[index2].ToString();
+                                    // Get index of displayMember in drv.
+                                    int dmIndex = drv.Row.Table.Columns.IndexOf("DisplayMember");
+                                    string displayMember = drv.Row.ItemArray[dmIndex].ToString();
+                                    // Don't include the current value of the filter (selectedDisplayMember)
                                     if (displayMember != selectedDisplayMember)
                                     {
                                         if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList)
                                         {
-                                            int intValueMember = (int)drv.Row.ItemArray[index];
+                                            int intValueMember = (int)drv.Row.ItemArray[vmIndex];
                                             valueMember = intValueMember.ToString();
                                         }
                                         else
                                         {
-                                            valueMember = drv.Row.ItemArray[index].ToString();
+                                            valueMember = drv.Row.ItemArray[vmIndex].ToString();
                                         }
                                         newValueValueMembers.Add(valueMember);
                                         newValueDisplayMembers.Add(displayMember);
@@ -2269,24 +2359,38 @@ namespace SqlEditor
                             frmNewValues.myList = newValueDisplayMembers;
                             frmNewValues.myJob = frmListItems.job.SelectString;
                             frmNewValues.Text = "Select new value for " + sf.fieldName;
+                            frmNewValues.AllowNewValue = showNewValueButton;
                             frmNewValues.ShowDialog();
-                            string selectedItem = frmNewValues.returnString;
-                            int intSelectedRowsCount = frmNewValues.returnIndex; // Returns -1 if exit or nothing selected
+                            bool OKselected = frmNewValues.OK;
+                            string selectedValue = String.Empty;
+                            if (frmNewValues.mySelectedValues.Count > 0)
+                            {
+                                selectedValue = frmNewValues.mySelectedValues[0];
+                            }
                             frmNewValues = null;
-                            // Return if nothing is choosen
-                            if (intSelectedRowsCount < 0)
+                            // Return if nothing is chosen
+                            if (selectedValue == string.Empty)
                             {
                                 sqlInsertValues.Clear();
                                 return sqlInsertValues;
                             }
-                            // The point of all this
-                            for (int k = 0; k < newValueValueMembers.Count; k++)
+                            // For a dropdown with strings, the valueMember is the displayMember
+                            // This will also work for a new value.
+                            if (cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDown)
                             {
-                                // This will be true for some k. 
-                                if (newValueDisplayMembers[k] == selectedItem)
+                                sqlInsertValues.Add((sf, selectedValue));
+                            }
+                            else
+                            {
+                                // For DropDownlist (ID's), find the DisplayMember in list, and add valueMember as sf value
+                                for (int k = 0; k < newValueValueMembers.Count; k++)
                                 {
-                                    sqlInsertValues.Add((sf, newValueValueMembers[k]));
-                                    break;  // From 3rd for loop
+                                    // This will be true for some k. 
+                                    if (newValueDisplayMembers[k] == selectedValue)
+                                    {
+                                        sqlInsertValues.Add((sf, newValueValueMembers[k]));
+                                        break;  // From 3rd for loop
+                                    }
                                 }
                             }
                         }
@@ -2312,9 +2416,152 @@ namespace SqlEditor
             }
         }
 
+        #endregion
+
+        //----------------------------------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------------------------------------
+
+        #region EVENTS - IT Menu events
+        private void mnuForeignKeyMissing_Click(object sender, EventArgs e)
+        {
+            // Get list of Non-foriegn keys - with perhaps one intended as foreign key
+            DataRow[] drs = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_PK = 'False' AND is_FK = 'False' AND DataType = 'int'", currentSql.myTable));
+            if (drs.Count() > 0)
+            {
+                // 1. Get user choice for proposed FK
+                List<string> columnList = new List<string>();
+                foreach (DataRow dr in drs)
+                {
+                    columnList.Add(dr["ColumnName"].ToString());
+                }
+                frmListItems nonFK_ListForm = new frmListItems();
+                nonFK_ListForm.myList = columnList;
+                nonFK_ListForm.myJob = frmListItems.job.SelectString;
+                nonFK_ListForm.Text = "Select column you want to make a foreign key";
+                nonFK_ListForm.ShowDialog();
+                if (nonFK_ListForm.OK && nonFK_ListForm.mySelectedValues.Count > 0)
+                {
+                    // Get selected string
+                    string selectedNonFK = nonFK_ListForm.mySelectedValues[0];
+                    int selectedNonFKIndex = nonFK_ListForm.mySelectedIndexes[0];
+                    nonFK_ListForm = null;  // No more information needed
+
+                    // 2. Get user choice for proposed Ref Table
+                    DataRow[] drs2 = dataHelper.fieldsDT.Select("is_PK = 'True'");
+                    List<string> refTableList = new List<string>();
+                    foreach (DataRow dr2 in drs2)
+                    {
+                        refTableList.Add(dr2["TableName"].ToString());
+                    }
+                    frmListItems RefTable_ListForm = new frmListItems();
+                    RefTable_ListForm.myList = refTableList;
+                    RefTable_ListForm.myJob = frmListItems.job.SelectString;
+                    RefTable_ListForm.Text = "Select Reference Table";
+                    RefTable_ListForm.ShowDialog();
+                    if (RefTable_ListForm.OK && RefTable_ListForm.mySelectedIndexes.Count > 0)
+                    {
+                        string selectedRefTable = RefTable_ListForm.mySelectedValues[0];
+                        RefTable_ListForm = null;
+                        // Index in form same as index in drs.
+                        DataRow dr = drs[selectedNonFKIndex];
+                        // Get two inner join fields
+                        field refField = dataHelper.getTablePrimaryKeyField(selectedRefTable);
+                        field nonFkField = dataHelper.getFieldFromFieldsDT(currentSql.myTable, selectedNonFK);
+                        StringBuilder sbWhere = new StringBuilder();
+                        sbWhere.Append(" (NOT EXISTS (SELECT ");
+                        sbWhere.Append(refField.fieldName + " FROM " + refField.table + " AS " + refField.tableAlias);
+                        sbWhere.Append(" WHERE ");
+                        sbWhere.Append(dataHelper.QualifiedAliasFieldName(refField) + " = " + dataHelper.QualifiedAliasFieldName(nonFkField));
+                        sbWhere.Append("))");
+                        txtManualFilter.Text = sbWhere.ToString(); // Will change currentSql.returnSql();
+                        msgText(Properties.MyResources.eachOfDisplayedRowsHasEmptyFK + "  " + Properties.MyResources.ifNoDisplayedRowsNoEmptyFK);
+                        writeGrid_NewFilter(false);
+                    }
+                    else
+                    {
+                        RefTable_ListForm = null;
+                    }
+                }
+                else
+                {
+                    nonFK_ListForm = null;
+                }
+            }
+        }
+
+        private void mnuToolDuplicateDisplayKeys_Click(object sender, EventArgs e)
+        {
+            // Get display key list of strings from fields table
+            if (currentSql == null) { return; }
+            showDuplicateDispayKeys();
+        }
+
+        private void showDuplicateDispayKeys()
+        {
+            if (currentSql == null) { return; }
+
+            String filter = String.Format("TableName = '{0}' and is_DK = 'true'", currentSql.myTable);
+            DataRow[] drsDKFieldsDT = dataHelper.fieldsDT.Select(filter);
+
+            if (drsDKFieldsDT.Count() == 0)
+            {
+                msgText("No display keys!", true, false);
+                mnuMergeDuplicateDKs.Checked = false;
+                return;
+            }
+
+            List<String> dkFields = new List<String>();
+            foreach (DataRow row in drsDKFieldsDT)
+            {
+                dkFields.Add(row["ColumnName"].ToString());
+            }
+            string fields = String.Join(",", dkFields);
+            string fields2 = fields + ", Count(*)";
+            String sqlSelectDuplicates = String.Format("Select {0} From {1} Group By {2} Having Count(*) > 1", fields2, currentSql.myTable, fields);
+            MsSqlWithDaDt DaDt = new MsSqlWithDaDt(sqlSelectDuplicates);
+            if (DaDt.errorMsg != string.Empty)
+            {
+                MessageBox.Show(DaDt.errorMsg, "ERROR in mnuToolDuplicateDisplayKeys_Click");
+                return;
+            }
+            else if (DaDt.dt.Rows.Count == 0)
+            {
+                msgText(Properties.MyResources.EverythingOkNoDuplicates, true, false);
+                mnuMergeDuplicateDKs.Checked = false; // Reset 
+                return;
+            }
+            msgText("Count: " + DaDt.dt.Rows.Count.ToString());
+
+            List<String> andConditions = new List<String>();
+            foreach (DataRow row in DaDt.dt.Rows)
+            {
+                List<String> atomicStatements = new List<String>();
+                foreach (string dkField in dkFields)
+                {
+                    field fl = new field(currentSql.myTable, dkField, DbType.String, 0);
+                    String atomicStatement = String.Format("({0} = '{1}' OR {0} IS NULL)", dataHelper.QualifiedAliasFieldName(fl), row[dkField].ToString());
+                    atomicStatements.Add(atomicStatement);
+                }
+                andConditions.Add("(" + String.Join(" AND ", atomicStatements) + ")");
+                if (mnuMergeDuplicateDKs.Checked)
+                {
+                    break;  // Break after first row - i.e. fix one by one
+                }
+            }
+            string whereCondition = String.Join(" OR ", andConditions);
+            txtManualFilter.Text = whereCondition;
+            writeGrid_NewFilter(false);
+        }
+
+        private void mnuToolsDatabaseInformation_Click(object sender, EventArgs e)
+        {
+            frmDatabaseInfo formDBI = new frmDatabaseInfo();
+            formDBI.ShowDialog();
+        }
+
         private void mnuShowITTools_CheckedChanged(object sender, EventArgs e)
         {
-            if (programMode != ProgramMode.none && mnuShowITTools.Checked == false)
+            if (programMode != ProgramMode.none && !mnuShowITTools.Checked)
             {
                 Application_Restart();
             }
@@ -2418,10 +2665,14 @@ namespace SqlEditor
             directoryListForm.myJob = frmListItems.job.SelectString;
             directoryListForm.Text = "Select Plugin";
             directoryListForm.ShowDialog();
-            string selectedDirectory = directoryListForm.returnString;
-            int intSelectedDirectory = directoryListForm.returnIndex;
+            bool OKselected = directoryListForm.OK;
+            string selectedDirectory = string.Empty;
+            if (directoryListForm.mySelectedValues.Count > 0)
+            {
+                selectedDirectory = directoryListForm.mySelectedValues[0];
+            }
             directoryListForm = null;
-            if (intSelectedDirectory > -1)
+            if (selectedDirectory != string.Empty)
             {
                 // Executed on next load
                 AppData.SaveKeyValue("deletePluginPath", selectedDirectory);
@@ -2436,7 +2687,7 @@ namespace SqlEditor
                 // Get list of display keys for current table
                 frmListItems frmDisplayKeys = new frmListItems();
                 frmDisplayKeys.myList = new List<string>();
-                frmDisplayKeys.mySelectedList = new List<string>();
+                frmDisplayKeys.mySelectedValues = new List<string>();
                 DataRow[] drsList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}'", currentSql.myTable));
                 DataRow[] drsSelectedList = dataHelper.fieldsDT.Select(String.Format("TableName = '{0}' AND is_DK = 'True'", currentSql.myTable));
                 List<string> columnList = new List<string>();
@@ -2452,12 +2703,12 @@ namespace SqlEditor
                 frmDisplayKeys.myJob = frmListItems.job.SelectMultipleStrings;
                 frmDisplayKeys.Text = "Edit Display Keys (internal list)";
                 frmDisplayKeys.myList = columnList;
-                frmDisplayKeys.mySelectedList = dkColumnList;
+                frmDisplayKeys.mySelectedValues = dkColumnList;
                 frmDisplayKeys.ShowDialog();
-                List<string> selectedDKs = frmDisplayKeys.mySelectedList;
-                int intSelectedDirectory = frmDisplayKeys.returnIndex;
+                List<string> selectedDKs = frmDisplayKeys.mySelectedValues;
+                bool okSelected = frmDisplayKeys.OK;
                 frmDisplayKeys = null;
-                if (intSelectedDirectory > -1)
+                if (okSelected)
                 {
                     //Select the DKs - NO - must turn unselected off
                     foreach (String columnName in columnList)
@@ -2476,6 +2727,84 @@ namespace SqlEditor
                 }
             }
         }
+
+        private void mnuShowSql_Click(object sender, EventArgs e)
+        {
+            if (currentSql != null)
+            {
+                string sql = currentSql.returnSql(command.select);
+                msgText(sql);
+                MessageBox.Show(sql, "Current select Sql");
+            }
+        }
+
+        private void mnuToolsBackupDatabase_Click(object sender, EventArgs e)
+        {
+            if (MsSql.cn != null)
+            {
+                // Get folder
+                string folder = AppData.GetKeyValue("DatabaseBackupFolder");
+                if (string.IsNullOrEmpty(folder) || !Path.Exists(folder))
+                {
+                    folder = SelectFolder(folder, true);  // Returns string.Empty if dialog canceled
+                    if (folder == string.Empty)
+                    {
+                        return;
+                    }
+                }
+
+                //Set complete path
+                string filename = string.Format("{0}-{1}.bak", MsSql.cn.Database, DateTime.Now.ToString("yyyy-MM-dd-hh-mm"));
+                string completeFilePath = Path.Combine(folder, filename);
+                DialogResult result = MessageBox.Show(String.Format("Backup database to {0}?", completeFilePath), "Backup Database", MessageBoxButtons.YesNo);
+                if (result == DialogResult.No)
+                {
+                    result = MessageBox.Show("Choose a different folder?", "Change folder", MessageBoxButtons.YesNo);
+                    if (result == DialogResult.No)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        folder = SelectFolder(folder, true);
+                        if (folder == String.Empty)
+                        {
+                            return;
+                        }
+                        completeFilePath = Path.Combine(folder, filename);
+                    }
+                }
+                if (MsSql.BackupCurrentDatabase(completeFilePath))
+                {
+                    MessageBox.Show(String.Format("Saved Database to {0}.", completeFilePath), "Backup Database");
+                }
+            }
+        }
+
+        private string SelectFolder(string defaultFolder, bool allowNewFolder)
+        {
+            folderBrowserDialog1 = new FolderBrowserDialog();
+            folderBrowserDialog1.ShowNewFolderButton = allowNewFolder;
+            if (Path.Exists(defaultFolder))
+            {
+                folderBrowserDialog1.SelectedPath = defaultFolder;
+            }
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            string fbdPath = folderBrowserDialog1.SelectedPath;
+            if (result == DialogResult.Cancel) { return string.Empty; }
+            AppData.SaveKeyValue("DatabaseBackupFolder", fbdPath);
+            return fbdPath;
+        }
+
+        private void mnuMergeDuplicateDKs_Click(object sender, EventArgs e)
+        {
+            if (mnuMergeDuplicateDKs.Checked)
+            {
+                showDuplicateDispayKeys();
+            }
+        }
+
+
 
         #endregion
 
@@ -2514,7 +2843,7 @@ namespace SqlEditor
 
         private void GridContextMenu_SetFkAsMainFilter_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.SelectedRows.Count == 1)
+            if (!currentSql.isAggregateTable && dataGridView1.SelectedRows.Count == 1)
             {
                 List<field> foreignKeys = new List<field>();
                 // Get list of Foriegn keys
@@ -2538,13 +2867,17 @@ namespace SqlEditor
                     ParentTablesForm.myJob = frmListItems.job.SelectString;
                     ParentTablesForm.Text = "Select Foreign Key";
                     ParentTablesForm.ShowDialog();
-                    string selectedFK = ParentTablesForm.returnString;
-                    int selectedFKindex = ParentTablesForm.returnIndex;
-                    ParentTablesForm = null;
-                    if (selectedFKindex > -1 && !String.IsNullOrEmpty(selectedFK))
+                    bool OKselected = ParentTablesForm.OK;
+                    int selectedFKindex = -1;
+                    if (ParentTablesForm.mySelectedValues.Count > 0)
                     {
-                        // 1.  Get Where for Parent table 
-                        field fieldInCurrentTable = foreignKeys[selectedFKindex];
+                        selectedFKindex = ParentTablesForm.mySelectedIndexes[0];
+                    }
+                    ParentTablesForm = null;
+                    if (OKselected && selectedFKindex > -1)
+                    {
+                        // 1.  Get Where for Parent table
+                        field fieldInCurrentTable = foreignKeys[selectedFKindex]; // Index in form is also index in foreignKeys list
                         string refTableOfSelectedFK = dataHelper.getForeignKeyRefField(fieldInCurrentTable).table;
                         int dgColumnIndex = currentSql.getColumn(fieldInCurrentTable);
                         if (dgColumnIndex > -1)  // A needless check
@@ -2915,7 +3248,7 @@ namespace SqlEditor
 
         private void dataGridView1_ColumnWidthChanged(object sender, DataGridViewColumnEventArgs e)
         {
-            if (currentSql != null)
+            if (currentSql != null && !currentSql.isAggregateTable)
             {
                 if (!tableOptions.writingTable)
                 {
@@ -2944,7 +3277,7 @@ namespace SqlEditor
         // Update datatable in FkComboEditingControl on entering cell.  
         private void dataGridView1_CellEnter(object sender, DataGridViewCellEventArgs e)
         {
-            if (programMode == ProgramMode.edit)
+            if (programMode == ProgramMode.edit && !currentSql.isAggregateTable)
             {
                 field colField = currentSql.myFields[e.ColumnIndex];
                 msgText(currentSql.myTable);
@@ -3012,7 +3345,7 @@ namespace SqlEditor
         private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (programMode == ProgramMode.edit) msgDebug(", CVC");
-            if (!tableOptions.writingTable)
+            if (!tableOptions.writingTable && !currentSql.isAggregateTable)
             {
                 DataGridViewCell currentCell = dataGridView1.CurrentCell;
                 field drColField = currentSql.myFields[currentCell.ColumnIndex];
@@ -3156,7 +3489,8 @@ namespace SqlEditor
             // Check for same column ascending and change to descending  
             if (currentSql.myOrderBys.Count > 0)
             {
-                if (currentSql.myOrderBys[0].fld == currentSql.myFields[e.ColumnIndex])  // New column is the same as the old.
+                // New column is the same as the old.
+                if (currentSql.myOrderBys[0].fld == currentSql.myFields2[e.ColumnIndex])
                 {
                     if (currentSql.myOrderBys[0].sortOrder == System.Windows.Forms.SortOrder.Ascending)
                     {
@@ -3166,7 +3500,7 @@ namespace SqlEditor
             }
             // Update myOrdersBy to sort by newColumn and dir - may be same column
             currentSql.myOrderBys.Clear();
-            orderBy ob = new orderBy(currentSql.myFields[e.ColumnIndex], newSortOrder);
+            orderBy ob = new orderBy(currentSql.myFields2[e.ColumnIndex], newSortOrder);
             currentSql.myOrderBys.Add(ob);
             currentSql.myPage = 1;
             // Write the grid with the new order - write Grid will format the header cell
@@ -3466,7 +3800,8 @@ namespace SqlEditor
 
         //  COMBO FILTERS COMBOS EVENTS-----------------------------------------------------------------------------------------
 
-        // Unbind all CFV, set rebinding=true, set up and bind new CFV, rebind empty GFV and warn about others
+        // Unbind old lblCmbFilterFields,set up and bind new CFV,
+        // rebind empty GFV and warn about others
         private void cmbComboTableList_SelectedIndexChanged(object sender, EventArgs e)
         {
             Label[] lblCmbFilterFields = { lblCmbFilterField_0, lblCmbFilterField_1, lblCmbFilterField_2, lblCmbFilterField_3, lblCmbFilterField_4, lblCmbFilterField_5 };
@@ -3494,7 +3829,7 @@ namespace SqlEditor
                         break;
                     }
                 }
-                Tuple<string, string, string> key = Tuple.Create(PkRefTable.tableAlias, PkRefTable.table, PkRefTable.fieldName);
+                Tuple<string, string, string> key = System.Tuple.Create(PkRefTable.tableAlias, PkRefTable.table, PkRefTable.fieldName);
                 foreach (field fi in currentSql.PKs_OstensiveDictionary[key])
                 {
                     if (comboNumber < cmbComboFilterValue.Count()) // Skip if too many
@@ -3510,7 +3845,7 @@ namespace SqlEditor
                         tableOptions.doNotRebindGridFV = true;
                         RebindOneComboFilterValueCombo(comboNumber);
                         tableOptions.doNotRebindGridFV = false;
-                        if (!tableOptions.firstTimeWritingTable) // Grid not yet loaded and so can't get header color
+                        if (!currentSql.isAggregateTable && !tableOptions.firstTimeWritingTable) // Grid not yet loaded and so can't get header color
                         {
                             // Set color of combo
                             int colIndex = currentSql.getColumn(fi);
@@ -3574,7 +3909,6 @@ namespace SqlEditor
             }
         }
 
-
         private void BindAllComboFilterValueCombos()
         {
             ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
@@ -3607,6 +3941,85 @@ namespace SqlEditor
             BindingList<string> strBindingList = new BindingList<string>(strList);
             // Text will change to string.empty, but since it is unbound this is no change
             cmb.DataSource = strBindingList;
+        }
+
+        private void Set_myComboWheres(field PkField)  // PK used to get inner joins 
+        {   // Adds all the filters - FK, DK, non-Key and
+            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
+
+            // Clear any old filters from currentSql
+            currentSql.myComboWheres.Clear();
+
+            //Main filter - add this where to the currentSql)
+            if (cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
+            {
+                where mfWhere = (where)cmbMainFilter.SelectedValue;
+
+                if (Convert.ToInt32(mfWhere.whereValue) > 0)
+                {
+                    if (currentSql.MainFilterTableIsInComboSql(mfWhere, PkField, out string tableAlias))
+                    {
+                        mfWhere.fl.tableAlias = tableAlias;
+                        currentSql.myComboWheres.Add(mfWhere);
+                    }
+                }
+            }
+            // cmbComboFilterFields  (6 fields)
+            for (int i = 0; i < cmbComboFilterValue.Length; i++)
+            {
+                if (cmbComboFilterValue[i].Enabled)  // True iff visible
+                {
+                    if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
+                    {
+                        if (cmbComboFilterValue[i].Text != String.Empty) // ComboFV is a non-PK non-FK
+                        {
+                            field comboFF = (field)cmbComboFilterValue[i].Tag;
+                            field PKcomboFF = dataHelper.getTablePrimaryKeyField(comboFF.table);
+                            PKcomboFF.tableAlias = comboFF.tableAlias;
+                            if (currentSql.TableIsInMyInnerJoins(PkField, comboFF.tableAlias))  // Should always be true
+                            {
+                                where wh = new where(comboFF, cmbComboFilterValue[i].Text);
+                                if (dataHelper.TryParseToDbType(wh.whereValue, comboFF.dbType))
+                                {
+                                    currentSql.myComboWheres.Add(wh);
+                                }
+                                else
+                                {
+                                    string errorMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
+                                    msgTextError(errorMsg);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void FillComboDT(field fl, comboValueType cmbValueType)
+        {
+            // 1. Set the SqlWheresForCombo in currentSql
+            // If a foreign key
+            if (cmbValueType == comboValueType.PK_myTable || cmbValueType == comboValueType.PK_refTable)
+            {
+                Set_myComboWheres(fl);  // Filter by main filter and visible Combo filter Combos
+            }
+            else  // a text field
+            {
+                field PkTable = dataHelper.getTablePrimaryKeyField(fl.table);
+                PkTable.tableAlias = fl.tableAlias;
+                Set_myComboWheres(PkTable);
+            }
+            // 2. Get SQL and Fill dataHelper.comboDT
+            // combo.returnComboSql works very differently for Primary keys and non-Primary keys
+            string strSql = currentSql.returnComboSql(fl, formOptions.orderComboListsByPK, cmbValueType);
+            dataHelper.comboDT = new DataTable();
+            string errorMsg = MsSql.FillDataTable(dataHelper.comboDT, strSql);
+            if (errorMsg != string.Empty)
+            {
+                msgTextError(errorMsg);
+                MessageBox.Show(errorMsg, "ERROR in FillComboDT", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
         }
 
         // Used in almost all combo boxs as the boxs dropdown event
@@ -3789,9 +4202,51 @@ namespace SqlEditor
             {
                 // 1. Check that all display keys and foreign keys are loaded - and build where list
                 List<where> whereList = new List<where>(); // Used when adding row
-                List<where> dkWhere = new List<where>();  // Used to check for repeat displaykeys
-
-                for (int i = 0; i < cmbGridFilterFields.Length; i++)  // Skip the first gridFilter - all others are display or FK's
+                List<where> dkWhere = new List<where>();  // Used below to check for a row with same displaykeys
+                // Handle the first gridFilterField - non-FK, non-DK fields, but includes the PK
+                if (cmbGridFilterFields[0].Enabled)  // Always true
+                {
+                    field cmbField = (field)cmbGridFilterFields[0].SelectedValue;
+                    List<field> yellowFields = cmbGridFilterFields[0].Items.Cast<field>().ToList();
+                    foreach (field yellowFl in yellowFields)
+                    {
+                        if (yellowFl.baseKey.Equals(cmbField.baseKey))
+                        {
+                            if (cmbGridFilterValue[0].Text != string.Empty)
+                            {
+                                where wh = new where(cmbField, cmbGridFilterValue[0].Text);
+                                whereList.Add(wh);
+                            }
+                        }
+                        else
+                        {
+                            if (!dataHelper.isTablePrimaryKeyField(yellowFl))
+                            {
+                                bool nullable = dataHelper.isNullable(yellowFl);
+                                string defaultValue = dataHelper.defaultValue(yellowFl);
+                                if (!nullable && string.IsNullOrEmpty(defaultValue))
+                                {
+                                    frmListItems frmNewValue = new frmListItems();
+                                    frmNewValue.myJob = frmListItems.job.SelectString;
+                                    frmNewValue.Text = "Enter value for '" + yellowFl.fieldName + "'";
+                                    frmNewValue.AllowNewValue = true;
+                                    frmNewValue.ShowDialog();
+                                    bool okSelected = frmNewValue.OK;
+                                    string newValue = string.Empty;
+                                    if (okSelected && frmNewValue.mySelectedValues.Count > 0)
+                                    {
+                                        newValue = frmNewValue.mySelectedValues[0];
+                                        where wh = new where(yellowFl, newValue);
+                                        whereList.Add(wh);
+                                    }
+                                    frmNewValue = null;
+                                }
+                            }
+                        }
+                    }
+                }
+                // Handle all other gridFilterField - these are DKs or FKs
+                for (int i = 1; i < cmbGridFilterFields.Length; i++)
                 {
                     if (cmbGridFilterFields[i].Enabled)  // Sign it is being used
                     {
@@ -3802,11 +4257,11 @@ namespace SqlEditor
                         {
                             if (cmbGridFilterValue[i].Text == string.Empty)
                             {
-                                if (i > 0)  // ignore the first yellow dropdown if empty
-                                {
-                                    MessageBox.Show(String.Format(Properties.MyResources.pleaseSelectAvalueFor0, cmbLabel), Properties.MyResources.mustSelectAvalue, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                    return;
-                                }
+                                //if (i > 0)  // ignore the first yellow dropdown if empty
+                                //{
+                                MessageBox.Show(String.Format(Properties.MyResources.pleaseSelectAvalueFor0, cmbLabel), Properties.MyResources.mustSelectAvalue, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                                //}
                             }
                             else
                             {
@@ -3816,31 +4271,30 @@ namespace SqlEditor
                                 {
                                     dkWhere.Add(wh);
                                 }
-
                             }
                         }
                         else  // cmbGridFilterValue[i].DropDownStyle == ComboBoxStyle.DropDownList
                         {
                             if (cmbGridFilterValue[i].SelectedIndex == 0)
                             {
-                                if (i > 0)  // ignore the first yellow dropdown if empty
-                                {
-                                    MessageBox.Show(String.Format("Please select a value for {0}", cmbLabel), "Please select a value.", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                    return;
-                                }
+                                //if (i > 0)  // ignore the first yellow dropdown if empty
+                                //{
+                                MessageBox.Show(String.Format("Please select a value for {0}", cmbLabel), "Please select a value.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                return;
+                                //}
                             }
                             else
                             {
                                 //// Don't add first Grid filter if it is the primary key of this table
-                                if (!dataHelper.isTablePrimaryKeyField(cmbField)) // Vacuous - but in future myTable primary key might be in cmbGridFFcombo[0]
+                                // if (!dataHelper.isTablePrimaryKeyField(cmbField)) // Vacuous - but in future myTable primary key might be in cmbGridFFcombo[0]
+                                //{
+                                where wh = new where(cmbField, cmbGridFilterValue[i].SelectedValue.ToString());
+                                whereList.Add(wh);
+                                if (dataHelper.isDisplayKey(cmbField))  // Might be a foreign key
                                 {
-                                    where wh = new where(cmbField, cmbGridFilterValue[i].SelectedValue.ToString());
-                                    whereList.Add(wh);
-                                    if (dataHelper.isDisplayKey(cmbField))  // Might be a foreign key
-                                    {
-                                        dkWhere.Add(wh);
-                                    }
+                                    dkWhere.Add(wh);
                                 }
+                                //}
                             }
                         }
                     }
@@ -3879,7 +4333,7 @@ namespace SqlEditor
                 List<Tuple<string, string>> tupleList = new List<Tuple<string, string>>();
                 foreach (where wh in whereList)
                 {
-                    tupleList.Add(Tuple.Create(wh.fl.fieldName, wh.whereValue));
+                    tupleList.Add(System.Tuple.Create(wh.fl.fieldName, wh.whereValue));
                 }
 
                 foreach (Func<string, List<Tuple<string, string>>, bool> f in dgvHelper.insertConstraints)
@@ -4236,7 +4690,7 @@ namespace SqlEditor
 
         private void toolStripColumnWidth_Click(object sender, EventArgs e)
         {
-            if (currentSql != null)
+            if (currentSql != null && !currentSql.isAggregateTable)
             {
                 toolStripButtonColumnWidth.Enabled = false;
                 formOptions.narrowColumns = !formOptions.narrowColumns;
@@ -4337,16 +4791,12 @@ namespace SqlEditor
         //----------------------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------------------
 
-        #region Events - Other events and related functions
-
+        #region Events - txtManualFilter and related functions
 
         private void txtManualFilter_TextChanged(object sender, EventArgs e)
         {
-            if (!txtManualFilter.Enabled) { return; }
-
             string text = txtManualFilter.Text;
-            if (text.Length == 0) { return; }
-
+            if(text.Length == 0) { return; }
             // Show fields in 
             if (text.Length > 3)
             {
@@ -4358,7 +4808,6 @@ namespace SqlEditor
                         {
                             if (text.Substring(text.Length - (key.Length + 3)) == String.Format("[{0}].", key))
                             {
-                                txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
                                 txtManualFilter.AutoCompleteCustomSource = null;
                                 txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
                                 AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
@@ -4443,86 +4892,6 @@ namespace SqlEditor
                 }
             }
             return 0;
-        }
-
-
-        private void callSqlWheresForCombo(field PkField)  // PK used to get inner joins 
-        {   // Adds all the filters - FK, DK, non-Key and
-            ComboBox[] cmbComboFilterValue = { cmbComboFilterValue_0, cmbComboFilterValue_1, cmbComboFilterValue_2, cmbComboFilterValue_3, cmbComboFilterValue_4, cmbComboFilterValue_5 };
-
-            // Clear any old filters from currentSql
-            currentSql.myComboWheres.Clear();
-
-            //Main filter - add this where to the currentSql)
-            if (cmbMainFilter.SelectedIndex != cmbMainFilter.Items.Count - 1)
-            {
-                where mfWhere = (where)cmbMainFilter.SelectedValue;
-
-                if (Convert.ToInt32(mfWhere.whereValue) > 0)
-                {
-                    if (currentSql.MainFilterTableIsInComboSql(mfWhere, PkField, out string tableAlias))
-                    {
-                        mfWhere.fl.tableAlias = tableAlias;
-                        currentSql.myComboWheres.Add(mfWhere);
-                    }
-                }
-            }
-            // cmbComboFilterFields  (6 fields)
-            for (int i = 0; i < cmbComboFilterValue.Length; i++)
-            {
-                if (cmbComboFilterValue[i].Enabled)  // True iff visible
-                {
-                    if (cmbComboFilterValue[i].DataSource != null)  // Probably not needed but just in case 
-                    {
-                        if (cmbComboFilterValue[i].Text != String.Empty) // ComboFV is a non-PK non-FK
-                        {
-                            field comboFF = (field)cmbComboFilterValue[i].Tag;
-                            field PKcomboFF = dataHelper.getTablePrimaryKeyField(comboFF.table);
-                            PKcomboFF.tableAlias = comboFF.tableAlias;
-                            if (currentSql.TableIsInMyInnerJoins(PkField, comboFF.tableAlias))  // Should always be true
-                            {
-                                where wh = new where(comboFF, cmbComboFilterValue[i].Text);
-                                if (dataHelper.TryParseToDbType(wh.whereValue, comboFF.dbType))
-                                {
-                                    currentSql.myComboWheres.Add(wh);
-                                }
-                                else
-                                {
-                                    string erroMsg = String.Format(dataHelper.errMsg, dataHelper.errMsgParameter1, dataHelper.errMsgParameter2);
-                                    msgTextError(erroMsg);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void FillComboDT(field fl, comboValueType cmbValueType)
-        {
-            // 1. Set the SqlWheresForCombo in currentSql
-            // If a foreign key
-            if (cmbValueType == comboValueType.PK_myTable || cmbValueType == comboValueType.PK_refTable)
-            {
-                callSqlWheresForCombo(fl);  // Filter by main filter and visible Combo filter Combos
-            }
-            else  // a text field
-            {
-                field PkTable = dataHelper.getTablePrimaryKeyField(fl.table);
-                PkTable.tableAlias = fl.tableAlias;
-                callSqlWheresForCombo(PkTable);
-            }
-            // 2. Get SQL and Fill dataHelper.comboDT
-            // combo.returnComboSql works very differently for Primary keys and non-Primary keys
-            string strSql = currentSql.returnComboSql(fl, formOptions.orderComboListsByPK, cmbValueType);
-            dataHelper.comboDT = new DataTable();
-            string errorMsg = MsSql.FillDataTable(dataHelper.comboDT, strSql);
-            if (errorMsg != string.Empty)
-            {
-                msgTextError(errorMsg);
-                MessageBox.Show(errorMsg, "ERROR in FillComboDT", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
         }
 
         private void SetSelectedCellsColor()
@@ -4655,24 +5024,17 @@ namespace SqlEditor
 
         private void btnExtra_Click(object sender, EventArgs e)
         {
-            // MsSql.testing();
-            if (btnExtra.Tag == "batchInsert")
+            if (currentSql != null)
             {
-                btnExtra.Tag = String.Empty;
-                btnExtra.Visible = false;
-                btnExtra.Enabled = false;
-                BatchInsert();  // Must finish this before next command
-                SelectMultipleRows(false);
+                if (btnExtra.Tag == "batchUpdate")
+                {
+                    BatchUpdate();
+                }
+                else if (btnExtra.Tag == "batchInsert")
+                {
+                    BatchInsert();
+                }
             }
-            else if (btnExtra.Tag == "batchUpdate")
-            {
-                btnExtra.Tag = String.Empty;
-                btnExtra.Visible = false;
-                btnExtra.Enabled = false;
-                BatchUpdate();  // Must finish this before next command
-                SelectMultipleRows(false);
-            }
-
         }
 
         #region Events that are unused or do nothing (accidently entered here or storing)
@@ -4696,9 +5058,14 @@ namespace SqlEditor
                     ChildTablesForm.myJob = frmListItems.job.SelectString;
                     ChildTablesForm.Text = "Select Table";
                     ChildTablesForm.ShowDialog();
-                    string selectedTable = ChildTablesForm.returnString;
+                    bool OKselected = ChildTablesForm.OK;
+                    string selectedTable = string.Empty;
+                    if (ChildTablesForm.mySelectedValues.Count > 0)
+                    {
+                        selectedTable = ChildTablesForm.mySelectedValues[0];
+                    }
                     ChildTablesForm = null;
-                    if (!String.IsNullOrEmpty(selectedTable))
+                    if (OKselected && selectedTable != string.Empty)
                     {
                         writeGrid_NewTable(selectedTable, true);
                     }
@@ -4724,6 +5091,7 @@ namespace SqlEditor
         }
 
         #endregion
+
     }
 }
 

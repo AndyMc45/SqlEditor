@@ -76,9 +76,15 @@ namespace SqlEditor
                         databaseListForm.myJob = frmListItems.job.SelectString;
                         databaseListForm.Text = "Select Database";
                         databaseListForm.ShowDialog();
-                        if (databaseListForm.returnString != string.Empty)
+                        bool OKselected = databaseListForm.OK;
+                        string selectedValue = string.Empty;
+                        if (databaseListForm.mySelectedValues.Count > 0)
+                        { 
+                            selectedValue = databaseListForm.mySelectedValues[0];
+                        }
+                        if (selectedValue != string.Empty)
                         {
-                            this.txtDatabase.Text = databaseListForm.returnString;
+                            this.txtDatabase.Text = selectedValue;
                         }
                         databaseListForm = null;
                     }

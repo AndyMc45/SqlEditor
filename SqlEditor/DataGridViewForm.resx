@@ -1762,6 +1762,18 @@
   <data name="mnuAllowDeepDelete.Text" xml:space="preserve">
     <value>Allow deep delete</value>
   </data>
+  <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>237, 6</value>
+  </data>
+  <data name="mnuAggregateTable.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 30</value>
+  </data>
+  <data name="mnuAggregateTable.Text" xml:space="preserve">
+    <value>Summary Table</value>
+  </data>
+  <data name="toolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>237, 6</value>
+  </data>
   <data name="mnuTools.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 29</value>
   </data>
@@ -1779,6 +1791,12 @@
   </data>
   <data name="mnuToolsBackupDatabase.Text" xml:space="preserve">
     <value>Backup Database</value>
+  </data>
+  <data name="mnuShowSql.Size" type="System.Drawing.Size, System.Drawing">
+    <value>356, 30</value>
+  </data>
+  <data name="mnuShowSql.Text" xml:space="preserve">
+    <value>Current Table Sql</value>
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>353, 6</value>
@@ -1985,7 +2003,7 @@
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>157</value>
+    <value>25</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>10, 25</value>
@@ -2125,6 +2143,24 @@
   <data name="&gt;&gt;mnuAllowDeepDelete.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;toolStripSeparator4.Name" xml:space="preserve">
+    <value>toolStripSeparator4</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mnuAggregateTable.Name" xml:space="preserve">
+    <value>mnuAggregateTable</value>
+  </data>
+  <data name="&gt;&gt;mnuAggregateTable.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Name" xml:space="preserve">
+    <value>toolStripSeparator5</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;mnuIT_Tools.Name" xml:space="preserve">
     <value>mnuIT_Tools</value>
   </data>
@@ -2141,6 +2177,12 @@
     <value>mnuToolsBackupDatabase</value>
   </data>
   <data name="&gt;&gt;mnuToolsBackupDatabase.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;mnuShowSql.Name" xml:space="preserve">
+    <value>mnuShowSql</value>
+  </data>
+  <data name="&gt;&gt;mnuShowSql.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;toolStripSeparator2.Name" xml:space="preserve">

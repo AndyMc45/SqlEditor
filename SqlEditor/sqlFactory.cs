@@ -1,6 +1,8 @@
 // using Microsoft.Office.Interop.Word;
+using Microsoft.SqlServer.Server;
 using System.Data;
 using System.Text;
+using Windows.Media.AppBroadcasting;
 
 namespace SqlEditor
 {
@@ -9,7 +11,8 @@ namespace SqlEditor
     {
         #region Variables
         public string errorMsg = String.Empty;
-        public string strManualWhereClause = String.Empty;  // If not empty, this will replace the where list in s
+        // If strManualWhereClause is empty, it will replace the where list in sql
+        public string strManualWhereClause = String.Empty;  
         public string myTable = "";
         public int myPage = 0;  // Asks for all records, 1 is first page
         public int myPageSize;  // Set by constructor
@@ -29,24 +32,57 @@ namespace SqlEditor
             }
         }
 
-        // SQL will be built from these three lists
+        // SQL built from 3 lists: myFields, myOrderBys, myWheres
+        // SQL for a Combo uses the combo field and myComboWheres
         // myFields never changes (once it is constructed by the constructor)		
-        public List<field> myFields = new List<field>();  // a field contains a .tableAlias, a .table, and a .fieldName
+        // A field contains a .tableAlias, a .table, and a .fieldName
+        public List<field> myFields = new List<field>();
         public List<orderBy> myOrderBys = new List<orderBy>();
         public List<where> myWheres = new List<where>();
         // Used to get the sql for a combo box dropdown items 
         public List<where> myComboWheres = new List<where>();
 
-        // PKs_OstensiveDictionary - the fields that the table will show in the main grid or the combos.
+        // PKs_OstensiveDictionary - the fields that the table PK will show in the main grid or the combos.
         // "OstensiveDictionary" means the human understandable fields that identify the PK.
-        // For example the OstensiveDefinition of "StudentDegreeID" = 32  might be the Student name field and the degree name field
-        // There should be unique index on the table for the OstensiveDefinition fields.
-        public Dictionary<Tuple<string, string, string>, List<field>> PKs_OstensiveDictionary = new Dictionary<Tuple<string, string, string>, List<field>>();
+        // For example the OstensiveDefinition of "StudentDegreeID" = 32  might be
+        // the Student name field and the degree name field.
+        // There should be unique index on each table giving the Display keys / OstensiveDefinition fields.
+        // The Tuple<string,string,string> is just the PK field in another format - although missing type.
+        // The three values are the field.tableAlias, field.table, field.fieldName
 
-        // Pks_InnerjoinMap - map from and PK_SomeTable.key to all innerJoins in SomeTable.
-        // Each inner join is an FK in the table and the reference table it refers to.
-        // Used to get the table string for any table and whenever we need to find the innerjoins of a table.
-        public Dictionary<Tuple<string, string, string>, List<innerJoin>> PKs_InnerjoinMap = new Dictionary<Tuple<string, string, string>, List<innerJoin>>();
+        public Dictionary<Tuple<string, string, string>, List<field>> 
+            PKs_OstensiveDictionary = new Dictionary<Tuple<string, string, string>, List<field>>();
+
+        // Pks_InnerjoinMap - map from a PK for a table to all innerJoins in the table.
+        // Each inner join is a FK in the table and the reference table it refers to.
+        // Used to get sql table string and whenever we need to find the inner joins of a table.
+        public Dictionary<Tuple<string, string, string>, List<innerJoin>> 
+            PKs_InnerjoinMap = new Dictionary<Tuple<string, string, string>, List<innerJoin>>();
+
+        // Following two used to get SQL for an aggregate function(s)
+        public List<field> myGroupByFields = new List<field>();
+        public List<field> myAggFieldList = new List<field>();
+
+        public List<field> myFields2
+        {
+            get {
+                if (myAggFieldList.Count > 0){
+                    return myGroupByFields.Concat(myAggFieldList).ToList();
+                }
+                else { 
+                    return myFields; 
+                }
+            }
+        }
+
+        public bool isAggregateTable
+        {
+            get
+            {
+                if (myAggFieldList.Count > 0) { return true; }
+                else { return false; }
+            }
+        }
 
         #endregion
 
@@ -54,7 +90,8 @@ namespace SqlEditor
         public SqlFactory(string table, int page, int pageSize) : this(table, page, pageSize, false) { }
         public SqlFactory(string table, int page, int pageSize, bool includeAllColumnsInAllTables)
         {
-            // If true, very slow in datagridview, if we make this true for transcripts - 89 columns;
+            // If includeAllColumnsInAllTables is true, this is very slow in datagridview
+            // For example, the transcripts table will have 89 columns;
             // Database call is fast, only the display is slow;
             this.includeAllColumnsInAllTables = includeAllColumnsInAllTables;
             myTable = table;
@@ -62,20 +99,21 @@ namespace SqlEditor
             myPageSize = pageSize;
 
             // The main work of this constructor
-            errorMsg = addFieldsAndInnerJoins();
+            errorMsg = ConstructMyFieldsInnerJoinsAndOstensiveDefinitions();
 
-            // If there is no ostensive definition for any PK or FK, add the primary key of myTable or refTable
+            // If there is no ostensive definition for any PK or FK reference table,
+            // add the primary key of the table (either myTable or the reference table for a FK)
             foreach (Tuple<string, string, string> pk in PKs_OstensiveDictionary.Keys)
             {
                 if (PKs_OstensiveDictionary[pk].Count == 0)
                 {
                     field PK_myTable = dataHelper.getTablePrimaryKeyField(myTable);
-                    if (pk.Equals(PK_myTable.key))  // Comparing to Tuples - ? worked with ==
+                    if (pk.Equals(PK_myTable.key))  // Comparing two Tuples - ? worked with ==
                     {
                         PKs_OstensiveDictionary[pk].Add(PK_myTable);
                     }
-                    else  // primary key of ref table - only PK's added to PK_Ostensive - either of myTable or RefTable of FKs
-                    {   // pk = <tableAlias, table, fieldName>
+                    else // primary key of ref table - only PK's added to PK_OstensiveDictionary
+                    {                           
                         field PK_RefTable = dataHelper.getFieldFromFieldsDT(pk.Item2, pk.Item3);
                         PK_RefTable.tableAlias = pk.Item1;
                         PKs_OstensiveDictionary[pk].Add(PK_RefTable);
@@ -85,38 +123,49 @@ namespace SqlEditor
 
         }
 
-        // addInnerJoin is complex - it stores somewhere everything about the table that the program needs to know 
-        // (1) Go through table and adds to myInnerJoins and myFields lists
-        // (2) Add map from every primary key to all ForeignKeys.  (PKs_InnerjoinMap[PK] --> list of FK inner joins in that PK table)
-        // Note: The list of FK does NOT contain grandchildren.  But the PK of the Son (ref.) table will be a key in PKs_InnerJoinMap, and this will have its FKs.
-        // (3) Add map from every primary key to all its displayFields (PKs_OstensiveDictionary[PK] --> list of display fields)
-        // Note: the list of Display keys has grandchildren.  And every entry has an FKAncestors list that maps the Display back to a column in myTable.
-        // Consider "StudentDegreesID", the table has 3 FK display keys (studentID, degreeID, handbookID).
-        // THe student table and degree table both have one display key (the names)
-        // The degreeID PK has 2 display keys: The name and DelMethID. The DelMethID display key has one display key (the name).  
-        // So StudentDegreesID will map to 4 display keys.
-        // The degreeName/Handbook/StudentName all have one FK ancester - Fk back to the StudentDegree table
-        // The DelMethod Name has two ancesters -- tracing back to Delivery Method table and then to the StudentDegree Table
+        // ConstructMyFieldsInnerJoinsAndOstensiveDefinitions is complex
+        // It fills variables with everything about the table that the program needs to know 
+        // (1) myInnerJoins and myFields lists -
+        //      Goes through table and adds to myInnerJoins and myFields lists
+        // (2) PKs_InnerjoinMap[PK] --> list of FK inner joins in that PK table
+        //      A map from every primary key to all ForeignKeys.  
+        //      The list of FKs does NOT contain grandchildren.
+        //      But the PK of the reference table (the son) will be a key in PKs_InnerJoinMap,
+        //      and this will have its FKs.
+        // (3) PKs_OstensiveDictionary[PK] --> list of display fields for PK
+        //      A map from every primary key to all its displayFields
+        //      The list of Display keys has grandchildren.  And every field has an FKAncestors list
+        //      that maps the Display back to a column in myTable.
+        //      Consider "StudentDegreesID", the table has 3 FK display keys (studentID, degreeID, handbookID).
+        //      The student table and degree table both have one display key (the names)
+        //      The degreeID PK has 2 display keys: The name and DelMethID.
+        //      The DelMethID display key has one display key (the name).  
+        //      So StudentDegreesID will map to 4 display keys.
+        //      The degreeName/Handbook/StudentName fields all have one FK ancester-the FK in the StudentDegree table
+        //      The DelMethod Name filed has two ancestors- Delivery Method table PK and FK in StudentDegree Table
         // (4) Finally, keep a list of errors. After returning from the constructor, datagridview1 reports these to the user.
-        // These things never change for an sqlFactory object.
-        private string addFieldsAndInnerJoins()
+        //
+        // NOTE: Once all these things are set by this routine, they never change in this sqlFactory object.
+        private string ConstructMyFieldsInnerJoinsAndOstensiveDefinitions()
         {
+            List<string> errMsgs = new List<string>(); // By reference, because errors may be in lower tables
             List<field> displayKeys = new List<field>();  // By reference, because these are in lower tables (i.e. recursive calls add some) 
             List<string> allTables = new List<string>();  // By reference, use to set tableAlias for each table 
-            List<string> errMsgs = new List<string>();
             List<field> ancestorFields = new List<field>();  // By value, because these are sent down to lower tables
             // Begin the program
             field pkMyTable = dataHelper.getTablePrimaryKeyField(myTable);
             myFields.Add(pkMyTable);  // Always want this first
-            addFieldsAndInnerJoins(pkMyTable, ancestorFields, ref displayKeys, ref allTables, ref errMsgs);  // This does all the work
-            return String.Join(", ", errMsgs);  // errMsgs is a public List<string> variable which the above function can add to
+            // This does all the work
+            ConstructMyFieldsInnerJoinsAndOstensiveDefinitions(
+                pkMyTable, ancestorFields, ref displayKeys, ref allTables, ref errMsgs); 
+            return String.Join(", ", errMsgs); 
         }
 
-        private void addFieldsAndInnerJoins(field pkCurrentTable, List<field> ancestorFields, ref List<field> displayKeys, ref List<string> allTables, ref List<string> errMsgs)
+        private void ConstructMyFieldsInnerJoinsAndOstensiveDefinitions(field pkCurrentTable, List<field> ancestorFields, ref List<field> displayKeys, ref List<string> allTables, ref List<string> errMsgs)
         {
             // Circular table inner join check
             bool circular = false;
-            // Cicular if the table is in its own ancestor fields
+            // Circular if the table is in its own ancestor fields
             foreach (field f in ancestorFields)
             {
                 if (f.table == pkCurrentTable.table) { circular = true; }
@@ -132,20 +181,21 @@ namespace SqlEditor
                 // New list of innerJoins for this table - starts with empty list
                 List<innerJoin> currentTableInnerJoins = new List<innerJoin>();
 
-                // New Allias for current table if needed
+                // New Alias for current table if needed
                 int i = allTables.Count(e => e.Equals(pkCurrentTable.table));
                 if (i > 0)
                 {
                     pkCurrentTable.tableAlias = pkCurrentTable.table + dataHelper.twoDigitNumber(i);
                 }
-                allTables.Add(pkCurrentTable.table);  // Prepare for tableAlias of next use of refTable if any
+                // Prepare for tableAlias of next use of refTable if any
+                allTables.Add(pkCurrentTable.table);  
 
                 // Loop through rows of current table
                 DataRow[] drs = dataHelper.fieldsDT.Select("TableName = '" + pkCurrentTable.table + "'", "ColNum ASC");
                 foreach (DataRow dr in drs)
                 {
-                    // Get the field for this row 
-                    field drField = dataHelper.getFieldFromFieldsDT(dr); // This field may or may not be added to myFields
+                    // Get the field for this row -- This field may or may not be added to myFields
+                    field drField = dataHelper.getFieldFromFieldsDT(dr);
                     // Same tableAlias and ancestorFields used for all fields in current Table
                     drField.tableAlias = pkCurrentTable.tableAlias;
                     drField.FKancestors = ancestorFields;
@@ -153,7 +203,7 @@ namespace SqlEditor
                     // Divide cases - a foreign key - recursive call
                     if (dataHelper.isForeignKeyField(drField))
                     {
-                        // Decide whether this inner join is included / shown - if not do nothing
+                        // Decide whether this inner join is included/shown -if not do nothing
                         if (includeAllColumnsInAllTables || pkCurrentTable.table == myTable || dataHelper.isDisplayKey(drField))
                         {
                             myFields.Add(drField);
@@ -165,11 +215,14 @@ namespace SqlEditor
                             // Prepare variables for recursive call
                             // Start with empty newDisplayKeys and add them after returning from recursive call.
                             List<field> newDisplayKeys = new List<field>();
-                            // AncestorFields are the original ancestors with this foreign key added as first element.
+                            // AncestorFields for lower tables are drField + ancestorFields from higher tables.
                             List<field> myAncestorFields = new List<field>();
                             myAncestorFields.Add(drField);
                             myAncestorFields.AddRange(ancestorFields);
-                            addFieldsAndInnerJoins(pkRefTable, myAncestorFields, ref newDisplayKeys, ref allTables, ref errMsgs);
+                            // Recursive call
+                            ConstructMyFieldsInnerJoinsAndOstensiveDefinitions(
+                                pkRefTable, myAncestorFields, ref newDisplayKeys, ref allTables, ref errMsgs);
+                            // FK - display keys include lower display keys
                             if (dataHelper.isDisplayKey(drField))
                             {
                                 displayKeys.AddRange(newDisplayKeys);
@@ -178,11 +231,12 @@ namespace SqlEditor
                     }
                     else if (dataHelper.isTablePrimaryKeyField(drField))
                     {
-                        // Primary Key of main table added to myFields in addFieldsAndInnerJoins()
-                        // Foreign keys are added as field in myFields -  So no need to add primary key of ref tables
+                        // Primary Key of main table added first in myFields
+                        // Foreign keys are added as field in myFields
+                        //    - so no need to add primary key of ref tables
                         // So there is no need to add any primary keys to myFields here
                     }
-                    else  // drField is neither a PK nor an FK
+                    else // drField is neither a PK nor an FK
                     {
                         // Add drField to myFields if we are including all tables, this is myTable, or drField is a displaykey of this table
                         // If it is a displayKey, add it to this tables displaykeys.
@@ -196,11 +250,13 @@ namespace SqlEditor
                         }
                     }
                 }
-                // Once all rows are processed, map the pk of the CurrentTable to its inner joins and its display keys
-                // pkCurrentTable.key is a Tuple<pkCurrentTable.tableAlias, pkCurrentTable.table, pkCurrentTable.fieldName)
-                // We use this because c# knows when to Tuple's are equal. THis allows us to check if a list of keys includes this key, etc.
+                // Once all rows are processed,
+                // map the pk of the CurrentTable to its inner joins and its display keys
                 PKs_InnerjoinMap.Add(pkCurrentTable.key, currentTableInnerJoins);
                 PKs_OstensiveDictionary.Add(pkCurrentTable.key, displayKeys);
+                // Note:pk.key is the Tuple<pk.tableAlias, pk.table, pk.fieldName)
+                // We use this because c# knows when two Tuple's are equal,
+                // but I have not defined when two fields are equal.
             }
 
         }
@@ -226,8 +282,23 @@ namespace SqlEditor
             }
             else if (cmd == command.select)
             {
-                // Sql 2012 required for this "Fetch" clause paging - works even when (recordCount <= offset + myPageSize)
-                sqlString = "SELECT " + SqlStatic.sqlFieldString(myFields) + " FROM " + sqlTableString() + SqlStatic.sqlWhereString(myWheres, strManualWhereClause, strict) + SqlStatic.sqlOrderByStr(myOrderBys) + MsSql.GetFetchString(offset, myPageSize);
+                // Aggregate fields
+                if (isAggregateTable) 
+                {
+                    sqlString = "Select " + SqlStatic.sqlFieldString(myFields2)
+                    + " FROM " + sqlTableString() + " "
+                    + SqlStatic.sqlWhereString(myWheres, strManualWhereClause, strict);
+                    if (myGroupByFields.Count > 0)
+                    {
+                        sqlString += " GROUP BY " + SqlStatic.sqlFieldString(myGroupByFields) + " ";
+                    }
+                    sqlString += SqlStatic.sqlOrderByStr(myOrderBys) + MsSql.GetFetchString(offset, myPageSize);
+                }
+                else 
+                { 
+                    // Sql 2012 required for this "Fetch" clause paging - works even when (recordCount <= offset + myPageSize)
+                    sqlString = "SELECT " + SqlStatic.sqlFieldString(myFields) + " FROM " + sqlTableString() + SqlStatic.sqlWhereString(myWheres, strManualWhereClause, strict) + SqlStatic.sqlOrderByStr(myOrderBys) + MsSql.GetFetchString(offset, myPageSize);
+                }
             }
             return sqlString;
         }
@@ -411,8 +482,8 @@ namespace SqlEditor
             return false;
         }
 
-        // This function is used in transcript plugin
         // Find index of field with unknown Alias - Use this method if you are certain there is only one
+        // This function is also used in transcript plugin
         public int getColumn(field fld)
         {
             List<field> inAncestors = new List<field>();
@@ -476,6 +547,19 @@ namespace SqlEditor
             // strict -- A string must be an exact match (non-strict uses "Like")
             public static string sqlWhereString(List<where> whereList, string strManualWhereClause, bool strict)
             {
+                string whereConditions = sqlWhereStringConditions(whereList,strManualWhereClause,strict);
+                if (whereConditions == string.Empty)
+                {
+                    return string.Empty;   // No where conditions
+                }
+                else
+                {
+                    // Return string constructed from list of conditions
+                    return " WHERE " + whereConditions;
+                }
+            }
+            public static string sqlWhereStringConditions(List<where> whereList, string strManualWhereClause, bool strict)
+            {
                 // Make a list of the conditions
                 List<string> WhereStrList = new List<string>();
                 foreach (where ws in whereList)
@@ -532,7 +616,7 @@ namespace SqlEditor
                 if (WhereStrList.Count > 0)
                 {
                     // Return string constructed from list of conditions
-                    return " WHERE " + String.Join(" AND ", WhereStrList);
+                    return String.Join(" AND ", WhereStrList);
                 }
                 else
                 {
@@ -575,7 +659,6 @@ namespace SqlEditor
         }
     }
 }
-
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------------

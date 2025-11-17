@@ -44,32 +44,39 @@ namespace SqlEditor.TranscriptPlugin
             var menuList = new List<(String, String)>
             {
                 ("Print Transcript", "printTranscript"),
+                ("QPA aggregate", "qpaAggregate"),
                 ("Print Class List", "printClassList"),
                 ("Update StudentDegrees Table", "updateStudentDegreesTable"),
                 ("Check for transcript errors", "checkForTranscriptErrors"),
                 ("Options", "options")
             };
+
             // Set appData to desired culture, and then translate if this is same as translationCultureName.
             // See DataGridViewForm.cs constructor.    
             Dictionary<string, string> columnHeaderTranslations = TranscriptHelper.FillColumnHeaderTranslationDictionary();
 
             List<(String, String)> readOnlyFields = new List<(string, string)>
             {
-                (TableName.studentDegrees, "creditsEarned"), (TableName.studentDegrees, "lastTerm") ,
-                (TableName.studentDegrees, "QPA"), (TableName.studentDegrees, "academicStatusID")
+                (TableName.studentDegreesStatus, "academicStatusID"),
+                (TableName.studentDegreesStatus, "firstTermID"),
+                (TableName.studentDegreesStatus, "lastTermID"),
+                (TableName.studentDegreesStatus, "creditsEarned"),
+                (TableName.studentDegreesStatus, "QPA")
             };
-
-            String translationCultureName = "zh-Hant";  // Hard coded to the language of the translation
+            
+            // Hardcode this to the language of the translation
+            String translationCultureName = "zh-Hant";
 
             frmTranscriptOptions fOptions = new frmTranscriptOptions();
 
-            cntTemplate = new ControlTemplate(("Transcripts", "transcriptMenu"),
-                                                menuList,
-                                                Transcript_CallBack,
-                                                fOptions,
-                                                translationCultureName,
-                                                columnHeaderTranslations,
-                                                readOnlyFields);
+            cntTemplate = new ControlTemplate(
+                ("Transcripts", "transcriptMenu"),
+                menuList,
+                Transcript_CallBack,
+                fOptions,
+                translationCultureName,
+                columnHeaderTranslations,
+                readOnlyFields );
 
             updateConstraints = new List<Func<String, String, DataRow, bool>>
             {
@@ -86,7 +93,7 @@ namespace SqlEditor.TranscriptPlugin
             newTableAction = newTableTranscriptPlugin;
         }
 
-        // Define CallBack - If things are good, then open the form with 'job'
+        // Define CallBack-If things are good, then open the form with 'job'
         void Transcript_CallBack(object? sender, EventArgs<string> e)
         {
             try
@@ -95,6 +102,32 @@ namespace SqlEditor.TranscriptPlugin
                 {
                     // Disable some menuItems
 
+                }
+                else if(e.Value == "qpaAggregate")
+                {
+                    DataGridViewForm dgvForm = (DataGridViewForm)mainForm;
+                    if (dgvForm.currentSql != null)
+                    {
+                        if (dgvForm.currentSql.myTable == "Transcript")
+                        {
+                            // This will show the IT tools if they are not shown.
+                            if (!dgvForm.mnuShowITTools.Checked)
+                            {
+                                dgvForm.mnuShowITTools.Checked = true;
+                            }
+                            // Select rows with credits in QPA, this will replace manual where 
+                            dgvForm.txtManualFilter.Text = "[Grades00].[creditsInQPA] = 'true'";
+                            dgvForm.currentSql.strManualWhereClause = dgvForm.txtManualFilter.Text;
+                            // Get AggField List
+                            string aggField = "AVG([Grades00].[QP])";
+                            List<field> AggFieldList = dgvForm.GetAggFieldList(aggField);
+                            // Get GroupBy List and write AggregateTable
+                            List<field> GroupByList = dgvForm.GetGroupByFieldList();
+                            dgvForm.WriteAggregateTable(GroupByList, AggFieldList);
+                            return;
+                        }
+                    }
+                    MessageBox.Show("You must choose the transcript table.", "Error message", MessageBoxButtons.OK, MessageBoxIcon.Question);
                 }
                 else if (e.Value == "options")
                 {

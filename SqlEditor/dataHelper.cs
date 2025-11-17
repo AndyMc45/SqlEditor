@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using System.Data;
 using System.Globalization;
 using System.Text;
 
@@ -62,24 +63,31 @@ namespace SqlEditor
             lastFilterValuesDT.Columns.Add(dataColumn4);
         }
 
-        public static string QualifiedFieldName(field fld)
+        public static string QualifiedAliasFieldName(field fld)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("[" + fld.table + "]");
-            sb.Append(".");
-            sb.Append("[" + fld.fieldName + "]");
-            return sb.ToString();
+            // Normal case
+            if(String.IsNullOrEmpty(fld.AggregateFieldName))
+            { 
+                StringBuilder sb = new StringBuilder();
+                sb.Append("[" + fld.tableAlias + "]");
+                sb.Append(".");
+                sb.Append("[" + fld.fieldName + "]");
+                return sb.ToString();
+            }
+            else  // Used for aggregate fields
+            {
+             return fld.AggregateFieldName; // Main use of this property
+            }
         }
 
-        public static string QualifiedAliasFieldName(field fld)
+        public static string StandardAggregateFieldName(field fld, aggregateFunction aggFunction)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("[" + fld.tableAlias + "]");
             sb.Append(".");
             sb.Append("[" + fld.fieldName + "]");
-            return sb.ToString();
+            return String.Format("{0}({1})",aggFunction.ToString(),sb.ToString());
         }
-
         public static DbType ConvertStringToDbType(string strVarType)
         {
             string strDbType = string.Empty;
@@ -135,7 +143,7 @@ namespace SqlEditor
             DbType dbType = (DbType)Enum.Parse(typeof(DbType), strDbType, true);
             return dbType;
         }
-
+        
         public static System.Type ConvertDbTypeToType(DbType dbType)
         {
             switch (dbType)
@@ -378,6 +386,18 @@ namespace SqlEditor
             return bool.Parse(getColumnValueinDR(dr, "is_FK"));
         }
 
+        public static bool isNullable(field fi)
+        {
+            DataRow dr = getDataRowFromFieldsDT(fi.table, fi.fieldName);
+            return bool.Parse(getColumnValueinDR(dr, "Nullable"));
+        }
+        public static string defaultValue(field fi)
+        {
+            DataRow dr = getDataRowFromFieldsDT(fi.table, fi.fieldName);
+            return getColumnValueinDR(dr, "defaultValue");
+        }
+
+
         public static void storeColumnWidth(string tableName, string columnName, int width)
         {
             setIntValueFieldsDT(tableName, columnName, "Width", width);
@@ -610,7 +630,6 @@ namespace SqlEditor
     {
         public field(string table, string fieldName, DbType dbType, int size, fieldType fType)
         {
-
             // Only call this constructor with pseudoFields = true;
             this.table = table;
             this.tableAlias = table + "00";  //Default
@@ -620,11 +639,23 @@ namespace SqlEditor
             this.fType = fType;
             // this.displayMember = fieldName;  // Set below when needed
             this.ColumnName = fieldName;  // Default
+            this.AggregateFieldName = String.Empty; //Default
         }
         public field(string table, string fieldName, DbType dbType, int size) :
             this(table, fieldName, dbType, size, fieldType.regular)
         { }
 
+        public field(string aggFieldName)
+        {  // Most of these properties are never used.
+            this.table = "AggregateTable";
+            this.tableAlias = table + "00";  
+            this.fieldName = aggFieldName;
+            this.dbType = DbType.Single;
+            this.size = 4;
+            this.fType = fieldType.aggregate;
+            this.AggregateFieldName = aggFieldName; // Crucial 
+            this.ColumnName = aggFieldName;
+        }
         public string fieldName { get; }
         public string table { get; set; }
         public string tableAlias { get; set; }
@@ -644,10 +675,6 @@ namespace SqlEditor
                 {
                     return "PsuedoField";  // Should never see this
                 }
-                //else if (fType == fieldType.longName)   // Never used
-                //{
-                //    return tableAlias + ":" + fieldName;  
-                //}
                 else
                 {
                     if (dataHelper.isTablePrimaryKeyField(this))
@@ -676,6 +703,9 @@ namespace SqlEditor
         // Key used to avoid needing to implement EqualityComparer<field> class - Used in dictionaries in sqlFactory
         public Tuple<string, string, string> key { get { return Tuple.Create(this.tableAlias, this.table, this.fieldName); } }
         public Tuple<string, string> baseKey { get { return Tuple.Create(this.table, this.fieldName); } }
+
+        // Used for aggregate fields, overrules qualifiedFieldName
+        public string AggregateFieldName {get; set; }
     }
 
 
@@ -730,6 +760,7 @@ namespace SqlEditor
             this.fld = fld;
             this.sortOrder = sortOrder;
         }
+
     }
 
     public enum command
@@ -764,9 +795,18 @@ namespace SqlEditor
     public enum fieldType
     {
         regular,
-        longName,
+        aggregate,
         pseudo
     }
+
+    public enum aggregateFunction
+    { 
+        MIN,
+        MAX,
+        SUM,
+        AVG
+    }
+    // Note, aggregateFunction.Min.ToString() = "MIN"
 
     public enum comboValueType
     {
