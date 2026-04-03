@@ -124,6 +124,8 @@
             mnuShowITTools = new ToolStripMenuItem();
             mnuHelp = new ToolStripMenuItem();
             mnuHelpFile = new ToolStripMenuItem();
+            mnuEvaluations = new ToolStripMenuItem();
+            mnuImportExcelEvals = new ToolStripMenuItem();
             toolStripBottom = new ToolStrip();
             txtRecordsPerPage = new ToolStripTextBox();
             toolStripButton4 = new ToolStripButton();
@@ -783,7 +785,7 @@
             // 
             MainMenu1.BackColor = SystemColors.ControlLight;
             MainMenu1.ImageScalingSize = new Size(20, 20);
-            MainMenu1.Items.AddRange(new ToolStripItem[] { mnuFile, mnuOpenTables, mnuTools, mnuIT_Tools, mnuHelp });
+            MainMenu1.Items.AddRange(new ToolStripItem[] { mnuFile, mnuOpenTables, mnuTools, mnuIT_Tools, mnuHelp, mnuEvaluations });
             resources.ApplyResources(MainMenu1, "MainMenu1");
             MainMenu1.Name = "MainMenu1";
             // 
@@ -973,6 +975,18 @@
             // 
             mnuHelpFile.Name = "mnuHelpFile";
             resources.ApplyResources(mnuHelpFile, "mnuHelpFile");
+            // 
+            // mnuEvaluations
+            // 
+            mnuEvaluations.DropDownItems.AddRange(new ToolStripItem[] { mnuImportExcelEvals });
+            mnuEvaluations.Name = "mnuEvaluations";
+            resources.ApplyResources(mnuEvaluations, "mnuEvaluations");
+            // 
+            // mnuImportExcelEvals
+            // 
+            mnuImportExcelEvals.Name = "mnuImportExcelEvals";
+            resources.ApplyResources(mnuImportExcelEvals, "mnuImportExcelEvals");
+            mnuImportExcelEvals.Click += mnuImportExcelEvals_Click;
             // 
             // toolStripBottom
             // 
@@ -1166,6 +1180,8 @@
         public ToolStripMenuItem mnuShowITTools;
         public TextBox txtManualFilter;
         private ToolStripSeparator toolStripSeparator5;
+        private ToolStripMenuItem mnuEvaluations;
+        private ToolStripMenuItem mnuImportExcelEvals;
         //private Button button2;
     }
 }

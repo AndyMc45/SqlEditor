@@ -11,6 +11,12 @@ namespace SqlEditor.TranscriptPlugin
     // Some of its public values have been changed by the main program
     // A click in the main program calls its callback function
     // The callback function opens frmTranscriptOptions - which allows user to do various things
+
+    // To change the plugin, 1. modify the plugin in visual study, 2. build the plugin,
+    // 3. Open the program and delete the old plugin, 4. Install the plugin from your repository
+    // folder (for me this is C:\Users\andyc\source\repos\AndyMc45\SqlEditor\SqlEditorPlugin).
+    // You can check that the files in this folder are new, and you should see a "zh-Hant" subfolder
+    // assuming you have this language translation.
     public class TransPlugin : IPlugin
     {
         #region Variables - all required by interface
@@ -156,7 +162,7 @@ namespace SqlEditor.TranscriptPlugin
                         fOptions.headerTranslations = cntTemplate.ColumnHeaderTranslations;
                         fOptions.translationCultureName = cntTemplate.TranslationCultureName;
 
-                        fOptions.ShowDialog();    // 
+                        fOptions.ShowDialog();    // show form
                     }
                 }
                 // The only difference between class role and grade sheet is the template that is used

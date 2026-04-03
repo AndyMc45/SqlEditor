@@ -397,11 +397,6 @@ namespace SqlEditor
         public static string ExecuteNonQuery(string query)
         {
             int rowsAffected = 0;
-            return ExecuteNonQuery(query, ref rowsAffected);
-        }
-
-        public static string ExecuteNonQuery(string query, ref int rowsAffected)
-        {
             List<(string, string)> parameters = new List<(string, string)>();
             return ExecuteNonQuery(query, parameters, CommandType.Text, ref rowsAffected);
         }

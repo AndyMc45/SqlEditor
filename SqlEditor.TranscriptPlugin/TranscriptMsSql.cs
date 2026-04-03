@@ -162,6 +162,8 @@ namespace SqlEditor.TranscriptPlugin
             return error;
         }
 
+        // This functions is a stored procedures in the database
+        // I don't think I am using it in the program anymore.
         public static StringBuilder getCTETranscriptSQL(int StudentDegreeID, string boolForCreditRows)
         {
             StringBuilder sb = new StringBuilder();
@@ -198,6 +200,8 @@ namespace SqlEditor.TranscriptPlugin
             return sb;
         }
 
+        // This function is a stored procedure in the database.
+        // I don't think I am using it in the program anymore.
         public static StringBuilder getFillStudentRequirementTableSql(int StudentDegreeID)
         {
             /// I added "courses" - but deleted the "Needed"-- calculate this in printout or datagrid ?

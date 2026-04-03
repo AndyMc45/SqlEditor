@@ -54,6 +54,7 @@ namespace SqlEditor
         private Dictionary<string, List<string>> aliasTableDictionary = new Dictionary<string, List<string>>();
         private ILogger myLogger;
         private List<string> dirtyGFCombos = new List<string>();
+        private AutoCompleteStringCollection autoCompleteStrings = new AutoCompleteStringCollection();
 
         #endregion
 
@@ -234,6 +235,7 @@ namespace SqlEditor
             formOptions.loadingMainFilter = false;
             cmbMainFilter.Enabled = false;  // Enabled by EnableMainFilter() when more than one element
             txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;  // Can't do it in enter
+            txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
 
             // 1. Set pageSize
             formOptions.pageSize = 100;
@@ -1766,7 +1768,7 @@ namespace SqlEditor
                 frmList_DistinctFields = null;
                 if (OK_chosen && !String.IsNullOrEmpty(chosenFieldName))
                 {
-                    countField = String.Format("count(distinct {0})",chosenFieldName);
+                    countField = String.Format("count(distinct {0})", chosenFieldName);
                 }
             }
             // Add count - something always added
@@ -2064,10 +2066,12 @@ namespace SqlEditor
                                     sb.AppendLine(lastErrorMsg);
                                 }
                                 DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
-                                if (result == DialogResult.Cancel) {
+                                if (result == DialogResult.Cancel)
+                                {
                                     btnExtra.Visible = false;
                                     btnExtra.Enabled = false;
-                                    return; }
+                                    return;
+                                }
                             }
                         }
                     }
@@ -2198,12 +2202,12 @@ namespace SqlEditor
                                     sb.AppendLine(lastErrorMsg);
                                 }
                                 DialogResult result = MessageBox.Show(sb.ToString(), "Batch Insert Result", MessageBoxButtons.OKCancel, MessageBoxIcon.None);
-                                if (result == DialogResult.Cancel) 
+                                if (result == DialogResult.Cancel)
                                 {
                                     btnExtra.Visible = false;
                                     btnExtra.Enabled = false;
 
-                                    return; 
+                                    return;
                                 }
                             }
                         }
@@ -4796,57 +4800,40 @@ namespace SqlEditor
         private void txtManualFilter_TextChanged(object sender, EventArgs e)
         {
             string text = txtManualFilter.Text;
-            if(text.Length == 0) { return; }
+            if (text.Length == 0) { return; }
+            if (text == "[")
+            {
+                // txtManualFilter.AutoCompleteCustomSource = null;
+                // AutoCompleteStringCollection AutoCompleteStrings = new AutoCompleteStringCollection();
+                autoCompleteStrings.Clear();
+                foreach (string key in aliasTableDictionary.Keys)
+                {
+                    autoCompleteStrings.Add(text + key + "].");
+                }
+                txtManualFilter.AutoCompleteCustomSource = autoCompleteStrings;
+                return;
+            }
+
             // Show fields in 
             if (text.Length > 3)
             {
                 if (text.Substring(text.Length - 2, 2) == "].")
                 {
+                    autoCompleteStrings.Clear();
                     foreach (string key in aliasTableDictionary.Keys)
                     {
                         if (text.Length > key.Length + 2)
                         {
                             if (text.Substring(text.Length - (key.Length + 3)) == String.Format("[{0}].", key))
                             {
-                                txtManualFilter.AutoCompleteCustomSource = null;
-                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
-                                AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
                                 foreach (string fieldName in aliasTableDictionary[key])
                                 {
-                                    lstStrings.Add(text + "[" + fieldName + "]");
-
+                                    autoCompleteStrings.Add(text + "[" + fieldName + "]");
                                 }
-                                txtManualFilter.AutoCompleteCustomSource = lstStrings;
-                                txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
-                                return;
                             }
                         }
                     }
-                    return;  // Found ]. but not with a table
-                }
-
-            }
-            else
-            {
-                bool showTables = false;
-                if (text == "[") { showTables = true; }
-                else if (text.Length > 3)
-                {
-                    if (text.Substring(text.Length - 1) == "[" && text.Substring(text.Length - 2) != ".[")
-                    { showTables = true; }
-                }
-                if (showTables)
-                {
-                    txtManualFilter.AutoCompleteMode = AutoCompleteMode.Suggest;
-                    txtManualFilter.AutoCompleteCustomSource = null;
-                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.None;
-                    AutoCompleteStringCollection lstStrings = new AutoCompleteStringCollection();
-                    foreach (string key in aliasTableDictionary.Keys)
-                    {
-                        lstStrings.Add(text + key + "].");
-                    }
-                    txtManualFilter.AutoCompleteCustomSource = lstStrings;
-                    txtManualFilter.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                    txtManualFilter.AutoCompleteCustomSource = autoCompleteStrings;
                 }
             }
         }
@@ -5092,6 +5079,15 @@ namespace SqlEditor
 
         #endregion
 
+        private void mnuImportExcelEvals_Click(object sender, EventArgs e)
+        {
+            frmImportExcelEvals importExcelForm = new frmImportExcelEvals();
+            importExcelForm.ShowDialog();
+            if (importExcelForm.result == DialogResult.OK)
+            {
+            }
+            importExcelForm.Dispose();
+        }
     }
 }
 

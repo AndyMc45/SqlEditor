@@ -5,6 +5,8 @@ using System.Data;
 using System.Diagnostics;
 using System.Text;
 
+
+
 namespace SqlEditor.TranscriptPlugin
 {
     public static class PrintToWord

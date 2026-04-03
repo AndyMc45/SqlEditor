@@ -209,6 +209,8 @@ namespace SqlEditor.TranscriptPlugin
                 //RequirementArea table - 
                 dataHelper.AddRowToFieldsDT("StudentReq", 3, "ReqArea", "ReqArea", "nvarchar", false, false, false, false, true, 200, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 13, "eReqArea", "eReqArea", "nvarchar", false, false, false, false, true, 200, String.Empty, String.Empty, 0);
+                // Added 2026.03 - but did not use, because I was using it to order rows, but I can order in stored procedure and zOrder already does this.
+                dataHelper.AddRowToFieldsDT("StudentReq", 18, "ReqAncestors", "ReqAncestors", "nvarchar", false, false, false, false, true, 200, String.Empty, String.Empty, 0);
                 // DeliveryMethodTable
                 dataHelper.AddRowToFieldsDT("StudentReq", 4, "DelMethName", "DelMethName", "nvarchar", false, false, false, false, true, 200, String.Empty, String.Empty, 0);
                 dataHelper.AddRowToFieldsDT("StudentReq", 15, "eDelMethName", "eDelMethName", "nvarchar", false, false, false, false, true, 200, String.Empty, String.Empty, 0);
@@ -260,6 +262,7 @@ namespace SqlEditor.TranscriptPlugin
                 dataHelper.setColumnValueInDR(dr, "Limit", requirementsDR["Limit"].ToString());
                 dataHelper.setColumnValueInDR(dr, "ReqArea", requirementsDR["ReqArea"].ToString());
                 dataHelper.setColumnValueInDR(dr, "eReqArea", requirementsDR["eReqArea"].ToString());
+                dataHelper.setColumnValueInDR(dr, "ReqAncestors", requirementsDR["ReqAncestors"].ToString());
 
                 dataHelper.setColumnValueInDR(dr, "DelMethName", requirementsDR["DelMethName"].ToString());
                 dataHelper.setColumnValueInDR(dr, "eDelMethName", requirementsDR["eDelMethName"].ToString());
