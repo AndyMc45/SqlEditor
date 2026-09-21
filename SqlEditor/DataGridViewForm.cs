@@ -1,4 +1,5 @@
-﻿// using DocumentFormat.OpenXml.Drawing;
+﻿// deleted -windows10.0.17763.0
+// using DocumentFormat.OpenXml.Drawing;
 // using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using Windows.Media.AppBroadcasting;
+// using Windows.Media.AppBroadcasting;
 using System.Windows.Forms;
 
 
@@ -66,6 +67,9 @@ namespace SqlEditor
         // No reference but use
         public DataGridViewForm(ILogger<DataGridViewForm> logger)
         {
+            // Moved up to first place
+            InitializeComponent();
+
             // DO NOT DELETE
             // THIS IS USED EVEN THOUGH IT SAYS "0 REFERENCES"
             // It is used in the constructor of the main form and in the plugins
@@ -117,7 +121,7 @@ namespace SqlEditor
             }
             //Required by windows forms
             myLogger.LogInformation("Initializing Form Component");
-            InitializeComponent();
+
             // Some setting to speed up datagridview
             myLogger.LogInformation("Settings to speed up DataGridView");
             dataGridView1.AutoGenerateColumns = false;
@@ -168,6 +172,7 @@ namespace SqlEditor
                 {
                     ToolStripMenuItem tsiNew = new ToolStripMenuItem();
                     tsiNew.Text = ((ToolStripMenuItem)tsi).Text;
+                    tsiNew.CheckOnClick = ((ToolStripMenuItem)tsi).CheckOnClick;
                     tsiNew.Click += mnuToolsMenuStripItem_Click;
                     // Tag used to identify this tsi in the click event
                     tsiNew.Tag = tsi.Name;
@@ -782,7 +787,8 @@ namespace SqlEditor
                 if (fl.AggregateFieldName != String.Empty)
                 {
                     column.Width = 200; // Change later
-                    dc.ColumnName = fl.AggregateFieldName; // Used below
+                    dc.ColumnName = fl.ColumnName;
+                    // dc.ColumnName = fl.AggregateFieldName; // Used below
                 }
                 else
                 {
@@ -1811,6 +1817,10 @@ namespace SqlEditor
                     ToolStripMenuItem tsi = (ToolStripMenuItem)sender;
                     if (tsi.Tag == gtsi.Tag)
                     {
+                        if (tsi.CheckOnClick) 
+                        { 
+                                                    
+                        }
                         gtsi.PerformClick();
                     }
                 }
@@ -2818,7 +2828,20 @@ namespace SqlEditor
         #region EVENTS - Context Menu events
         private void GridContextMenu_OrderComboByPK_Click(object sender, EventArgs e)
         {
-            formOptions.orderComboListsByPK = GridContextMenu_OrderCombolByPK.Checked;
+            formOptions.orderComboListsByPK = !formOptions.orderComboListsByPK;
+            GridContextMenu_OrderCombolByPK.Checked = formOptions.orderComboListsByPK;
+            foreach (ToolStripItem tsi in mnuTools.DropDownItems)
+            { 
+                if(tsi.Tag == "GridContextMenu_OrderCombolByPK")
+                {
+                    if (tsi is ToolStripMenuItem)
+                    {
+                        (tsi as ToolStripMenuItem).Checked = formOptions.orderComboListsByPK;
+                    }
+                }
+            }
+
+            if (currentSql == null) { return; }  // 2026.09
             writeGrid_NewTable(currentSql.myTable, false);
         }
 
@@ -3371,7 +3394,14 @@ namespace SqlEditor
                     int i = 0;
                     if (constraintPassed)
                     {
-                        i = MsSql.currentDA.Update(drArray);
+                        try 
+                        { 
+                            i = MsSql.currentDA.Update(drArray);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }   
                         msgText(Properties.MyResources.numberOfRowsModified + " : ");
                         msgTextAdd(i.ToString());
                         // Write the grid if this is a foreign key

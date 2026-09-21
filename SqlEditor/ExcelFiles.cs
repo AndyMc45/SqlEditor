@@ -19,17 +19,18 @@ namespace SqlEditor
 
         // Helper method to read data from a single Excel file using the Open XML SDK
         // Enters this data into courseEvaluations datatable
-        public static void LoadExcelFileIntoCourseEvaluations(string filePath)
+        public static string LoadExcelFileIntoCourseEvaluations(string filePath)
         {
+            StringBuilder errSB = new StringBuilder(); 
             // Open the spreadsheet document for read-only access
             using (SpreadsheetDocument document = SpreadsheetDocument.Open(filePath, false))
             {
                 WorkbookPart workbookPart = document.WorkbookPart;
-                if (workbookPart == null) return;
+                if (workbookPart == null) return errSB.ToString();
 
                 // Get the first worksheet part
                 Sheet firstSheet = workbookPart.Workbook.Sheets.Elements<Sheet>().FirstOrDefault();
-                if (firstSheet?.Id == null) return;
+                if (firstSheet?.Id == null) return errSB.ToString();
 
                 WorksheetPart worksheetPart = (WorksheetPart)workbookPart.GetPartById(firstSheet.Id);
                 Worksheet worksheet = worksheetPart.Worksheet;
@@ -40,41 +41,65 @@ namespace SqlEditor
                 // Iterate through each row in the worksheet
                 foreach (Row excelRow in sheetData.Elements<Row>())
                 {
+                    // Skip the first row - headerRow true on first call only
                     if (headerRow) {
-                        headerRow = false; // prepare for next row
-                        continue;
+                        headerRow = false;
+                        // Check that the excel columns are in the right places
+                        // Excel Header row must have the expected string for column in it
+                        foreach (DataColumn courseEvaluationDC in courseEvaluations.Columns)
+                        {
+                            string strCol = courseEvaluationDC.ExtendedProperties["ExcelColumnLetter"].ToString();
+                            string headerMustContain = courseEvaluationDC.ExtendedProperties["HeaderMustContain"].ToString();
+                            string cellReference = strCol + excelRow.RowIndex.ToString();
+                            // The following might return 'null' - but for header row I doubt it.
+                            Cell cell = excelRow.Elements<Cell>().FirstOrDefault(c => c.CellReference.Value == cellReference);
+                            string cellValue = string.Empty;
+                            if (cell is not null)
+                            {
+                                cellValue = GetCellValue(cell, workbookPart);
+                            }
+                            if (!cellValue.Contains(headerMustContain, StringComparison.OrdinalIgnoreCase))
+                            {
+                                string errMsg = string.Format("Error in {3}: Header in col {0} (i.e. {1}) does not contain '{2}", strCol, cellValue, headerMustContain, filePath);
+                                errSB.AppendLine(errMsg);
+                            }
+                        }
+                        if (errSB.Length > 0) 
+                        { 
+                            return errSB.ToString(); //Skip the rest of the file
+                        }
+                        else 
+                        { 
+                            continue;  // Skip the below code
+                        }
                     }
                     // Add row to courseEvaluation
                     DataRow ceNewRow = courseEvaluations.NewRow();
                     // Iterate through columns of courseEvaluation - finding matching column of courseEvaluation
                     foreach (DataColumn courseEvaluationDC in courseEvaluations.Columns)
                     {
-                        string strCol = courseEvaluationDC.ExtendedProperties["ExcelColumn"].ToString();
-                        int col = int.Parse(strCol);
-                        try
+                        string strCol = courseEvaluationDC.ExtendedProperties["ExcelColumnLetter"].ToString();
+                        string cellReference = strCol + excelRow.RowIndex.ToString();
+                        // The following might return 'null'
+                        Cell cell = excelRow.Elements<Cell>().FirstOrDefault(c => c.CellReference.Value == cellReference);
+                        // Get default value for empty cell (either string.empty or "-1")
+                        string cellValue = string.Empty;   
+                        if (courseEvaluationDC.ExtendedProperties["NumericQuestion"].ToString() == "True")
                         {
-                            Cell cell = (Cell)excelRow.ElementAt(col);  // might not exist, Note: Col 0 is COl A 
-                            string cellValue = GetCellValue(cell, workbookPart);
-                            ceNewRow[courseEvaluationDC.ColumnName] = cellValue;  //Add excel value to ce datatable
+                            cellValue = "-1";
                         }
-                        catch (Exception ex)
-                        {
-
-                            if (courseEvaluationDC.ExtendedProperties["NumericQuestion"].ToString() == "True")
-                            {
-                                ceNewRow[courseEvaluationDC.ColumnName] = "-1";  // -1 is no answer. Don't allow students to give a "-1"
-                            } else {
-                                ceNewRow[courseEvaluationDC.ColumnName] = string.Empty;
-                            }
+                        // Get value that is in the cell
+                        if (cell is not null)
+                        { 
+                            cellValue = GetCellValue(cell, workbookPart);
                         }
+                        //Add excel value to ce datatable
+                        ceNewRow[courseEvaluationDC.ColumnName] = cellValue;  
                     }
                     courseEvaluations.Rows.Add(ceNewRow);
-
-                    // Iterate through each cell in the row
-                    //foreach (Cell cell in row.Elements<Cell>()){
-                    //    string cellValue = GetCellValue(cell, workbookPart); . . .; }
                 }
             }
+            return errSB.ToString();
         }
 
         // A helper method to get the correct cell value (handling shared strings)
@@ -87,7 +112,12 @@ namespace SqlEditor
                 SharedStringTablePart stringTablePart = workbookPart.GetPartsOfType<SharedStringTablePart>().FirstOrDefault();
                 if (stringTablePart != null)
                 {
-                    value = stringTablePart.SharedStringTable.ElementAt(int.Parse(value)).InnerText;
+                    // Not sure why value is sometimes string.empty, but it causes an error, so I add
+                    int outValue = 0;
+                    if (int.TryParse(value, out outValue))
+                    {
+                        value = stringTablePart.SharedStringTable.ElementAt(outValue).InnerText;
+                    }
                 }
             }
             return value;

@@ -398,7 +398,14 @@ namespace SqlEditor
         {
             int rowsAffected = 0;
             List<(string, string)> parameters = new List<(string, string)>();
-            return ExecuteNonQuery(query, parameters, CommandType.Text, ref rowsAffected);
+            try
+            {
+                return ExecuteNonQuery(query, parameters, CommandType.Text, ref rowsAffected);
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         public static string ExecuteNonQuery(string query, List<(string, string)> parameters, CommandType cmdType, ref int rowsAffected)
@@ -545,7 +552,10 @@ namespace SqlEditor
             sb.Append("FROM sys.objects so inner join sys.columns sc on so.object_id = sc.object_id ");
             sb.Append("inner join sys.tables st on so.object_id = st.object_id ");
             sb.Append("left join sys.default_constraints d on sc.default_object_id = d.object_id ");
-            sb.Append("WHERE so.is_ms_shipped <> 1 AND so.type = 'U' and st.lob_data_space_id = 0 ");
+            sb.Append("WHERE so.is_ms_shipped <> 1 AND so.type = 'U'");
+            // lob_data_space_id = 0 means no "large objects" such as nvarchar("MAX") columns.
+            // Avoid Max columns because of performance issues.
+            sb.Append(" AND st.lob_data_space_id = 0 ");   
             sb.Append("ORDER BY ColNum ");
             string sqlFields = sb.ToString();
             readOnlyDA = new SqlDataAdapter(sqlFields, cn);

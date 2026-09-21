@@ -1,18 +1,20 @@
 //using System.Data;
 // using System.Data.SqlClient;
-
+using System.Windows.Forms;
 namespace SqlEditor
 {
-    internal partial class frmListItems
-        : System.Windows.Forms.Form
+    internal partial class frmListItems : Form
     {
-        public job myJob { get; set; }
-
         public frmListItems() : base()
         {
             //This call is required by the Windows Form Designer.
             InitializeComponent();
         }
+
+        public job myJob { get; set; }
+
+
+        #region Variables
 
         // For deleting connection, we will build a list of connection strings - see below
         List<connectionString> csList = new List<connectionString>();
@@ -20,12 +22,14 @@ namespace SqlEditor
         public List<string> myList = new List<string>();
         // For display keys we will ALSO feed in list of initially selected items
         // We will also return this list if user says "o.k."
-        // For
         public List<string> mySelectedValues = new List<string>();
         public List<int> mySelectedIndexes = new List<int>();
         // Indicates user has selected OK.
         public bool OK = false;
         public bool AllowNewValue = false;
+        
+        #endregion
+
         private void frmListItems_Load(object sender, EventArgs e)
         {
             if (AllowNewValue) 
@@ -69,6 +73,35 @@ namespace SqlEditor
             }
         }
 
+            private void listBox1_MouseDown(object sender, MouseEventArgs e)
+            {
+                // Step 1: Start drag if an item is selected
+                if (this.listBox1.SelectedItem == null) return;
+                this.listBox1.DoDragDrop(this.listBox1.SelectedItem, DragDropEffects.Move);
+            }
+
+            private void listBox1_DragOver(object sender, DragEventArgs e)
+            {
+                // Step 3: Set move effect
+                e.Effect = DragDropEffects.Move;
+            }
+
+            private void listBox1_DragDrop(object sender, DragEventArgs e)
+            {
+                // Step 4: Handle the reordering logic
+                Point point = listBox1.PointToClient(new Point(e.X, e.Y));
+                int index = this.listBox1.IndexFromPoint(point);
+
+                // If dropped below last item, move to the end
+                if (index < 0) index = this.listBox1.Items.Count - 1;
+
+                // Retrieve and move the data
+                object data = e.Data.GetData(this.listBox1.SelectedItem.GetType());
+                this.listBox1.Items.Remove(data);
+                this.listBox1.Items.Insert(index, data);
+            }
+
+        
         private void cmdOK_Click(Object eventSender, EventArgs eventArgs)
         {
             OK = true;
@@ -127,11 +160,6 @@ namespace SqlEditor
             //Method 2. The manual way
             this.Top = (Screen.PrimaryScreen.Bounds.Height - this.Height) / 2;
             this.Left = (Screen.PrimaryScreen.Bounds.Width - this.Width) / 2;
-        }
-
-        private void txtNewInput_TextChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void cmdNewValue_Click(object sender, EventArgs e)

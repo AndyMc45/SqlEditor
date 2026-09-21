@@ -2,7 +2,7 @@
 using Microsoft.SqlServer.Server;
 using System.Data;
 using System.Text;
-using Windows.Media.AppBroadcasting;
+// using Windows.Media.AppBroadcasting;
 
 namespace SqlEditor
 {
@@ -11,7 +11,7 @@ namespace SqlEditor
     {
         #region Variables
         public string errorMsg = String.Empty;
-        // If strManualWhereClause is empty, it will replace the where list in sql
+        // If strManualWhereClause is not String.Empty, it will replace the where list in sql
         public string strManualWhereClause = String.Empty;  
         public string myTable = "";
         public int myPage = 0;  // Asks for all records, 1 is first page
@@ -25,7 +25,8 @@ namespace SqlEditor
             set
             {
                 recordCount = value;
-                if (myPageSize > 0)
+                // When setting recordCount, also set TotalPages                    
+                if (myPageSize > 0)  // Error check
                 {
                     TotalPages = (int)Math.Ceiling((decimal)recordCount / myPageSize);
                 }
@@ -35,7 +36,11 @@ namespace SqlEditor
         // SQL built from 3 lists: myFields, myOrderBys, myWheres
         // SQL for a Combo uses the combo field and myComboWheres
         // myFields never changes (once it is constructed by the constructor)		
-        // A field contains a .tableAlias, a .table, and a .fieldName
+        // A field contains a .tableAlias, a .table, and a .fieldName (and various other information -
+            // i.e a dbType, a size (for integers), my fType (regular, aggregate, or pseudo),
+            // displayMember (when needed), ColumnName (used in sorting)
+            // and an AggregateFieldName (only used for aggregate fields))
+
         public List<field> myFields = new List<field>();
         public List<orderBy> myOrderBys = new List<orderBy>();
         public List<where> myWheres = new List<where>();
@@ -53,8 +58,8 @@ namespace SqlEditor
         public Dictionary<Tuple<string, string, string>, List<field>> 
             PKs_OstensiveDictionary = new Dictionary<Tuple<string, string, string>, List<field>>();
 
-        // Pks_InnerjoinMap - map from a PK for a table to all innerJoins in the table.
-        // Each inner join is a FK in the table and the reference table it refers to.
+        // Pks_InnerjoinMap - map from a PK for a table (a 3-tuple) to all innerJoins in the PK table.
+        // An inner join is an FK in the PK table and the reference table it refers to.
         // Used to get sql table string and whenever we need to find the inner joins of a table.
         public Dictionary<Tuple<string, string, string>, List<innerJoin>> 
             PKs_InnerjoinMap = new Dictionary<Tuple<string, string, string>, List<innerJoin>>();
@@ -63,6 +68,7 @@ namespace SqlEditor
         public List<field> myGroupByFields = new List<field>();
         public List<field> myAggFieldList = new List<field>();
 
+        //myFields2 is either myFields or for Aggregate sql, the union of myGroupByFields and myAggFieldList.
         public List<field> myFields2
         {
             get {
@@ -93,12 +99,14 @@ namespace SqlEditor
             // If includeAllColumnsInAllTables is true, this is very slow in datagridview
             // For example, the transcripts table will have 89 columns;
             // Database call is fast, only the display is slow;
+            // If false, skip PK's and non-Display columns in all but the main table.
             this.includeAllColumnsInAllTables = includeAllColumnsInAllTables;
             myTable = table;
             myPage = page;
             myPageSize = pageSize;
 
-            // The main work of this constructor
+            // The main work of this constructor - the name indicates what it does
+            // It constructs myField, PKs_InnerJoinMap and PKs_OstensiveDefinitions
             errorMsg = ConstructMyFieldsInnerJoinsAndOstensiveDefinitions();
 
             // If there is no ostensive definition for any PK or FK reference table,
@@ -303,7 +311,8 @@ namespace SqlEditor
             return sqlString;
         }
 
-        // This factory is still the currentSql factory
+        // The factory for the ComboSql is still the currentSql factory (same as for DataGridView)
+        // A little odd - we might expect the factory for the table that is in the combo.
         public string returnComboSql(field cmbField, bool includePKinDisplayMember, comboValueType cmbValueType)  // Return all Display keys
         {
             string sqlString = string.Empty;

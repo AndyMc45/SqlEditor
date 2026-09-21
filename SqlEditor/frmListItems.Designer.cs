@@ -1,4 +1,5 @@
 
+using System.Windows.Forms;
 namespace SqlEditor
 {
     partial class frmListItems
@@ -55,19 +56,22 @@ namespace SqlEditor
             listBox1.BackColor = SystemColors.Window;
             listBox1.Font = new Font("Microsoft Sans Serif", 8.25F);
             listBox1.ForeColor = SystemColors.WindowText;
-            listBox1.ItemHeight = 17;
+            listBox1.ItemHeight = 20;
             listBox1.Location = new Point(24, 43);
             listBox1.Name = "listBox1";
             listBox1.RightToLeft = RightToLeft.No;
-            listBox1.Size = new Size(345, 225);
+            listBox1.Size = new Size(345, 224);
             listBox1.TabIndex = 0;
+            listBox1.DragDrop += listBox1_DragDrop;
+            listBox1.DragOver += listBox1_DragOver;
+            listBox1.MouseDown += listBox1_MouseDown;
             // 
             // lblText
             // 
             lblText.AutoSize = true;
             lblText.Location = new Point(21, 13);
             lblText.Name = "lblText";
-            lblText.Size = new Size(161, 17);
+            lblText.Size = new Size(188, 20);
             lblText.TabIndex = 2;
             lblText.Text = "Replaced by the caption";
             // 
@@ -90,15 +94,14 @@ namespace SqlEditor
             txtNewInput.Location = new Point(21, 289);
             txtNewInput.Name = "txtNewInput";
             txtNewInput.PlaceholderText = "Enter New Value";
-            txtNewInput.Size = new Size(345, 23);
+            txtNewInput.Size = new Size(345, 26);
             txtNewInput.TabIndex = 4;
             txtNewInput.Visible = false;
-            txtNewInput.TextChanged += txtNewInput_TextChanged;
             // 
             // frmListItems
             // 
             AllowDrop = true;
-            AutoScaleDimensions = new SizeF(8F, 17F);
+            AutoScaleDimensions = new SizeF(10F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Control;
             ClientSize = new Size(397, 410);

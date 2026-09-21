@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
-using Windows.Media.Core;
+// using Windows.Media.Core;
 using System.Reflection;
 
 
@@ -38,6 +38,7 @@ namespace SqlEditor
                 MessageBox.Show(errMessage);
                 return;
             }
+            dataGridViewExcelFiles.AllowUserToDeleteRows = true;
             // Bind cmbTerms combobox
             // Bind Term ComboBox
             if (MsSql.cn != null && MsSql.cn.State == ConnectionState.Open)
@@ -58,19 +59,6 @@ namespace SqlEditor
             btnSelectFolder.Visible = false;
             btnRun.Enabled = false;
             progressBar1.Visible = false;
-
-            // Bind EvaluationFormNames combo box - currently only one value
-            string sqlString2 = "Select Distinct strYear From evalColumnMap";
-            DataTable dt2 = new DataTable();
-            MsSql.FillDataTable(dt2,sqlString2);
-            if (dt2.Rows.Count > 0)
-            {
-                foreach (DataRow dr in dt2.Rows)
-                {
-                    cmbEvalFormName.Items.Add(dr[0].ToString());
-                }
-                cmbEvalFormName.SelectedIndex = 0;
-            }
         }
 
         public DialogResult result { get; set; }
@@ -216,6 +204,7 @@ namespace SqlEditor
                 // progressBar1.Value = value; // Runs on UI thread automatically
                 // lblStatus.Text = $"Processing: {value}%";
             });
+            btnRun.Enabled = false;
             // Set up variables
             progressBar1.Value = 0;
             int dvgRows = dataGridViewExcelFiles.Rows.Count;
@@ -228,217 +217,266 @@ namespace SqlEditor
                 progressBar1.Maximum = 1; 
             }
             progressBar1.Step = 1;
-            string strEvalForm = cmbEvalFormName.SelectedItem.ToString();
+            string strTerm = cmbBoxTerm.SelectedValue.ToString();
+            string sqlQuery7 = string.Format("Select Top (1) strYear from Terms where termID = {0}", strTerm);
+            string strEvalForm = MsSql.ExecuteScalar(sqlQuery7);
             int inserted = 0;
             int updated = 0;
             StringBuilder sbErr = new StringBuilder();
             progressBar1.Visible = true;
-            // Run the program - do not invoke the UI, because it is running on a different thread (but dvg Rows are still available. Not sure why)
-            await Task.Run(() => DoWork(progress, strEvalForm, ref inserted, ref updated, ref sbErr));
+
+            foreach (DataGridViewRow dvgRow in dataGridViewExcelFiles.Rows)
+            {
+                int ctID = (int)dvgRow.Cells["CourseTerm"].Value;
+                string relPath = dvgRow.Cells["FileName"].Value.ToString();
+                // Process rows that have a FileName and CourseTerm
+                bool AlreadyPresent = AlreadyInFilesTable(ctID);
+                bool processFile = false; // By default do not processFile
+                if (ctID > 0)
+                {
+                    if (!AlreadyPresent)
+                    {
+                        InsertInFilesTable(dvgRow);
+                        inserted++;
+                        dvgRow.Cells["FileName"].Value = string.Empty;
+                        processFile = true;
+                    }
+                    else if (ckbUpdateCourses.Checked)
+                    {
+                        UpdateFilesTable(dvgRow);
+                        updated++;
+                        dvgRow.Cells["FileName"].Value = string.Empty;
+                        processFile = true;
+                    }
+                }
+                // Run the program - do not invoke the UI, because it is running on a different thread (but dvg Rows are still available. Not sure why)
+                await Task.Run(() => DoWork(progress, processFile, ctID, relPath, strEvalForm, ref sbErr));
+            }
+
             // Messages to user
             string msg = String.Format("{0} Evaluation files inserted; {1} files updated;", inserted.ToString(), updated.ToString());
             if (sbErr.Length > 0)
             { 
                 msg = Environment.NewLine + sbErr.ToString();
-            }
+            } 
             MessageBox.Show(msg);
             progressBar1.Visible = false;
         }
 
-        private void DoWork(IProgress<int> progress, string strEvalForm, ref int inserted, ref int updated, ref StringBuilder sbErr)
+        private void DoWork(IProgress<int> progress, bool processFile, int ctID, string relPath, string strEvalForm, ref StringBuilder sbErr)
         {
             try
             {
-                foreach (DataGridViewRow dvgRow in dataGridViewExcelFiles.Rows)
+                // Make the process files divide here in order to allow the progress bar to progress on unprocessed files as well.
+                if (processFile)
                 {
-                    int ctID = (int)dvgRow.Cells["CourseTerm"].Value;
-                    string relPath = dvgRow.Cells["FileName"].Value.ToString();
-                    // Process rows that have a FileName and CourseTerm
-                    if (ctID > 0 && !string.IsNullOrEmpty(relPath))
-                    {
-                        bool inserting = false;
-                        bool updating = false;  // Not really needed because updating will be not inserting
-                        bool AlreadyPresent = AlreadyInFilesTable(ctID);
+                    // Insert new rows in Answers tables
 
-                        if (!AlreadyPresent || ckbUpdateCourses.Checked)
-                        {
-                            if (!AlreadyPresent)
-                            {
-                                InsertInFilesTable(dvgRow);
-                                inserted++;
-                                inserting = true;
-                                dvgRow.Cells["FileName"].Value = string.Empty;
-
-                            }
-                            else if (ckbUpdateCourses.Checked)
-                            {
-                                UpdateFilesTable(dvgRow);
-                                updated++;
-                                updating = true;
-                                dvgRow.Cells["FileName"].Value = string.Empty;
-                            }
-                            // Insert new rows in Answers tables
-
-                            // 1. Load columns into a headers DataTable
-                            ExcelReader.headers = new DataTable();
-                            string strSqlHeaders = @"
-                        SELECT [ExcelColumnLetter],[ExcelColumn],eq.[QuestionName], eq.[NumericQuestion]
+                    // 1. Load columns into a headers DataTable
+                    ExcelReader.headers = new DataTable();
+                    string strSqlHeaders = @"
+                        SELECT [ExcelColumnLetter],[ExcelColumn],eq.[QuestionName], eq.[NumericQuestion],
+                            eq.[HighestScore], eq.[LowestScore], eq.[HeaderMustContain]
                         FROM [dbo].[evalColumnMap] ecm inner join evalQuestions eq
                         on ecm.evalQuestionID = eq.evalQuestionsID 
                         WHERE strYear = '{0}'";
-                            strSqlHeaders = string.Format(strSqlHeaders, strEvalForm);
-                            MsSql.FillDataTable(ExcelReader.headers, strSqlHeaders);
+                    strSqlHeaders = string.Format(strSqlHeaders, strEvalForm);
+                    MsSql.FillDataTable(ExcelReader.headers, strSqlHeaders);
 
-                            // 2. Load columns from database into DataTable coursesEvaluations
-                            ExcelReader.courseEvaluations = new DataTable();
-                            foreach (DataRow headerRow in ExcelReader.headers.Rows)
+                    // 2. For each row in headers, add a corresponding column to coursesEvaluations
+                    ExcelReader.courseEvaluations = new DataTable();
+                    foreach (DataRow headerRow in ExcelReader.headers.Rows)
+                    {
+                        DataColumn dc = new DataColumn();
+                        dc.ColumnName = headerRow["QuestionName"].ToString();
+                        if (headerRow["NumericQuestion"].ToString() == "1")
+                        {
+                            dc.DataType = typeof(int);
+                        }
+                        else
+                        {
+                            dc.DataType = typeof(string);
+                        }
+                        dc.ExtendedProperties.Add("ExcelColumn", headerRow["ExcelColumn"].ToString());
+                        dc.ExtendedProperties.Add("ExcelColumnLetter", headerRow["ExcelColumnLetter"].ToString());
+                        dc.ExtendedProperties.Add("NumericQuestion", headerRow["NumericQuestion"].ToString());
+                        dc.ExtendedProperties.Add("HighestScore", headerRow["HighestScore"].ToString());
+                        dc.ExtendedProperties.Add("LowestScore", headerRow["LowestScore"].ToString());
+                        dc.ExtendedProperties.Add("HeaderMustContain", headerRow["HeaderMustContain"].ToString());
+
+                        ExcelReader.courseEvaluations.Columns.Add(dc);
+                    }
+                    // 3. Load excel file into DataTable courseEvaluations
+                    string myDocumentFolder = AppData.GetKeyValue("DocumentFolder");
+                    string filePath = myDocumentFolder + relPath;
+                    if (File.Exists(filePath))
+                    {
+                        string errMsg = string.Empty;
+                        errMsg = ExcelReader.LoadExcelFileIntoCourseEvaluations(filePath);
+                        if (errMsg != string.Empty)
+                        {
+                            sbErr.AppendLine(errMsg);
+                            return;
+                        }
+                        // 4. Delete old evaluations from evalEssayAnswers and evalNumericAnswers sql tables
+                        string strString6 = string.Format("DELETE FROM [dbo].[evalEssayAnswers] WHERE CourseTermID = {0}", ctID);
+                        MsSql.ExecuteNonQuery(strString6);
+                        string strString7 = string.Format("DELETE FROM [dbo].[evalNumericAnswers] WHERE CourseTermID = {0}", ctID);
+                        MsSql.ExecuteNonQuery(strString7);
+
+                        // 5. Write the courseEvaluations file to evalEssayAnswers and evalNumericAnswers sql tables
+                        //    Course evaluation DT - first row is headers, and so we can skip it
+                        //    Each row has 19 columns - one for every answer.
+                        //    First two rows are "GraduateStudent" and "Expected Grade", and I will put these two in every answer.
+                        //    So, each row will become 17 answers (except feedback ignored if not given).
+
+                        // Get Faculty ID from CourseTerm ID (ctID - from above)
+                        String sqlString = string.Format("Select Top 1 facultyID from CourseTerms where CourseTermID = {0}", ctID.ToString());
+                        int facultyID = Int32.Parse(MsSql.ExecuteScalar(sqlString));
+
+                        foreach (DataRow cdDataRow in ExcelReader.courseEvaluations.Rows)
+                        {
+                            // Get StudentDegree (Converted to bool)
+                            string studentDegreeColumn = cdDataRow["StudentDegree"].ToString();
+                            bool boolGradDegree =
+                                studentDegreeColumn.Contains("研究", StringComparison.OrdinalIgnoreCase) ||
+                                studentDegreeColumn.Contains("碩", StringComparison.OrdinalIgnoreCase) ||
+                                string.IsNullOrEmpty(studentDegreeColumn);
+
+                            // Get Expected Grade (Converted to Int - 5 (A) to 1 (F))
+                            string expectedGrade = cdDataRow["ExpectedGrade"].ToString();
+                            int intExpectedGrade = -1;
+                            if (expectedGrade.Contains("A", StringComparison.OrdinalIgnoreCase))
+                            { intExpectedGrade = 5; }
+                            else if (expectedGrade.Contains("B", StringComparison.OrdinalIgnoreCase))
+                            { intExpectedGrade = 4; }
+                            else if (expectedGrade.Contains("C", StringComparison.OrdinalIgnoreCase))
+                            { intExpectedGrade = 3; }
+                            else if (expectedGrade.Contains("D", StringComparison.OrdinalIgnoreCase))
+                            { intExpectedGrade = 2; }
+                            else if (expectedGrade.Contains("E", StringComparison.OrdinalIgnoreCase))
+                            { intExpectedGrade = 1; }
+                            else if (expectedGrade.Contains("F", StringComparison.OrdinalIgnoreCase))
+                            { intExpectedGrade = 1; }
+
+                            // Process all rows - divide numeric and essay answers
+                            // I could and should do this based on this only.
+                            // Could also use Type type = col.DataType; to get the type of question
+                            // The "switch" is clearer, but needs updated for new evaluation forms
+                            foreach (DataColumn col in cdDataRow.Table.Columns)
                             {
-                                DataColumn dc = new DataColumn();
-                                dc.ColumnName = headerRow["QuestionName"].ToString();
-                                if (headerRow["NumericQuestion"].ToString() == "1")
+                                int HighestScore = -1; // lower than highest score
+                                int LowestScore = 101;  //higher than lowest score
+                                string strHighestScore = col.ExtendedProperties["HighestScore"].ToString();
+                                string strLowestScore = col.ExtendedProperties["LowestScore"].ToString();
+                                Int32.TryParse(strHighestScore, out HighestScore);
+                                Int32.TryParse(strLowestScore, out LowestScore);
+                                string columnName = col.ColumnName;
+                                // Get questionID
+                                String sqlString3 = string.Format("Select Top 1 evalQuestionsID from evalQuestions where QuestionName = '{0}'", columnName);
+                                int questionID = Int32.Parse(MsSql.ExecuteScalar(sqlString3));
+                                // Insert answer into answer tables
+                                switch (columnName)
                                 {
-                                    dc.DataType = typeof(int);
-                                }
-                                else
-                                {
-                                    dc.DataType = typeof(string);
-                                }
-                                dc.ExtendedProperties.Add("ExcelColumn", headerRow["ExcelColumn"].ToString());
-                                dc.ExtendedProperties.Add("ExcelColumnLetter", headerRow["ExcelColumnLetter"].ToString());
-                                dc.ExtendedProperties.Add("NumericQuestion", headerRow["NumericQuestion"].ToString());
-                                ExcelReader.courseEvaluations.Columns.Add(dc);
-                            }
-                            // 3. Load excel file into DataTable courseEvaluations
-                            string myDocumentFolder = AppData.GetKeyValue("DocumentFolder");
-                            string filePath = myDocumentFolder + relPath;
-                            if (File.Exists(filePath))
-                            {
-                                ExcelReader.LoadExcelFileIntoCourseEvaluations(filePath);
-                            }
-                            else
-                            {
-                                sbErr.AppendLine("Missing file: " + filePath);
-                                break;
-                            }
-
-                            // 4. Delete old evaluations from evalEssayAnswers and evalNumericAnswers sql tables
-                            string strString6 = string.Format("DELETE FROM [dbo].[evalEssayAnswers] WHERE CourseTermID = {0}", ctID);
-                            MsSql.ExecuteNonQuery(strString6);
-                            string strString7 = string.Format("DELETE FROM [dbo].[evalNumericAnswers] WHERE CourseTermID = {0}", ctID);
-                            MsSql.ExecuteNonQuery(strString7);
-
-                            // 5. Write the courseEvaluations file to evalEssayAnswers and evalNumericAnswers sql tables
-                            //    Course evaluation DT - first row is headers, and so we can skip it
-                            //    Each row has 19 columns - one for every answer.
-                            //    First two rows are "GraduateStudent" and "Expected Grade", and I will put these two in every answer.
-                            //    So, each row will become 17 answers (except feedback ignored if not given).
-
-                            // Get Faculty ID from CourseTerm ID (ctID - from above)
-                            String sqlString = string.Format("Select Top 1 facultyID from CourseTerms where CourseTermID = {0}", ctID.ToString());
-                            int facultyID = Int32.Parse(MsSql.ExecuteScalar(sqlString));
-
-                            foreach (DataRow cdDataRow in ExcelReader.courseEvaluations.Rows)
-                            {
-                                // Get StudentDegree (Converted to bool)
-                                string studentDegreeColumn = cdDataRow["StudentDegree"].ToString();
-                                bool boolGradDegree =
-                                    studentDegreeColumn.Contains("研究", StringComparison.OrdinalIgnoreCase) ||
-                                    studentDegreeColumn.Contains("碩", StringComparison.OrdinalIgnoreCase);
-
-                                // Get Expected Grade (Converted to Int - 5 (A) to 1 (F))
-                                string expectedGrade = cdDataRow["ExpectedGrade"].ToString();
-                                int intExpectedGrade = 4;
-                                if (expectedGrade.Contains("A", StringComparison.OrdinalIgnoreCase))
-                                { intExpectedGrade = 5; }
-                                else if (expectedGrade.Contains("B", StringComparison.OrdinalIgnoreCase))
-                                { intExpectedGrade = 4; }
-                                else if (expectedGrade.Contains("C", StringComparison.OrdinalIgnoreCase))
-                                { intExpectedGrade = 3; }
-                                else if (expectedGrade.Contains("D", StringComparison.OrdinalIgnoreCase))
-                                { intExpectedGrade = 2; }
-                                else if (expectedGrade.Contains("E", StringComparison.OrdinalIgnoreCase))
-                                { intExpectedGrade = 1; }
-                                else if (expectedGrade.Contains("F", StringComparison.OrdinalIgnoreCase))
-                                { intExpectedGrade = 1; }
-
-                                // Process all rows - divide numeric and essay answers
-                                // I could and should do this based on this only.
-                                // Could also use Type type = col.DataType; to get the type of question
-                                // The "switch" is clearer, but needs updated for new evaluation forms
-                                foreach (DataColumn col in cdDataRow.Table.Columns)
-                                {
-                                    string columnName = col.ColumnName;
-                                    // Get questionID
-                                    String sqlString3 = string.Format("Select Top 1 evalQuestionsID from evalQuestions where QuestionName = '{0}'", columnName);
-                                    int questionID = Int32.Parse(MsSql.ExecuteScalar(sqlString3));
-                                    // Insert answer into answer tables
-                                    switch (columnName)
-                                    {
-                                        case "StudentDegree":
-                                            break;
-                                        case "ExpectedGrade":
-                                            break;
-                                        case "Difficulty":
-                                        case "Fairness":
-                                        case "HowMuchLearned":
-                                        case "HowValuable":
-                                        case "TeacherPrepared":
-                                        case "WellDesigned":
-                                        case "ReadingMaterial":
-                                        case "GiftedTeacher":
-                                        case "AnotherCourse":
-                                        case "TeacherReformed":
-                                        case "TeacherPunctuality":
-                                        case "TakeAgain":
-                                        case "ConnectionLost":
-                                        case "VideoChoppy":
-                                        case "RecordedLectures":
-                                            int score = -1;
-                                            string strScore = cdDataRow[columnName].ToString();
-                                            strScore = strScore.TrimStart();
+                                    case "StudentDegree":
+                                        break;
+                                    case "ExpectedGrade":                                   
+                                    case "Difficulty":
+                                    case "Fairness":
+                                    case "HowMuchLearned":
+                                    case "HowValuable":
+                                    case "TeacherPrepared":
+                                    case "WellDesigned":
+                                    case "ReadingMaterial":
+                                    case "GiftedTeacher":
+                                    case "AnotherCourse":
+                                    case "TeacherReformed":
+                                    case "TeacherPunctuality":
+                                    case "TakeAgain":
+                                    case "ConnectionLost":
+                                    case "VideoChoppy":
+                                    case "RecordedLectures":
+                                        int score = -1;
+                                        string strScore = cdDataRow[columnName].ToString();
+                                        strScore = strScore.TrimStart();
+                                        if (strScore.Length > 0)
+                                        {
                                             strScore = strScore.Substring(0, 1);
                                             bool OK = Int32.TryParse(strScore, out score);
-                                            if (score > -1)
+                                        }
+                                        // Check for error
+                                        if (score > HighestScore || score < LowestScore)
+                                        {
+                                            score = -1;   // Nothing inserted into Database on next statement.
+                                        }
+                                        // Insert into database evalNumericAnswers Table
+                                        if (score > -1)
+                                        {
+                                            insertNumericAnswerIntoDB(ctID, facultyID, boolGradDegree,
+                                            intExpectedGrade, questionID, score, "");
+                                        }
+                                        break;
+                                    case "FeedBackForTeacher":
+                                    case "FeedbackOnlineLearning":
+                                        string strAnswer = cdDataRow[columnName].ToString();
+                                        if (strAnswer.Length > 1)
+                                        {
+                                            List<string> stringList = new List<string>();
+                                            if (strAnswer.Length < 980)
                                             {
-                                                insertNumericAnswerIntoDB(ctID, facultyID, boolGradDegree,
-                                                intExpectedGrade, questionID, score, "");
+                                                stringList.Add(strAnswer);
                                             }
-                                            break;
-                                        case "FeedBackForTeacher":
-                                        case "FeedbackOnlineLearning":
-                                            string strAnswer = cdDataRow[columnName].ToString();
-                                            if (strAnswer.Length > 3)
+                                            else if (strAnswer.Length < 1960)
+                                            {
+                                                stringList.Add(strAnswer.Substring(0, 980));
+                                                stringList.Add(". . ." + strAnswer.Substring(980));
+                                            }
+                                            else
+                                            {
+                                                stringList.Add(strAnswer.Substring(0, 980));
+                                                stringList.Add(". . ." + strAnswer.Substring(980, 980));
+                                                if (strAnswer.Length < 2940)
+                                                {
+                                                    stringList.Add(". . . " + strAnswer.Substring(1960));
+                                                }
+                                                else
+                                                {
+                                                    stringList.Add(". . . " + strAnswer.Substring(1960,970) + " End deleted");
+                                                }
+                                            }
+                                            foreach (string str in stringList) 
                                             {
                                                 insertEssayAnswerIntoDB(ctID, facultyID, boolGradDegree,
-                                                intExpectedGrade, questionID, strAnswer, "");
+                                                    intExpectedGrade, questionID, str, str.Length, "");
                                             }
-                                            break;
-                                        default:
-                                            // Unknown error, but ignore for now
-                                            break;
-                                    }
+                                        }
+                                        break;
+                                    default:
+                                        // Unknown error, but ignore for now
+                                        break;
                                 }
                             }
                         }
                     }
-                    progress.Report(0);  // Value not used
+                    else
+                    {
+                        sbErr.AppendLine("Missing file: " + filePath);
+                    }
                 }
+                progress.Report(0);  // Value not used, so set to 0
             }
             catch (Exception ex)
-            { 
-                string msg = ex.Message;
-                if (ex.InnerException is not null)
-                {
-                    string innerEx = ex.InnerException.Message;
-                }
-
+            {
+                sbErr.AppendLine(ex.Message);
             }
-
         }
 
         private void insertNumericAnswerIntoDB( int courseTermID, int facultyID, bool gradStudent, 
                      int expectedGrade, int questionID, int score, string adminNote)
         {
+            // Escape any single quotes
+            adminNote = adminNote.Replace("'", "''");
+
             string sqlString = @"
             INSERT INTO[dbo].[evalNumericAnswers]
             ([GradStudent], [ExpectedGrade], [CourseTermID], [FacultyID], [QuestionID], [Score], [AdminNote])
@@ -450,15 +488,19 @@ namespace SqlEditor
         }
 
         private void insertEssayAnswerIntoDB(int courseTermID, int facultyID, bool gradStudent,
-             int expectedGrade, int questionID, string essay, string adminNote)
+             int expectedGrade, int questionID, string essay, int characters, string adminNote)
         {
+            // Escape any single quotes
+            adminNote = adminNote.Replace("'", "''");
+            essay = essay.Replace("'", "''");
+
             string sqlString = @"
             INSERT INTO[dbo].[evalEssayAnswers]
-            ([GradStudent], [ExpectedGrade], [CourseTermID], [FacultyID], [QuestionID], [Essay], [AdminNote])
+            ([GradStudent],[ExpectedGrade],[CourseTermID],[FacultyID],[QuestionID],[Essay],[Characters],[AdminNote])
             VALUES
-            ( '{0}', {1}, {2}, {3}, {4}, N'{5}', N'{6}')";
+            ( '{0}', {1}, {2}, {3}, {4}, N'{5}', {6}, N'{7}')";
 
-            sqlString = string.Format(sqlString, gradStudent, expectedGrade, courseTermID, facultyID, questionID, essay, adminNote);
+            sqlString = string.Format(sqlString, gradStudent, expectedGrade, courseTermID, facultyID, questionID, essay, characters, adminNote);
             MsSql.ExecuteNonQuery(sqlString);
         }
 

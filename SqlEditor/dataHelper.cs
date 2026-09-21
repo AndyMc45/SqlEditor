@@ -82,10 +82,15 @@ namespace SqlEditor
 
         public static string StandardAggregateFieldName(field fld, aggregateFunction aggFunction)
         {
+            // For integers, change to CAST([evalNumericAnswers00].[Score] as Decimal(10,2))
+            // because Ms Sql will aggregate as integer
+
             StringBuilder sb = new StringBuilder();
+            if (dbTypeIsInteger(fld.dbType)) { sb.Append("CAST("); }
             sb.Append("[" + fld.tableAlias + "]");
             sb.Append(".");
             sb.Append("[" + fld.fieldName + "]");
+            if (dbTypeIsInteger(fld.dbType)) { sb.Append(" as Decimal(10,2))"); }
             return String.Format("{0}({1})",aggFunction.ToString(),sb.ToString());
         }
         public static DbType ConvertStringToDbType(string strVarType)
@@ -647,14 +652,19 @@ namespace SqlEditor
 
         public field(string aggFieldName)
         {  // Most of these properties are never used.
+            // Only use this constructor form for aggregate fields
             this.table = "AggregateTable";
             this.tableAlias = table + "00";  
             this.fieldName = aggFieldName;
-            this.dbType = DbType.Single;
-            this.size = 4;
+            this.dbType = DbType.Decimal;
+            this.size = 4; // ?
             this.fType = fieldType.aggregate;
-            this.AggregateFieldName = aggFieldName; // Crucial 
-            this.ColumnName = aggFieldName;
+            this.AggregateFieldName = aggFieldName; // Crucial
+            // Following because AggregateFieldName might have the Cast as decimal clause 
+            string noCast = aggFieldName;
+            noCast = noCast.Replace("CAST(", String.Empty);
+            noCast = noCast.Replace(" as Decimal(10,2))", String.Empty);
+            this.ColumnName = noCast;           ;
         }
         public string fieldName { get; }
         public string table { get; set; }

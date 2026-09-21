@@ -38,8 +38,6 @@
             dataGridViewExcelFiles = new DataGridView();
             btnRun = new Button();
             ckbUpdateCourses = new CheckBox();
-            lblYearString = new Label();
-            cmbEvalFormName = new ComboBox();
             progressBar1 = new ProgressBar();
             ((System.ComponentModel.ISupportInitialize)connectionStringBindingSource).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridViewExcelFiles).BeginInit();
@@ -118,28 +116,9 @@
             ckbUpdateCourses.Text = "Update Courses";
             ckbUpdateCourses.UseVisualStyleBackColor = true;
             // 
-            // lblYearString
-            // 
-            lblYearString.AutoSize = true;
-            lblYearString.Location = new Point(54, 67);
-            lblYearString.Margin = new Padding(4, 0, 4, 0);
-            lblYearString.Name = "lblYearString";
-            lblYearString.Size = new Size(115, 25);
-            lblYearString.TabIndex = 8;
-            lblYearString.Text = "Form Name: ";
-            // 
-            // cmbEvalFormName
-            // 
-            cmbEvalFormName.FormattingEnabled = true;
-            cmbEvalFormName.Location = new Point(183, 58);
-            cmbEvalFormName.Margin = new Padding(4, 5, 4, 5);
-            cmbEvalFormName.Name = "cmbEvalFormName";
-            cmbEvalFormName.Size = new Size(171, 33);
-            cmbEvalFormName.TabIndex = 9;
-            // 
             // progressBar1
             // 
-            progressBar1.Location = new Point(506, 55);
+            progressBar1.Location = new Point(517, 55);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new Size(611, 34);
             progressBar1.TabIndex = 10;
@@ -150,8 +129,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1666, 924);
             Controls.Add(progressBar1);
-            Controls.Add(cmbEvalFormName);
-            Controls.Add(lblYearString);
             Controls.Add(ckbUpdateCourses);
             Controls.Add(btnRun);
             Controls.Add(dataGridViewExcelFiles);
@@ -180,8 +157,6 @@
         private DataGridView dataGridViewExcelFiles;
         private Button btnRun;
         private CheckBox ckbUpdateCourses;
-        private Label lblYearString;
-        private ComboBox cmbEvalFormName;
         private ProgressBar progressBar1;
     }
 }

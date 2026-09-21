@@ -5,12 +5,12 @@ namespace SqlEditor
     {
         internal frmCaptions(string caption, string job)
         {
+            //This call is required by the Windows Form Designer.
+            InitializeComponent();
             this.Text = caption;
             this.job = job;
             labels = new List<Label>();
             tableCollection = new List<string>();
-            //This call is required by the Windows Form Designer.
-            InitializeComponent();
         }
 
         internal string selectedCaption = "";
